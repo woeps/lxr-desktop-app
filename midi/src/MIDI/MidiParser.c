@@ -26,6 +26,7 @@
 
 #include "Soundengine/MIDI/MidiMessages.h"
 #include "lxr/engine.h"
+#include <string.h>
 #include "Parameters.h"
 
 static uint16_t midiParser_activeNrpnNumber = 0;
@@ -33,12 +34,15 @@ static uint16_t midiParser_activeNrpnNumber = 0;
 /** Receive filter bitmap (MIDI_FILTER_*) and per-voice channels live in the engine's parameter store. */
 #define MIDI_RX_FILTER (activeParameters[PAR_MIDI_FILT_RX])
 
-/** MIDI channel (0..15) of voice 0..6, or of the global channel for index 7. */
+/** MIDI channel (0..15) of voice slot 0..6, or of the global channel for index 7.
+ *  Returns 0xff (matches nothing) when the global channel is off. */
 static uint8_t midiParser_channelOf(uint8_t voice)
 {
-	if(voice < 6) return activeParameters[PAR_MIDI_CHAN_1 + voice];
-	if(voice == 6) return activeParameters[PAR_MIDI_CHAN_7];
-	return activeParameters[PAR_MIDI_CHAN_GLOBAL];
+	uint8_t stored; /* 1..16, or 0 = off for the global channel */
+	if(voice < 6) stored = activeParameters[PAR_MIDI_CHAN_1 + voice];
+	else if(voice == 6) stored = activeParameters[PAR_MIDI_CHAN_7];
+	else stored = activeParameters[PAR_MIDI_CHAN_GLOBAL];
+	return stored ? (uint8_t)(stored - 1) : 0xff;
 }
 
 enum State
@@ -343,6 +347,7 @@ void midiParser_parseMidiMessage(MidiMsg msg)
 		} else if(msgonly==MIDI_CC){
 
 
+			/* 1..6 = voice that owns the CC (old firmware indexed the channel table with this 1-based number, off by one), 0 or 7 = any */
 			uint8_t voiceNr = midiParser_cc2voiceNr(msg.data1);
 
 			if(voiceNr==0 || voiceNr >= 7) //any set midi channel
@@ -357,7 +362,7 @@ void midiParser_parseMidiMessage(MidiMsg msg)
 			{
 
 				// respond to CC message. This responds only when global channel or voice channel matches the cc message's channel
-				if((MIDI_RX_FILTER & MIDI_FILTER_CC) && ((chanonly == midiParser_channelOf(voiceNr)) || (chanonly == midiParser_channelOf(7)) )) {
+				if((MIDI_RX_FILTER & MIDI_FILTER_CC) && ((chanonly == midiParser_channelOf((uint8_t)(voiceNr - 1))) || (chanonly == midiParser_channelOf(7)) )) {
 					//handle midi data
 					midiParser_ccHandler(msg);
 				}
@@ -406,17 +411,33 @@ void midiParser_handleStatusByte(unsigned char data)
   midiMsg_tmp.lastNonSysStatus = data;
 }
 //-----------------------------------------------------------
+void midiParser_reset(void)
+{
+	memset(&midiMsg_tmp, 0, sizeof(midiMsg_tmp));
+	parserState = IGNORE;
+	midiParser_activeNrpnNumber = 0;
+}
+//-----------------------------------------------------------
+void midiParser_reportError(void)
+{
+	/* drop the partial message and wait for the next status byte (no running status) */
+	parserState = IGNORE;
+	midiMsg_tmp.bits.length = 0;
+	midiMsg_tmp.lastNonSysStatus = 0;
+	lxr_stats_count_midi_error();
+}
+//-----------------------------------------------------------
 // This will build up the midi message and hand it off to
 // parseMidiMessage when it's complete
-volatile static uint8_t checkMIDIprocPAR_t = 0;
-volatile static int8_t checkMIDIprocPAR = 0;
-
 void midiParser_parseUartData(unsigned char data)
 {
-  checkMIDIprocPAR_t = ((checkMIDIprocPAR_t^1) & 0x01);
-  checkMIDIprocPAR = (int8_t)checkMIDIprocPAR_t - 6;
-
   uint8_t parseMsg = 0;
+
+  /* System real-time bytes (clock, start, continue, stop, active sensing, reset)
+   * may arrive between any two bytes of another message. They carry no data and
+   * the module has no tempo, so they are dropped without touching the parser state. */
+  if(data >= 0xF8)
+    return;
 
   // if (data == 0xF8)
   // {

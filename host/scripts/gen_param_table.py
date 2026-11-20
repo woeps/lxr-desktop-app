@@ -129,6 +129,9 @@ SKIP_PREFIX = ("PAR_SYNC_LFO", "PAR_UNUSED")
 GLOBAL_DEFAULTS = {f"PAR_MIDI_CHAN_{i}": 1 for i in range(1, 8)}
 GLOBAL_DEFAULTS.update({f"PAR_MIDI_NOTE{i}": 48 for i in range(1, 8)})
 GLOBAL_DEFAULTS.update({"PAR_MIDI_CHAN_GLOBAL": 0, "PAR_MIDI_FILT_TX": 15, "PAR_MIDI_FILT_RX": 15})
+# MIDI channels are stored 1..16 (old DTYPE_1B16); the global channel 0 means off.
+RANGE_OVERRIDE = {f"PAR_MIDI_CHAN_{i}": (1, 16) for i in range(1, 8)}
+RANGE_OVERRIDE["PAR_MIDI_CHAN_GLOBAL"] = (0, 16)
 # Voice-less globals in the sound range have voice -1; per-voice names end in _1.._6.
 VOICE_SUFFIX = re.compile(r"_([1-6])$")
 
@@ -205,6 +208,7 @@ def main():
             ename = f"enum_{arr}"
         if name in GLOBAL_DEFAULTS:
             default = GLOBAL_DEFAULTS[name]
+            lo, hi = RANGE_OVERRIDE.get(name, (lo, hi))
         elif v < end_sound:
             default = kit[8 + v] if 8 + v < len(kit) else 0
         else:

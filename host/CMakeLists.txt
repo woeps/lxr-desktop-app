@@ -59,3 +59,13 @@ target_compile_options(lxr_engine_host PRIVATE -Wno-double-promotion -Wno-attrib
 add_executable(test_engine test_engine.c)
 target_link_libraries(test_engine PRIVATE lxr_engine_host)
 add_test(NAME engine_api COMMAND test_engine)
+
+# --- MIDI parser (task 6) ---------------------------------------------------------
+# Built against a recording mock of the Engine API (in the test file).
+add_executable(test_midi_parser
+    test_midi_parser.c
+    ${LXR_ROOT}/midi/src/MIDI/MidiParser.c
+    ${LXR_ROOT}/engine/src/param_table.c
+)
+target_link_libraries(test_midi_parser PRIVATE lxr_host_flags)
+add_test(NAME midi_parser COMMAND test_midi_parser)

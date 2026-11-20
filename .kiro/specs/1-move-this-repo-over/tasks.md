@@ -37,10 +37,10 @@ Paths are relative to `/home/chris/Projects/lxr-desktop-app`.
   - [x] 5.4 Implement `ui/ui_iface.h` (`ui_register`, fan-out of parameter changes).
   - [x] 5.5 Host unit tests: set/get round trip, out-of-range rejection, callback fires once per change, trigger of every voice produces non-silent output.
 
-- [ ] 6. MIDI parser (R4.3, R4.4, R4.5, R4.7, R2.3)
-  - [ ] 6.1 Port the running-status parser, note-to-voice mapping, CC and NRPN handling to `midi/midi_parser.c`, calling only `lxr_*` functions.
-  - [ ] 6.2 Add the error path: on framing or overrun error or a stray data byte, drop the partial message, resync on the next status byte, and increment the `midi_errors` counter.
-  - [ ] 6.3 Host unit tests: running status, NRPN sequence, velocity scaling matches the old firmware for a table of 8 notes, clock and transport bytes ignored with no state change, partial message followed by a valid one.
+- [x] 6. MIDI parser (R4.3, R4.4, R4.5, R4.7, R2.3)
+  - [x] 6.1 Port the running-status parser, note-to-voice mapping, CC and NRPN handling to `midi/midi_parser.c`, calling only `lxr_*` functions.
+  - [x] 6.2 Add the error path: on framing or overrun error or a stray data byte, drop the partial message, resync on the next status byte, and increment the `midi_errors` counter.
+  - [x] 6.3 Host unit tests (`host/test_midi_parser.c`, against a recording mock of the Engine API): channel routing, note off ignored, running status, note map, global channel, CC and NRPN mapping, value clamping, real-time bytes inside a message, system messages ignored, error resync, stray data, receive filter. Velocity is passed through unchanged to the voice trigger code, which is unchanged from the old firmware, so the test checks the pass-through. Fixed on the way: real-time bytes (clock) broke a message they interrupted, MIDI channels are stored 1..16 (the table had 0..15), and per-voice CCs were matched against the next voice's channel (old off-by-one).
 
 - [ ] 7. Serial console (R7.2 to R7.7)
   - [ ] 7.1 Implement `ui/console/console.c` with all commands from design section 5 against a character-source and a character-sink function pointer.

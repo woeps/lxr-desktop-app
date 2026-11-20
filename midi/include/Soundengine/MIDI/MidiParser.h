@@ -23,6 +23,13 @@
 
 void midiParser_parseUartData(unsigned char data);
 void midiParser_parseMidiMessage(volatile MidiMsg msg);
+
+/** Puts the parser into its power-on state (no running status, no NRPN number). */
+void midiParser_reset(void);
+
+/** Call on a UART framing error or overrun: drops the partial message, waits for
+ *  the next status byte, and counts the error in the engine statistics. */
+void midiParser_reportError(void);
 #if 0
 void midiDebugSend(uint8_t b1, uint8_t b2);
 #endif
