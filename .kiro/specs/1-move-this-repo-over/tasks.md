@@ -42,11 +42,11 @@ Paths are relative to `/home/chris/Projects/lxr-desktop-app`.
   - [x] 6.2 Add the error path: on framing or overrun error or a stray data byte, drop the partial message, resync on the next status byte, and increment the `midi_errors` counter.
   - [x] 6.3 Host unit tests (`host/test_midi_parser.c`, against a recording mock of the Engine API): channel routing, note off ignored, running status, note map, global channel, CC and NRPN mapping, value clamping, real-time bytes inside a message, system messages ignored, error resync, stray data, receive filter. Velocity is passed through unchanged to the voice trigger code, which is unchanged from the old firmware, so the test checks the pass-through. Fixed on the way: real-time bytes (clock) broke a message they interrupted, MIDI channels are stored 1..16 (the table had 0..15), and per-voice CCs were matched against the next voice's channel (old off-by-one).
 
-- [ ] 7. Serial console (R7.2 to R7.7)
-  - [ ] 7.1 Implement `ui/console/console.c` with all commands from design section 5 against a character-source and a character-sink function pointer.
-  - [ ] 7.2 Implement the non-blocking TX ring behaviour (drop when full) and the deferred `watch` output.
-  - [ ] 7.3 Host `lxr_console` program on stdin/stdout.
-  - [ ] 7.4 Host unit tests for each command, including errors: unknown parameter, value out of range, bad voice name, bad slot number.
+- [x] 7. Serial console (R7.2 to R7.7)
+  - [x] 7.1 Implement `ui/console/console.c` with all commands from design section 5 against a character-source and a character-sink function pointer. The `preset` commands need the preset storage, so task 12.2 adds them.
+  - [x] 7.2 Implement the non-blocking TX ring behaviour (drop when full) and the deferred `watch` output.
+  - [x] 7.3 Host `lxr_console` program on stdin/stdout.
+  - [x] 7.4 Host unit tests for each command, including errors: unknown parameter, value out of range, bad voice name, bad slot number.
 
 - [ ] 8. Host render tool and golden audio (R5.5, R6.6)
   - [ ] 8.1 Implement `host/lxr_render` (text MIDI script in, 16-bit 44.1 kHz WAV out) and three scripts in `host/scripts/`: all six voices at three velocities, a CC sweep across filter and FX parameters, and a 10-second dense retrigger.

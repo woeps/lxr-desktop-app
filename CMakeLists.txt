@@ -50,6 +50,7 @@ add_library(lxr_engine STATIC
     ${LXR_ENGINE_SOURCES}
     midi/src/MIDI/MidiParser.c
     ui/ui_iface.c
+    ui/console/console.c
 )
 target_include_directories(lxr_engine PUBLIC engine/include midi/include ui)
 target_link_libraries(lxr_engine PUBLIC lxr_engine_flags)

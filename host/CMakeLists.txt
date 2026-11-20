@@ -69,3 +69,14 @@ add_executable(test_midi_parser
 )
 target_link_libraries(test_midi_parser PRIVATE lxr_host_flags)
 add_test(NAME midi_parser COMMAND test_midi_parser)
+
+# --- serial console (task 7) ------------------------------------------------------
+add_library(lxr_console_ui STATIC ${LXR_ROOT}/ui/console/console.c)
+target_link_libraries(lxr_console_ui PUBLIC lxr_engine_host)
+
+add_executable(lxr_console lxr_console.c)
+target_link_libraries(lxr_console PRIVATE lxr_console_ui)
+
+add_executable(test_console test_console.c)
+target_link_libraries(test_console PRIVATE lxr_console_ui)
+add_test(NAME console COMMAND test_console)
