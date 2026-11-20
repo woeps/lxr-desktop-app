@@ -96,7 +96,7 @@ float lerp(float a, float b, float t) {
   //return a + t * (b - a);
 	//fma(a, b, c) = a*b + c
 	//fnms(a, b, c) = -(a*b - c) = c - a*b
-	return fma(t, b, fnms(t, a, a));
+	return fmaf(t, b, fnms(t, a, a));
 
 }
 

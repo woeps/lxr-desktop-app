@@ -49,10 +49,10 @@ Paths are relative to `/home/chris/Projects/lxr-desktop-app`.
   - [x] 7.4 Host unit tests for each command, including errors: unknown parameter, value out of range, bad voice name, bad slot number.
 
 - [ ] 8. Host render tool and golden audio (R5.5, R6.6)
-  - [ ] 8.1 Implement `host/lxr_render` (text MIDI script in, 16-bit 44.1 kHz WAV out) and three scripts in `host/scripts/`: all six voices at three velocities, a CC sweep across filter and FX parameters, and a 10-second dense retrigger.
-  - [ ] 8.2 Render the golden WAVs, listen to them, and commit them to `host/golden/`.
-  - [ ] 8.3 Add the comparison tool `host/wavcmp` (peak difference at most 4 LSB, RMS below 1 LSB) and wire everything into CTest.
-  - [ ] 8.4 Fix the roughly 108 silent float-to-double promotions found in task 1 (`docs/memory-map.md` section 4) and verify the host build is clean under `-Wdouble-promotion -Werror` (R5.1).
+  - [x] 8.1 Implement `host/lxr_render` (text MIDI script in, 16-bit 44.1 kHz WAV out) and three scripts in `host/scripts/`: `voices.txt` (all seven voice slots at velocity 40, 90, 127), `cc_sweep.txt` (filter cutoff CC sweep, then drum 1 into the delay with an NRPN sweep of fx_p1), `dense_retrigger.txt` (every slot every 47 ms for 10 s). Scripts can also call `set <param> <value>` to configure channels and the note map.
+  - [ ] 8.2 Render the golden WAVs, listen to them, and commit them to `host/golden/`. Rendered and committed as candidates; **waiting for the user's listening check**. Facts measured so far: every slot sounds, velocity does not change level (factory kit has volume modulation off, as on the LXR), dense_retrigger saturates 1.05% of samples (seven full-scale voices summed).
+  - [x] 8.3 Add the comparison tool `host/wavcmp` (peak difference at most 4 LSB, RMS below 1 LSB) and wire everything into CTest.
+  - [x] 8.4 Fix the roughly 108 silent float-to-double promotions found in task 1 (`docs/memory-map.md` section 4) and verify the host build is clean under `-Wdouble-promotion -Werror` (R5.1). Done by changing every `double` in the engine to `float` and every libm call to its `f` variant (including `fma`). Output change versus the double version: 0.22 to 0.90 LSB RMS, at most 7 LSB peak. Both builds use `-Werror=double-promotion`, and the Pico build checks the engine library with `cmake/check_no_double.cmake` (no `__aeabi_d*`/`f2d` helpers, no double libm).
 
 - [ ] 9. Pico audio output, performance measurement and clock (R3, R5.1, R5.2)
   - [ ] 9.1 Implement `board/pico2/i2s.pio` and `audio_i2s.c`: PIO program on GP9/GP10/GP11, fractional divider computed from the configured clock in `board/pico2/clocks.h`, two DMA channels in ping-pong, completion IRQ flags core 1.

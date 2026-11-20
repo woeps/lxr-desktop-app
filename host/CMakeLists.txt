@@ -31,7 +31,7 @@ target_include_directories(lxr_host_flags INTERFACE
     ${LXR_ROOT}/ui
 )
 target_compile_options(lxr_host_flags INTERFACE
-    -Wall -Wextra -Wdouble-promotion -Wfloat-conversion -fsingle-precision-constant
+    -Wall -Wextra -Wdouble-promotion -fsingle-precision-constant
 )
 
 # --- parameter table (task 4) ---------------------------------------------------
@@ -53,8 +53,8 @@ add_library(lxr_engine_host STATIC
     ${LXR_ROOT}/ui/ui_iface.c
 )
 target_link_libraries(lxr_engine_host PUBLIC lxr_host_flags m)
-# TODO(task 8.4): remove this once the float-to-double promotions found in task 1 are fixed.
-target_compile_options(lxr_engine_host PRIVATE -Wno-double-promotion -Wno-attributes -Wno-unused-parameter -Wno-sign-compare -Wno-unused-variable -Wno-unused-but-set-variable)
+# Silent float-to-double promotion is an error in the engine (R5.1).
+target_compile_options(lxr_engine_host PRIVATE -Werror=double-promotion -Wno-float-conversion -Wno-attributes -Wno-unused-parameter -Wno-sign-compare -Wno-unused-variable -Wno-unused-but-set-variable)
 
 add_executable(test_engine test_engine.c)
 target_link_libraries(test_engine PRIVATE lxr_engine_host)

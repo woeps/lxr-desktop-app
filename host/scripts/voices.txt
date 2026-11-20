@@ -1,0 +1,39 @@
+# All seven voice slots (d1 d2 d3 snare cym hh-closed hh-open), each at velocity 40, 90 and 127.
+# seconds: 9
+
+# each voice slot on its own MIDI channel (1..7), note map 'any'
+t=0 set midi_chan_1 1
+t=0 set midi_chan_2 2
+t=0 set midi_chan_3 3
+t=0 set midi_chan_4 4
+t=0 set midi_chan_5 5
+t=0 set midi_chan_6 6
+t=0 set midi_chan_7 7
+t=0 set midi_note1 0
+t=0 set midi_note2 0
+t=0 set midi_note3 0
+t=0 set midi_note4 0
+t=0 set midi_note5 0
+t=0 set midi_note6 0
+t=0 set midi_note7 0
+t=100 90 3c 28
+t=500 90 3c 5a
+t=900 90 3c 7f
+t=1300 91 3c 28
+t=1700 91 3c 5a
+t=2100 91 3c 7f
+t=2500 92 3c 28
+t=2900 92 3c 5a
+t=3300 92 3c 7f
+t=3700 93 3c 28
+t=4100 93 3c 5a
+t=4500 93 3c 7f
+t=4900 94 3c 28
+t=5300 94 3c 5a
+t=5700 94 3c 7f
+t=6100 95 3c 28
+t=6500 95 3c 5a
+t=6900 95 3c 7f
+t=7300 96 3c 28
+t=7700 96 3c 5a
+t=8100 96 3c 7f

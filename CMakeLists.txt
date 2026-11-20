@@ -33,8 +33,6 @@ add_library(lxr_engine_flags INTERFACE)
 target_compile_options(lxr_engine_flags INTERFACE
     $<$<COMPILE_LANGUAGE:C>:-mfp16-format=ieee -fsingle-precision-constant>
 )
-# TODO(task 8.4): add -Wdouble-promotion -Wfloat-conversion here once the
-# float-to-double promotions found in task 1 are fixed.
 
 add_executable(lxr
     board/pico2/main.c
@@ -54,8 +52,16 @@ add_library(lxr_engine STATIC
 )
 target_include_directories(lxr_engine PUBLIC engine/include midi/include ui)
 target_link_libraries(lxr_engine PUBLIC lxr_engine_flags)
-target_compile_options(lxr_engine PRIVATE -O3 -fno-thread-jumps)
+# Silent float-to-double promotion is an error in the engine (R5.1): the M33 FPU is single precision.
+target_compile_options(lxr_engine PRIVATE -O3 -fno-thread-jumps -Werror=double-promotion)
 target_link_libraries(lxr PRIVATE lxr_engine)
+
+add_custom_command(TARGET lxr_engine POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -DNM=${CMAKE_NM} -DLIB=$<TARGET_FILE:lxr_engine>
+            -P ${CMAKE_CURRENT_LIST_DIR}/cmake/check_no_double.cmake
+    COMMENT "Checking the engine for double-precision code"
+    VERBATIM
+)
 
 # The engine runs from RAM (docs/memory-map.md, section 3).
 pico_set_binary_type(lxr copy_to_ram)

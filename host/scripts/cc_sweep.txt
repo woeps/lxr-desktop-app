@@ -1,0 +1,88 @@
+# Drum 1 retriggered every 250 ms. 0-4 s: CC sweep of filter_freq_1 (CC 38) with filter type LP and
+# resonance 90. 4-8 s: drum 1 routed to the FX bus, FX = delay, dry/wet 60, NRPN sweep of fx_p1.
+# seconds: 8.5
+
+# each voice slot on its own MIDI channel (1..7), note map 'any'
+
+t=0 set midi_chan_1 1
+t=0 set midi_chan_2 2
+t=0 set midi_chan_3 3
+t=0 set midi_chan_4 4
+t=0 set midi_chan_5 5
+t=0 set midi_chan_6 6
+t=0 set midi_chan_7 7
+t=0 set midi_note1 0
+t=0 set midi_note2 0
+t=0 set midi_note3 0
+t=0 set midi_note4 0
+t=0 set midi_note5 0
+t=0 set midi_note6 0
+t=0 set midi_note7 0
+t=0 b0 2c 5a   # reso_1 (CC 44) = 90
+t=0 90 3c 64
+t=10 b0 26 00   # filter_freq_1
+t=250 90 3c 64
+t=260 b0 26 08   # filter_freq_1
+t=500 90 3c 64
+t=510 b0 26 10   # filter_freq_1
+t=750 90 3c 64
+t=760 b0 26 18   # filter_freq_1
+t=1000 90 3c 64
+t=1010 b0 26 20   # filter_freq_1
+t=1250 90 3c 64
+t=1260 b0 26 28   # filter_freq_1
+t=1500 90 3c 64
+t=1510 b0 26 30   # filter_freq_1
+t=1750 90 3c 64
+t=1760 b0 26 38   # filter_freq_1
+t=2000 90 3c 64
+t=2010 b0 26 40   # filter_freq_1
+t=2250 90 3c 64
+t=2260 b0 26 48   # filter_freq_1
+t=2500 90 3c 64
+t=2510 b0 26 50   # filter_freq_1
+t=2750 90 3c 64
+t=2760 b0 26 58   # filter_freq_1
+t=3000 90 3c 64
+t=3010 b0 26 60   # filter_freq_1
+t=3250 90 3c 64
+t=3260 b0 26 68   # filter_freq_1
+t=3500 90 3c 64
+t=3510 b0 26 70   # filter_freq_1
+t=3750 90 3c 64
+t=3760 b0 26 78   # filter_freq_1
+t=4000 90 3c 64
+t=4000 b0 63 00 b0 62 57 b0 06 06   # audio_out1 = FX
+t=4000 b0 63 00 b0 62 6a b0 06 04   # fx_type = del
+t=4000 b0 63 00 b0 62 6c b0 06 3c   # fx_dry_wet = 60
+t=4020 b0 63 00 b0 62 6e b0 06 00   # fx_p1
+t=4250 90 3c 64
+t=4270 b0 63 00 b0 62 6e b0 06 08   # fx_p1
+t=4500 90 3c 64
+t=4520 b0 63 00 b0 62 6e b0 06 10   # fx_p1
+t=4750 90 3c 64
+t=4770 b0 63 00 b0 62 6e b0 06 18   # fx_p1
+t=5000 90 3c 64
+t=5020 b0 63 00 b0 62 6e b0 06 20   # fx_p1
+t=5250 90 3c 64
+t=5270 b0 63 00 b0 62 6e b0 06 28   # fx_p1
+t=5500 90 3c 64
+t=5520 b0 63 00 b0 62 6e b0 06 30   # fx_p1
+t=5750 90 3c 64
+t=5770 b0 63 00 b0 62 6e b0 06 38   # fx_p1
+t=6000 90 3c 64
+t=6020 b0 63 00 b0 62 6e b0 06 40   # fx_p1
+t=6250 90 3c 64
+t=6270 b0 63 00 b0 62 6e b0 06 48   # fx_p1
+t=6500 90 3c 64
+t=6520 b0 63 00 b0 62 6e b0 06 50   # fx_p1
+t=6750 90 3c 64
+t=6770 b0 63 00 b0 62 6e b0 06 58   # fx_p1
+t=7000 90 3c 64
+t=7020 b0 63 00 b0 62 6e b0 06 60   # fx_p1
+t=7250 90 3c 64
+t=7270 b0 63 00 b0 62 6e b0 06 68   # fx_p1
+t=7500 90 3c 64
+t=7520 b0 63 00 b0 62 6e b0 06 70   # fx_p1
+t=7750 90 3c 64
+t=7770 b0 63 00 b0 62 6e b0 06 78   # fx_p1

@@ -62,7 +62,7 @@ The RP2350 has 520 KB of SRAM, so about 250 KB stays free. **Decision: use `pico
 
 ## 4. Double-precision findings (for R5.1)
 
-Compiling the same objects with `-Wdouble-promotion` reports about 108 places where a `float` is silently promoted to `double`, mostly in `Distortion.c` (32), `Delay.c` (14), `Compressor.c` (12), `Reverb.c` (10), `ResonantFilter.c` (9) and `1PoleLp.c` (7). On the Cortex-M33 each of these runs as slow software double math. Task 8.4 and task 9 must fix them (float literals with an `f` suffix, `sinf`/`powf` and friends) so the audio path is single-precision.
+Compiling the same objects with `-Wdouble-promotion` reported about 108 places where a `float` is silently promoted to `double`, mostly in `Distortion.c` (32), `Delay.c` (14), `Compressor.c` (12), `Reverb.c` (10), `ResonantFilter.c` (9) and `1PoleLp.c` (7). On the Cortex-M33 each of these runs as slow software double math. **Fixed in task 8.4:** all `double` variables and libm calls in the engine are now single precision. The Pico build fails if the engine library references any software double helper (`cmake/check_no_double.cmake`).
 
 ## 5. Clock, voltage and temperature limits (task 1.3)
 
