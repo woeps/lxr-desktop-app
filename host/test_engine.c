@@ -58,11 +58,20 @@ static void uiBChanged(uint16_t id, uint8_t value) { (void)id; (void)value; uiBC
 int main(void)
 {
 	lxr_engine_init(44100);
+	uint8_t v = 0;
+
+	/* factory MIDI defaults: one channel per voice slot (1..7), any note, global off */
+	for(int i = 0; i < 6; i++)
+	{
+		CHECK(lxr_param_get(PAR_MIDI_CHAN_1 + i, &v) == 0 && v == i + 1, "midi_chan_%d default %u", i + 1, v);
+		CHECK(lxr_param_get(PAR_MIDI_NOTE1 + i, &v) == 0 && v == 0, "midi_note%d default %u", i + 1, v);
+	}
+	CHECK(lxr_param_get(PAR_MIDI_CHAN_7, &v) == 0 && v == 7, "midi_chan_7 default %u", v);
+	CHECK(lxr_param_get(PAR_MIDI_CHAN_GLOBAL, &v) == 0 && v == 0, "global channel default %u", v);
 
 	/* set / get round trip */
 	const lxr_param_info_t *vol1 = lxr_param_find("vol1");
 	CHECK(vol1 != NULL, "vol1 missing");
-	uint8_t v = 0;
 	CHECK(lxr_param_get(vol1->id, &v) == 0 && v == vol1->def, "default of vol1 is %u, table says %u", v, vol1->def);
 	CHECK(lxr_param_set(vol1->id, 77) == 0, "set vol1 failed");
 	CHECK(lxr_param_get(vol1->id, &v) == 0 && v == 77, "vol1 reads %u after set 77", v);

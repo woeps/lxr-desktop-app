@@ -125,9 +125,11 @@ RANGE = {
 SKIP_NAMES = {"PAR_NONE", "PAR_MOD_WHEEL", "PAR_NRPN_DATA_ENTRY_COARSE", "PAR_MORPH_KIT_DEST",
               "PAR_NRPN_FINE", "PAR_NRPN_COARSE", "PAR_BANK_CHANGE"}
 SKIP_PREFIX = ("PAR_SYNC_LFO", "PAR_UNUSED")
-# Globals kept (module MIDI settings), with the defaults of preset_loadDefaultGlobals().
-GLOBAL_DEFAULTS = {f"PAR_MIDI_CHAN_{i}": 1 for i in range(1, 8)}
-GLOBAL_DEFAULTS.update({f"PAR_MIDI_NOTE{i}": 48 for i in range(1, 8)})
+# Globals kept (module MIDI settings). Factory default: every voice slot on its own
+# channel (d1..d3 = 1..3, snare = 4, cymbal = 5, closed hat = 6, open hat = 7), note
+# map "any" (0, the received note sets the pitch), global channel off.
+GLOBAL_DEFAULTS = {f"PAR_MIDI_CHAN_{i}": i for i in range(1, 8)}
+GLOBAL_DEFAULTS.update({f"PAR_MIDI_NOTE{i}": 0 for i in range(1, 8)})
 GLOBAL_DEFAULTS.update({"PAR_MIDI_CHAN_GLOBAL": 0, "PAR_MIDI_FILT_TX": 15, "PAR_MIDI_FILT_RX": 15})
 # MIDI channels are stored 1..16 (old DTYPE_1B16); the global channel 0 means off.
 RANGE_OVERRIDE = {f"PAR_MIDI_CHAN_{i}": (1, 16) for i in range(1, 8)}
