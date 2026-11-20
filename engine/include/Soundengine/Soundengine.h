@@ -25,7 +25,6 @@
 #include "Soundengine/DSPAudio/Snare.h"
 #include "Soundengine/DSPAudio/modulationNode.h"
 #include "Soundengine/DSPAudio/random.h"
-#include "Soundengine/MIDI/MidiParser.h"
 
 
 

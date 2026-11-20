@@ -30,12 +30,12 @@ Paths are relative to `/home/chris/Projects/lxr-desktop-app`.
   - [x] 4.2 Review the generated table by hand: unique lower-case names (for example `filter_freq_1`, `velod4`, `fx_dry_wet`), correct stored ranges, enum names for waveforms and filter types. The names follow the old enum identifiers, so they are not the dotted names of the design's examples. The table has 245 rows: 228 sound parameters plus 17 MIDI settings (channels, notes, filters).
   - [x] 4.3 Add the host test that every non-removed `ParamEnums` ID below `END_OF_SOUND_PARAMETERS` has exactly one row and that names are unique.
 
-- [ ] 5. Engine API and command ring (R4.4, R6.2, R6.3, R6.4)
-  - [ ] 5.1 Write `engine/include/lxr/engine.h` as in design section 3.
-  - [ ] 5.2 Implement the SPSC command ring (256 entries) and the shadow parameter copy. Core 1 side drains the ring at the start of `lxr_engine_render`.
-  - [ ] 5.3 Implement `lxr_trigger`, `lxr_param_set/get`, `lxr_param_find`, `lxr_param_info`, `lxr_set_param_callback`, `lxr_get_stats`, applying commands through the existing `paramArray_setParameter` logic with `valueShaper` scaling.
-  - [ ] 5.4 Implement `ui/ui_iface.h` (`ui_register`, fan-out of parameter changes).
-  - [ ] 5.5 Host unit tests: set/get round trip, out-of-range rejection, callback fires once per change, trigger of every voice produces non-silent output.
+- [x] 5. Engine API and command ring (R4.4, R6.2, R6.3, R6.4)
+  - [x] 5.1 Write `engine/include/lxr/engine.h` as in design section 3. Differences from the design sketch: `lxr_engine_render` takes one interleaved stereo buffer, there are 7 voice slots (the hi-hat has closed and open), `lxr_trigger_note` adds an explicit pitch, and the metadata functions live in `lxr/param_info.h`. Presets (`lxr_preset_*`) are added by tasks 11 and 12.
+  - [x] 5.2 Implement the SPSC command ring (256 entries) and the shadow parameter copy. Core 1 side drains the ring at the start of `lxr_engine_render`.
+  - [x] 5.3 Implement `lxr_trigger`, `lxr_param_set/get`, `lxr_param_find`, `lxr_param_info`, `lxr_set_param_callback`, `lxr_get_stats`, applying commands through the existing CC handler (moved from `MidiParser.c` to `engine/src/param_apply.c`) with its `valueShaper` scaling. The MIDI parser now only decodes bytes and calls the Engine API.
+  - [x] 5.4 Implement `ui/ui_iface.h` (`ui_register`, fan-out of parameter changes).
+  - [x] 5.5 Host unit tests: set/get round trip, out-of-range rejection, callback fires once per change, trigger of every voice produces non-silent output.
 
 - [ ] 6. MIDI parser (R4.3, R4.4, R4.5, R4.7, R2.3)
   - [ ] 6.1 Port the running-status parser, note-to-voice mapping, CC and NRPN handling to `midi/midi_parser.c`, calling only `lxr_*` functions.

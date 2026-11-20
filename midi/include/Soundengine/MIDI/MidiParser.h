@@ -18,42 +18,14 @@
 #include "Soundengine/platform.h"
 #include "Soundengine/globals.h"
 #include "Soundengine/MIDI/MidiMessages.h"
-#include "Soundengine/MIDI/MidiVoiceControl.h"
+
 
 
 void midiParser_parseUartData(unsigned char data);
-void midiParser_ccHandler(MidiMsg msg, uint8_t updateOriginalValue, uint8_t isFloatModulator, float v);
 void midiParser_parseMidiMessage(volatile MidiMsg msg);
-float midiParser_calcDetune(uint8_t value);
 #if 0
 void midiDebugSend(uint8_t b1, uint8_t b2);
 #endif
-
-// it's either tx or rx. value is a bitmap value from 0 to 15 where (lsb first):
-// bit 1 - Note on/off
-// bit 2 - Realtime on/off
-// bit 3 - CC on/off (right now only applies to Rx)
-// bit 4 - Prog chg on/off
-void midiParser_setFilter(uint8_t is_tx, uint8_t value);
-
-/** 1 if the voice (0..6) is muted by its CC2_MUTE parameter. */
-uint8_t midiParser_isVoiceMuted(uint8_t voice);
-
-// a place to store all the incoming CC values
-//needed to know to which value the automation node should return
-extern uint8_t midiParser_originalCcValues[0xff];
-
-
-extern uint8_t midi_MidiChannels[8]; // last element is global channel
-//extern uint8_t midi_NoteOverride[7];
-//extern uint8_t midi_mode; not used anymore
-
-//enum MIDI_modeEnum
-//{
-//	MIDI_MODE_TRIGGER,
-//	MIDI_MODE_NOTE,
-//} MidiModes;
-
 
 enum TxRxFilterValues
 {
@@ -63,7 +35,5 @@ enum TxRxFilterValues
 	MIDI_FILTER_PROG_C = 0x08,
 };
 
-// high nibble is TX low nibble is RX. see above (midiParser_setFilter) for bitmap
-extern uint8_t midiParser_txRxFilter;
 
 #endif /* MIDIPARSER_H_ */

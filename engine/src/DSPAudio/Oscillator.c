@@ -12,6 +12,7 @@
  */
 
 
+#include "Soundengine/param_apply.h"
 #include "Soundengine/DSPAudio/Oscillator.h"
 #include "Soundengine/DSPAudio/random.h"
 #include "Soundengine/DSPAudio/Samples.h"
@@ -790,7 +791,7 @@ void osc_calcUserSampleFreq(OscInfo* osc)
  {
 
 	 //get fine tune
-	 const float cent = midiParser_calcDetune(osc->midiFreq&0xff);
+	 const float cent = engine_calcDetune(osc->midiFreq&0xff);
 	 //calc coarse tune
 	 int16_t note =  (osc->midiFreq>>8) + (baseNote-OSC_DEFAULT_NOTE);
 	 if(note>127)note=127;
@@ -804,7 +805,7 @@ void osc_calcUserSampleFreq(OscInfo* osc)
  IN_ITCM_RAM void osc_recalcFreq(OscInfo* osc)
  {
 	 //get fine tune
-	 const float cent = midiParser_calcDetune(osc->midiFreq&0xff);
+	 const float cent = engine_calcDetune(osc->midiFreq&0xff);
 	 //calc coarse tune
 	 int16_t note =  (osc->midiFreq>>8) + (osc->baseNote-OSC_DEFAULT_NOTE);
 

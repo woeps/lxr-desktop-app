@@ -109,4 +109,16 @@ static inline uint64_t __SMLALD(uint32_t a, uint32_t b, uint64_t acc)
 
 #endif /* __ARM_FEATURE_SIMD32 */
 
+/* Flush denormal floats to zero on the calling core (audio core). The Arm FPU
+ * does this through FPSCR.FZ; on the host the build uses SSE flags instead. */
+static inline void lxr_enable_flush_to_zero(void)
+{
+#if defined(__ARM_FP)
+	uint32_t fpscr;
+	__asm__ volatile("vmrs %0, fpscr" : "=r"(fpscr));
+	fpscr |= (1u << 24);
+	__asm__ volatile("vmsr fpscr, %0" : : "r"(fpscr));
+#endif
+}
+
 #endif /* LXR_PLATFORM_H_ */

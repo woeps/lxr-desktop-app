@@ -41,3 +41,21 @@ add_executable(test_param_table
 )
 target_link_libraries(test_param_table PRIVATE lxr_host_flags)
 add_test(NAME param_table COMMAND test_param_table)
+
+# --- engine (tasks 5 and 8) ---------------------------------------------------------
+# The whole engine and the MIDI parser, built for the host.
+file(GLOB LXR_ENGINE_SOURCES ${LXR_ROOT}/engine/src/*.c ${LXR_ROOT}/engine/src/*/*.c ${LXR_ROOT}/engine/src/*/*/*.c)
+list(FILTER LXR_ENGINE_SOURCES EXCLUDE REGEX "param_table\\.c$")
+add_library(lxr_engine_host STATIC
+    ${LXR_ENGINE_SOURCES}
+    ${LXR_ROOT}/engine/src/param_table.c
+    ${LXR_ROOT}/midi/src/MIDI/MidiParser.c
+    ${LXR_ROOT}/ui/ui_iface.c
+)
+target_link_libraries(lxr_engine_host PUBLIC lxr_host_flags m)
+# TODO(task 8.4): remove this once the float-to-double promotions found in task 1 are fixed.
+target_compile_options(lxr_engine_host PRIVATE -Wno-double-promotion -Wno-attributes -Wno-unused-parameter -Wno-sign-compare -Wno-unused-variable -Wno-unused-but-set-variable)
+
+add_executable(test_engine test_engine.c)
+target_link_libraries(test_engine PRIVATE lxr_engine_host)
+add_test(NAME engine_api COMMAND test_engine)

@@ -31,13 +31,30 @@ pico_sdk_init()
 # Flags every engine source needs: __fp16 (FX buffer) and single-precision math.
 add_library(lxr_engine_flags INTERFACE)
 target_compile_options(lxr_engine_flags INTERFACE
-    $<$<COMPILE_LANGUAGE:C>:-mfp16-format=ieee -fsingle-precision-constant -Wdouble-promotion -Wfloat-conversion>
+    $<$<COMPILE_LANGUAGE:C>:-mfp16-format=ieee -fsingle-precision-constant>
 )
+# TODO(task 8.4): add -Wdouble-promotion -Wfloat-conversion here once the
+# float-to-double promotions found in task 1 are fixed.
 
 add_executable(lxr
     board/pico2/main.c
 )
 target_link_libraries(lxr PRIVATE pico_stdlib lxr_engine_flags)
+
+# Engine, MIDI parser and UI registry: plain C, no SDK headers (R6.1).
+file(GLOB LXR_ENGINE_SOURCES CONFIGURE_DEPENDS
+    ${CMAKE_CURRENT_LIST_DIR}/engine/src/*.c
+    ${CMAKE_CURRENT_LIST_DIR}/engine/src/*/*.c
+    ${CMAKE_CURRENT_LIST_DIR}/engine/src/*/*/*.c)
+add_library(lxr_engine STATIC
+    ${LXR_ENGINE_SOURCES}
+    midi/src/MIDI/MidiParser.c
+    ui/ui_iface.c
+)
+target_include_directories(lxr_engine PUBLIC engine/include midi/include ui)
+target_link_libraries(lxr_engine PUBLIC lxr_engine_flags)
+target_compile_options(lxr_engine PRIVATE -O3 -fno-thread-jumps)
+target_link_libraries(lxr PRIVATE lxr_engine)
 
 # The engine runs from RAM (docs/memory-map.md, section 3).
 pico_set_binary_type(lxr copy_to_ram)

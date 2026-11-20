@@ -13,6 +13,7 @@
 
 
 
+#include "Soundengine/param_apply.h"
 #include "Soundengine/MIDI/MidiMessages.h"
 #include "Soundengine/MIDI/ParameterArray.h"
 #include "Soundengine/DSPAudio/DrumVoice.h"
@@ -58,7 +59,7 @@
 
 		msg.data1 += 1;
 		msg.data1 &= 0x7f;
-		midiParser_ccHandler(msg,0, 0, 0.f);
+		engine_applyCc(msg,0, 0, 0.f);
 
 
 	}
@@ -69,7 +70,7 @@
 		msg.data2 = val;
 
 		msg.data1 &= 0x7f;
-		midiParser_ccHandler(msg,0, 0, 0.f);
+		engine_applyCc(msg,0, 0, 0.f);
 
 	}
 #else

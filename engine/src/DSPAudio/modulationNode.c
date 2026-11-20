@@ -13,6 +13,7 @@
 
 
 
+#include "Soundengine/param_apply.h"
 #include "Soundengine/MIDI/MidiMessages.h"
 #include "Soundengine/DSPAudio/modulationNode.h"
 #include "Soundengine/DSPAudio/DrumVoice.h"
@@ -192,7 +193,7 @@ void modNode_updateValue(ModulationNode* vm, float val)
 
 		msg.data1 += 1;
 		msg.data1 &= 0x7f;
-		midiParser_ccHandler(msg,0, 1, newValue);
+		engine_applyCc(msg,0, 1, newValue);
 
 
 	}
@@ -202,7 +203,7 @@ void modNode_updateValue(ModulationNode* vm, float val)
 		msg.data1 = vm->destination-128; //stupid offset only in CC not CC2
 
 		msg.data1 &= 0x7f;
-		midiParser_ccHandler(msg,0, 1, newValue);
+		engine_applyCc(msg,0, 1, newValue);
 
 	}
 

@@ -25,8 +25,6 @@ void soundengine_init()
 		modNode_init(&velocityModulators[i]);
 	}
 
-	memset(midi_MidiChannels,0,8);
-
 	initDrumVoice();
 	Snare_init();
 	HiHat_init();
@@ -35,9 +33,11 @@ void soundengine_init()
 
 void soundengine_renderBlock(int16_t* stereoOut)
 {
-	/* The mixer can feed a second output pair. This module has only one
-	 * stereo output (the first pair), so the second pair goes to a scratch buffer. */
-	static int16_t unusedSecondPair[OUTPUT_DMA_SIZE*2];
+	/* The mixer has two output pairs and writes DAC 1 ("St1", the default
+	 * routing) into its second buffer. The module's single stereo output is
+	 * DAC 1. DAC 2 goes to a scratch buffer; mixer_checkOutJackAvailable
+	 * reroutes anything sent to DAC 2 onto DAC 1. */
+	static int16_t unusedDac2[OUTPUT_DMA_SIZE*2];
 
-	mixer_calcNextSampleBlock(stereoOut, unusedSecondPair);
+	mixer_calcNextSampleBlock(unusedDac2, stereoOut);
 }
