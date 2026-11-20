@@ -25,10 +25,10 @@ Paths are relative to `/home/chris/Projects/lxr-desktop-app`.
   - [x] 3.4 Remove per-step velocity and parameter-lock modulation paths driven by the sequencer while keeping MIDI-velocity modulation (R2.6).
   - [x] 3.5 Add `ALL` to the `check_engine_deps` target in `CMakeLists.txt`. Remove the leftover STM32 pieces still in `Core/` (`main.h`, `delay.c/h`, the `Core/Inc/IO`, `menu` and legacy UI files) and the HD44780 row in `NOTICE.md`. Verify: `check_engine_deps` passes, and a `grep` for `seq_`, `menu_`, `lcd_`, `usb_` in `engine/` and `midi/` finds nothing.
 
-- [ ] 4. Parameter metadata table (R6.5)
-  - [ ] 4.1 Write a one-off script `host/scripts/gen_param_table.py` that reads `Parameters.h`, `Cc2Text.c`, `CcNr2Text.h` and `MenuText.h` from git history and emits the first version of `engine/param_table.c` (id, name, voice, kind, min, max, default, enum names).
-  - [ ] 4.2 Review the generated table by hand: unique dotted names (`d1.freq`, `snare.decay`, ...), correct ranges, enum names for waveforms and filter types.
-  - [ ] 4.3 Add the host test that every non-removed `ParamEnums` ID below `END_OF_SOUND_PARAMETERS` has exactly one row and that names are unique.
+- [x] 4. Parameter metadata table (R6.5)
+  - [x] 4.1 Write a one-off script `host/scripts/gen_param_table.py` that reads `Parameters.h`, `Cc2Text.c`, `CcNr2Text.h` and `MenuText.h` from git history and emits the first version of `engine/param_table.c` (id, name, voice, kind, min, max, default, enum names).
+  - [x] 4.2 Review the generated table by hand: unique lower-case names (for example `filter_freq_1`, `velod4`, `fx_dry_wet`), correct stored ranges, enum names for waveforms and filter types. The names follow the old enum identifiers, so they are not the dotted names of the design's examples. The table has 245 rows: 238 sound parameters plus the MIDI channel, note and filter settings.
+  - [x] 4.3 Add the host test that every non-removed `ParamEnums` ID below `END_OF_SOUND_PARAMETERS` has exactly one row and that names are unique.
 
 - [ ] 5. Engine API and command ring (R4.4, R6.2, R6.3, R6.4)
   - [ ] 5.1 Write `engine/include/lxr/engine.h` as in design section 3.

@@ -33,3 +33,11 @@ target_include_directories(lxr_host_flags INTERFACE
 target_compile_options(lxr_host_flags INTERFACE
     -Wall -Wextra -Wdouble-promotion -Wfloat-conversion -fsingle-precision-constant
 )
+
+# --- parameter table (task 4) ---------------------------------------------------
+add_executable(test_param_table
+    test_param_table.c
+    ${LXR_ROOT}/engine/src/param_table.c
+)
+target_link_libraries(test_param_table PRIVATE lxr_host_flags)
+add_test(NAME param_table COMMAND test_param_table)
