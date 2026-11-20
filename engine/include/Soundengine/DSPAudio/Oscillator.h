@@ -15,7 +15,7 @@
 #ifndef OSCILLATOR_H_
 #define OSCILLATOR_H_
 
-#include "stm32f7xx_hal.h"
+#include "Soundengine/platform.h"
 #include "Soundengine/datatypes.h"
 #include "Soundengine/DSPAudio/wavetable.h"
 #include "Soundengine/config.h"
@@ -36,6 +36,9 @@ enum OscWaveforms
 
 
 #define phaseShift 1000
+
+/** MIDI note at which an oscillator plays its base frequency (was SEQ_DEFAULT_NOTE). */
+#define OSC_DEFAULT_NOTE 60
 
 //-----------------------------------------------------------
 

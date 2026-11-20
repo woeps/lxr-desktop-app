@@ -62,7 +62,6 @@ These components are included in source form and are distributed under their own
 
 | Component | Location | Licence |
 |---|---|---|
-| HD44780 LCD routines, based on the mikrocontroller.net AVR-GCC tutorial | `Core/Src/lcd.c`, `Core/Inc/lcd.h` | as published on mikrocontroller.net |
 
 The firmware is built against the Raspberry Pi Pico SDK (BSD-3-Clause) and Arm CMSIS headers
 (Apache-2.0). Neither is copied into this repository; they are fetched or installed at build time.

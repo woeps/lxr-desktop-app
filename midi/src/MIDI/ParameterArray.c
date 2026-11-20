@@ -13,6 +13,7 @@
 
 
 
+#include "Soundengine/MIDI/MidiMessages.h"
 #include "Soundengine/MIDI/ParameterArray.h"
 #include "Soundengine/DSPAudio/DrumVoice.h"
 #include "Soundengine/DSPAudio/CymbalVoice.h"
@@ -23,8 +24,6 @@
 #include "Soundengine/FxBus.h"
 #include "Soundengine/MIDI/MidiMessages.h"
 #include "Soundengine/MIDI/MidiParser.h"
-#include "frontPanelParser_ui.h"
-#include "menu/menu.h"
 
  Parameter parameterArray[END_OF_SOUND_PARAMETERS];
 //the parameter numbers from the AVR/Frontpanel

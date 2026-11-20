@@ -362,7 +362,7 @@ enum ParamEnums
 */
 };
 #endif
-#include "stm32f7xx_hal.h"
+#include "Soundengine/platform.h"
 
 typedef union
 {

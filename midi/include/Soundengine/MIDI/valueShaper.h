@@ -15,7 +15,7 @@
 #ifndef VALUESHAPER_H_
 #define VALUESHAPER_H_
 //-------------------------------------------------------------
-#include "stm32f7xx_hal.h"
+#include "Soundengine/platform.h"
 #include <math.h>
 //-------------------------------------------------------------
 //shape is a value between -1 and 1

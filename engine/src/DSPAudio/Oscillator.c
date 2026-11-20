@@ -17,7 +17,6 @@
 #include "Soundengine/DSPAudio/Samples.h"
 #include "Soundengine/MIDI/MidiParser.h"
 #include "Soundengine/MIDI/MidiNoteNumbers.h"
-#include "Soundengine/Sequencer/sequencer.h"
 
 static __inline uint32_t freq2PhaseIncr(const float f) //4096
 {
@@ -342,12 +341,12 @@ IN_ITCM_RAM void calcNoiseBlock(OscInfo* osc, int16_t* buf, const uint8_t size ,
 //-----------------------------------------------------------
 int16_t calcNoise(OscInfo* osc)
 {
+	const uint32_t oldPhase = osc->phase;
 	osc->phase += osc->phaseInc;
 
-	//check overflow flag, ( if osc->phase == osc->phaseInc a reset occured ==> retrigger, too
-	APSR_Type apsr;
-	apsr.w = __get_APSR();
-	if(apsr.b.V ||  (osc->phase == osc->phaseInc))
+	//signed overflow of the phase add (the old code read the CPU V flag), or a reset happened ==> retrigger
+	const uint32_t signedOverflow = (oldPhase ^ osc->phase) & (osc->phaseInc ^ osc->phase) & 0x80000000u;
+	if(signedOverflow ||  (osc->phase == osc->phaseInc))
 	{
 		//overflow happened -> phaseWrapped
 
@@ -793,7 +792,7 @@ void osc_calcUserSampleFreq(OscInfo* osc)
 	 //get fine tune
 	 const float cent = midiParser_calcDetune(osc->midiFreq&0xff);
 	 //calc coarse tune
-	 int16_t note =  (osc->midiFreq>>8) + (baseNote-SEQ_DEFAULT_NOTE);
+	 int16_t note =  (osc->midiFreq>>8) + (baseNote-OSC_DEFAULT_NOTE);
 	 if(note>127)note=127;
 	 if(note<0)note=0;
 
@@ -807,7 +806,7 @@ void osc_calcUserSampleFreq(OscInfo* osc)
 	 //get fine tune
 	 const float cent = midiParser_calcDetune(osc->midiFreq&0xff);
 	 //calc coarse tune
-	 int16_t note =  (osc->midiFreq>>8) + (osc->baseNote-SEQ_DEFAULT_NOTE);
+	 int16_t note =  (osc->midiFreq>>8) + (osc->baseNote-OSC_DEFAULT_NOTE);
 
 	 if(note>127)note=127;
  	 if(note<0)note=0;

@@ -15,6 +15,8 @@
 
 #include "Parameters.h"
 
+uint8_t activeParameters[NUM_PARAMS];
+
 
 uint8_t parameterOrder[END_OF_SOUND_PARAMETERS] = {
 

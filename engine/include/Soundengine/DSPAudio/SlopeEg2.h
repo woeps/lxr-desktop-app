@@ -17,7 +17,7 @@
 
 
 
-#include "stm32f7xx_hal.h"
+#include "Soundengine/platform.h"
 
 
 #define EG_STOPPED 	0

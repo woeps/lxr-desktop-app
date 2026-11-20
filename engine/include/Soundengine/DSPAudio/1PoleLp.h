@@ -15,7 +15,7 @@
 #ifndef ONE_POLELP_H_
 #define ONE_POLELP_H_
 //-------------------------------------------------------------
-#include "stm32f7xx_hal.h"
+#include "Soundengine/platform.h"
 //-------------------------------------------------------------
 #define CALC_FILTER_FREQ(f) (1-expf(-2.f*M_PI*f/(float)REAL_FS))
 

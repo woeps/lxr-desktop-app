@@ -21,7 +21,7 @@
 
 #define NUM_KIT_SLOTS 64
 
-#include "stm32f7xx_hal.h"
+#include "Soundengine/platform.h"
 
 enum ParamEnums
 {
@@ -430,6 +430,9 @@ enum ParamEnums
 };
 
 extern uint8_t parameterOrder[END_OF_SOUND_PARAMETERS];
+
+/** Current value (0..127) of every parameter. Written by core 0, read by the UI layer. */
+extern uint8_t activeParameters[NUM_PARAMS];
 
 
 #endif /* PARAMETERS_H_ */

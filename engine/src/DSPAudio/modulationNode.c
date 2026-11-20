@@ -13,16 +13,14 @@
 
 
 
+#include "Soundengine/MIDI/MidiMessages.h"
 #include "Soundengine/DSPAudio/modulationNode.h"
 #include "Soundengine/DSPAudio/DrumVoice.h"
 #include "Soundengine/DSPAudio/CymbalVoice.h"
 #include "Soundengine/DSPAudio/HiHat.h"
 #include "Soundengine/DSPAudio/Snare.h"
-#include "Soundengine/Sequencer/sequencer.h"
-#include "menu/menu.h"
 #include "Soundengine/MIDI/MidiMessages.h"
 #include "Soundengine/MIDI/MidiParser.h"
-#include "frontPanelParser_ui.h"
 
 INDTCMZ ModulationNode velocityModulators[6];
 

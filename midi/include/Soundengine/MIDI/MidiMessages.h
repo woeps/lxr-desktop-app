@@ -15,7 +15,7 @@
 #ifndef MIDIMESSAGES_H_
 #define MIDIMESSAGES_H_
 
-#include "stm32f7xx_hal.h"
+#include "Soundengine/platform.h"
 
 enum MidiSource {
 	midiSourceMIDI,
@@ -46,6 +46,7 @@ typedef struct MidiStruct {
 #define NOTE_OFF 			0x80	// 2 data bytes
 #define NOTE_ON 			0x90	// 2 data bytes
 #define MIDI_CC				0xB0	// 2 data bytes
+#define CC_2				0xd6	// internal status for parameters above 127 (same value as FRONT_CC_2)
 #define MIDI_CC2			0xF4	// 2 data bytes an unused midi status is used to indicate another cc message for params above 127
 #define PROG_CHANGE			0xC0	// 1 data bytes
 #define MIDI_PITCH_WHEEL	0xE0	// 2 data bytes

@@ -35,7 +35,7 @@ To save time when generating dither for multiple channels you can do
 things like this:  r3=(r1 & 0x7F)<<8; instead of calling rand() again.
 */
 
-#include "stm32f7xx_hal.h"
+#include "Soundengine/platform.h"
 #include "random.h"
 
 #define BITS 16

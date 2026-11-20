@@ -1,7 +1,5 @@
 /*
- * rnd.c
- *
- *  Created on: 07.04.2012
+ * random.c: xorshift32 generator, replacing the STM32 hardware RNG.
  *
  * Copyright (C) 2012-2026 Erica Synths
  * SPDX-License-Identifier: GPL-3.0-only
@@ -11,22 +9,21 @@
  * NOTICE.md. See LICENSE and NOTICE.md in the root of the repository.
  */
 
-
 #include "Soundengine/DSPAudio/random.h"
-#include "stm32f7xx_hal.h"
-//-------------------------------------------------------------
+
+static uint32_t rngState = 0x2545F491u;
+
 void initRng()
 {
-	/* Enable RNG clock source */
-	//RCC_AHB2PeriphClockCmd(RCC_AHB2Periph_RNG, ENABLE);
-
-	/* RNG Peripheral enable */
-	//RNG_Cmd(ENABLE);
+	rngState = 0x2545F491u;
 }
-//-------------------------------------------------------------
+
 uint32_t GetRngValue()
 {
-	return HAL_RNG_GetRandomNumber(&hrng);
+	uint32_t x = rngState;
+	x ^= x << 13;
+	x ^= x >> 17;
+	x ^= x << 5;
+	rngState = x;
+	return x;
 }
-//-------------------------------------------------------------
-

@@ -15,7 +15,7 @@
 #ifndef MIDIVOICECONTROL_H_
 #define MIDIVOICECONTROL_H_
 
-#include "stm32f7xx_hal.h"
+#include "Soundengine/platform.h"
 #include "Soundengine/config.h"
 
 

@@ -15,7 +15,7 @@
 #ifndef MIXER_H_
 #define MIXER_H_
 
-#include "stm32f7xx_hal.h"
+#include "Soundengine/platform.h"
 
 #define USE_SWITCH_ROUTING 1
 #define USE_DECIMATOR 1

@@ -15,7 +15,7 @@
 #ifndef HIHAT_H_
 #define HIHAT_H_
 
-#include "stm32f7xx_hal.h"
+#include "Soundengine/platform.h"
 #include "Soundengine/DSPAudio/Oscillator.h"
 #include "Soundengine/config.h"
 #include "Soundengine/DSPAudio/ResonantFilter.h"

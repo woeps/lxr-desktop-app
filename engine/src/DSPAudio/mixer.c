@@ -13,16 +13,12 @@
 
 #include "Soundengine/DSPAudio/mixer.h"
 #include "Soundengine/config.h"
-#include "Soundengine/AudioCodecManager.h"
 #include "Soundengine/DSPAudio/CymbalVoice.h"
 #include "Soundengine/DSPAudio/DrumVoice.h"
 #include "Soundengine/DSPAudio/Snare.h"
 #include "Soundengine/DSPAudio/HiHat.h"
 #include "Soundengine/DSPAudio/BufferTools.h"
 #include "Soundengine/DSPAudio/squareRootLut.h"
-#include "main.h"
-#include "Soundengine/TriggerOut.h"
-#include "menu/menu.h"
 #include "Soundengine/FxBus.h"
 
 	uint8_t r2_Available;
@@ -548,10 +544,12 @@ IN_ITCM_RAM static inline void mixer_addDataToOutput(uint8_t dest, const float p
 IN_ITCM_RAM void mixer_calcNextSampleBlock(int16_t* output,int16_t* output2)
 {
 
-	r2_Available = (switch_r2_GPIO_Port->IDR & switch_r2_Pin)>0;
-	l1_Available = (switch_l1_GPIO_Port->IDR & switch_l1_Pin)>0;
-	l2_Available = (switch_l2_GPIO_Port->IDR & switch_l2_Pin)>0;
-	r1_Available = (switch_r1_GPIO_Port->IDR & switch_r1_Pin)>0;
+	/* The module has one stereo output (the first DAC pair). The second pair
+	 * is reported as not connected, so all routing falls back to the first. */
+	r1_Available = 1;
+	l1_Available = 1;
+	r2_Available = 0;
+	l2_Available = 0;
 
 	modNode_resetTargets();
 	//re assign velocity modulation

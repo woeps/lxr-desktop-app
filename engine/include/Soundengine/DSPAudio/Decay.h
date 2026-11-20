@@ -15,7 +15,7 @@
 #ifndef DECAY_H_
 #define DECAY_H_
 
-#include "stm32f7xx_hal.h"
+#include "Soundengine/platform.h"
 
 
 typedef struct Decay_EG_Struct

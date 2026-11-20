@@ -23,14 +23,17 @@
 #include "Soundengine/DSPAudio/CymbalVoice.h"
 #include "Soundengine/DSPAudio/HiHat.h"
 #include "Soundengine/DSPAudio/Snare.h"
-#include "Soundengine/Sequencer/EuklidGenerator.h"
 #include "Soundengine/DSPAudio/modulationNode.h"
+#include "Soundengine/DSPAudio/random.h"
 #include "Soundengine/MIDI/MidiParser.h"
 
 
 
 
+/** Initialises all voices, the mixer, the FX bus and the parameter table. */
 void soundengine_init();
-void soundengine_process();
-uint8_t soundengine_calcNextSampleBlock();
+
+/** Renders one Block (OUTPUT_DMA_SIZE frames) of interleaved 16-bit stereo (L, R, L, R ...). Audio core only. */
+void soundengine_renderBlock(int16_t* stereoOut);
+
 #endif /* INC_SOUNDENGINE_SOUNDENGINE_H_ */

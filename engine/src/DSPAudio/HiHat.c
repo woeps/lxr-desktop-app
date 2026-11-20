@@ -16,9 +16,7 @@
 #include "Soundengine/DSPAudio/HiHat.h"
 #include "Soundengine/DSPAudio/squareRootLut.h"
 #include "Soundengine/DSPAudio/modulationNode.h"
-#include "Soundengine/TriggerOut.h"
 #include "Soundengine/MIDI/MidiVoiceControl.h"
-#include "IO/adcPots.h"
 #include "Soundengine/FxBus.h"
 
 INDTCMZ HiHatVoice hatVoice;
@@ -210,7 +208,7 @@ void HiHat_calcSyncBlock(int16_t* buf, const uint8_t size)
 			for(j=0;j<size;j++)
 			{
 				//add volume
-				buf[j] *=  hatVoice.combinedVolume * calcOnePole( &hatVoice.FaderVolumeFilter, adc_getFaderVolume(5));
+				buf[j] *=  hatVoice.combinedVolume * 1.f /* no hardware faders on the module */;
 			}
 #else
 		for(j=0;j<size;j++)
@@ -238,7 +236,7 @@ void HiHat_calcSyncBlock(int16_t* buf, const uint8_t size)
 			for(j=0;j<size;j++)
 			{
 				//add volume
-				buf[j] *=  hatVoice.combinedVolume * calcOnePole( &hatVoice.FaderVolumeFilter, adc_getFaderVolume(5));
+				buf[j] *=  hatVoice.combinedVolume * 1.f /* no hardware faders on the module */;
 			}
 #else
 		for(j=0;j<size;j++)

@@ -15,7 +15,7 @@
 #ifndef INC_PRESET_INITKIT_H_
 #define INC_PRESET_INITKIT_H_
 
-#include "stm32f7xx_hal.h"
+#include "Soundengine/platform.h"
 //init kit from hrtlkits_batch3.zip
 #define INIT_KIT_SIZE 254
 const extern uint8_t initKit[INIT_KIT_SIZE];

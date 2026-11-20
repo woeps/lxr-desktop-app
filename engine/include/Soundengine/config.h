@@ -18,7 +18,7 @@
 #ifndef CONFIG_SOUNDENGINE_H_
 #define CONFIG_SOUNDENGINE_H_
 
-#include "stm32f7xx_hal.h"
+#include "Soundengine/platform.h"
 #include <stdio.h>
 
 //#define UNUSED(x) (void)(x)
@@ -69,7 +69,7 @@
 #define USE_BOOTLOADER 1 	// if 1 the image will be loaded to offset 0x4000 (you also have to change stm32_flash.ld manually!!!)
 
 
-#define SYNTH_FS 			I2S_AUDIOFREQ_44K		  	// the requested I2S samplerate => 44.1 kHz
+#define SYNTH_FS 			44100		  	// sample rate in Hz
 
 #define REAL_FS				(float)44140.f//((float)44002.7573529412f) 	// since the prescaler wont allow for accurate 44.1kHz
 #define REAL_FS2			(REAL_FS/2.f)
@@ -83,12 +83,6 @@
 
 //typedef  uint8_t bool;
 
-// Helper to declare variable in CCM memory, pre-loaded from flash at startup
-#define INDTCM __attribute__ ((section(".dtcm")))
-
-// Helper to declare variable in CCM memory that is zeroed at startup
-#define INDTCMZ __attribute__ ((section(".dtcmz")))
-
-#define IN_ITCM_RAM __attribute__((section(".itcm_text")))
+// INDTCM, INDTCMZ and IN_ITCM_RAM are defined in Soundengine/platform.h
 
 #endif /* CONFIG_H_ */

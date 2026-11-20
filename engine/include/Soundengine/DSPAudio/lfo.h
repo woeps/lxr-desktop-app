@@ -17,11 +17,10 @@
 #ifndef LFO_H_
 #define LFO_H_
 //-------------------------------------------------------------
-#include "stm32f7xx_hal.h"
+#include "Soundengine/platform.h"
 #include "Soundengine/DSPAudio/Oscillator.h"
 #include "Soundengine/DSPAudio/wavetable.h"	//sine
 #include "Soundengine/config.h"
-#include "Soundengine/Sequencer/sequencer.h"
 #include "Soundengine/DSPAudio/modulationNode.h"
 //-------------------------------------------------------------
 enum

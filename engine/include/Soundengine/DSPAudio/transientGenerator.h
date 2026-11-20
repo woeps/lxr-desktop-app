@@ -19,7 +19,7 @@
 #define TRANSIENTGENERATOR_H_
 
 
-#include "stm32f7xx_hal.h"
+#include "Soundengine/platform.h"
 #include <stdint.h>
 #include "transientTables.h"
 

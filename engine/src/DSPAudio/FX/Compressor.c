@@ -14,7 +14,6 @@
 
 #include "Soundengine/DSPAudio/FX/Compressor.h"
 #include "math.h"
-#include "main.h"
 
 
 enum

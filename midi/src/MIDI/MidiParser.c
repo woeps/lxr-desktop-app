@@ -12,7 +12,6 @@
  */
 
 
-#include <Soundengine/MIDI/CortexParser.h>
 #include "Soundengine/MIDI/MidiParser.h"
 #include "Soundengine/MIDI/MidiNoteNumbers.h"
 #include "Soundengine/DSPAudio/DrumVoice.h"
@@ -20,14 +19,9 @@
 #include "Soundengine/config.h"
 #include "Soundengine/DSPAudio/HiHat.h"
 #include "Soundengine/DSPAudio/CymbalVoice.h"
-#include "Soundengine/MIDI/Uart.h"
-#include "Soundengine/Sequencer/sequencer.h"
-#include "Soundengine/Sequencer/clockSync.h"
 #include "Soundengine/DSPAudio/mixer.h"
 #include "Soundengine/MIDI/valueShaper.h"
 #include "Soundengine/DSPAudio/modulationNode.h"
-#include "Soundengine/USB/usb_manager.h"
-#include "menu/menu.h"
 #include "Soundengine/FxBus.h"
 
 #include "Soundengine/MIDI/MidiMessages.h"
@@ -36,23 +30,13 @@ static uint16_t midiParser_activeNrpnNumber = 0;
 
 uint8_t midiParser_originalCcValues[0xff];
 
-// this will be set to some value if we are ignoring all mtc messages until the next 0 message
-static uint8_t midiParser_mtcIgnore=1;
-static uint32_t volatile midiParser_lastMtcReceived=0x0;
-static uint8_t midiParser_mtcIsRunning=0;
+/* Per-voice mute flag, set by the CC2_MUTE_x parameters. */
+static uint8_t midiParser_voiceMuted[8];
 
-static union {
-	uint8_t value;
-	struct {
-		unsigned usb2midi:1;
-		unsigned usb2usb:1;   // not used
-		unsigned midi2midi:1;
-		unsigned midi2usb:1;
-		unsigned :4;
-	} route;
-} midiParser_routing = {0};
-
-
+uint8_t midiParser_isVoiceMuted(uint8_t voice)
+{
+	return voice < 8 ? midiParser_voiceMuted[voice] : 0;
+}
 
 //tx is high nibble
 uint8_t midiParser_txRxFilter = 0xFF;
@@ -1340,14 +1324,7 @@ void midiParser_ccHandler(MidiMsg msg, uint8_t updateOriginalValue, uint8_t isFl
 			case CC2_MUTE_7:
 			{
 				const uint8_t voiceNr = msg.data1 - CC2_MUTE_1;
-				if(value.itg == 0)
-				{
-					seq_setMute(voiceNr,0);
-				}
-				else
-				{
-					seq_setMute(voiceNr,1);
-				}
+				midiParser_voiceMuted[voiceNr] = value.itg != 0;
 
 			}
 				break;
@@ -1376,12 +1353,6 @@ void midiParser_ccHandler(MidiMsg msg, uint8_t updateOriginalValue, uint8_t isFl
 #endif
 				fxBus.fxType = value.itg;
 				FxBus_updateParameter();
-				//change visible parameters to selected FX type
-				if(menu_activePage == FX_MODE_PAGE)
-				{
-					if(menu_getSubPage() != fxBus.fxType)
-						menu_switchSubPage(fxBus.fxType, 1 );
-				}
 #endif
 				break;
 			case CC2_FX_ROUTING:
@@ -1440,97 +1411,24 @@ void midiParser_ccHandler(MidiMsg msg, uint8_t updateOriginalValue, uint8_t isFl
 	}
 }
 
-//-----------------------------------------------------------
-// this will check whether mtc is running, and if so will
-// check to see whether we need to stop the sequencer due to
-// lack of recent mtc activity. It will also reset our running indicator
-// if the sequencer has stopped for some other reason
-void midiParser_checkMtc()
-{
-	if(!midiParser_mtcIsRunning)
-		return;
-
-	if(!seq_isRunning()) {
-		// inform mtc that his services are no longer needed
-		midiParser_mtcIsRunning=0;
-		return;
-	}
-
-	// at a 24fps framerate (the lowest) we should receive a completed message (we receive one every 2 frames)
-	// every 83 ms. our tick counter is .25 ms resolution
-	if(systick_ticks-midiParser_lastMtcReceived > 100 * 4) { // overestimate, just in case something untoward should happen
-		// too much time has elapsed since our last message. mtc has gone away.
-		midiParser_mtcIsRunning=0;
-
-		uart_sendFrontpanelByte(FRONT_SEQ_CC);
-		uart_sendFrontpanelByte(FRONT_SEQ_RUN_STOP);
-		uart_sendFrontpanelByte(0);
-		// stop the sequencer
-		seq_setRunning(0);
-	}
-}
-
 //------------------------------------------------------
 // this fn assumes a valid voice is sent
-// do_rec - whether we want to allow it to be recorded and echoed - we will only record
-//          to the active track for notes received from the global channel
-static void midiParser_noteOn(uint8_t voice, uint8_t note, uint8_t vel, uint8_t do_rec)
+static void midiParser_noteOn(uint8_t voice, uint8_t note, uint8_t vel)
 {
+	if(midiParser_isVoiceMuted(voice))
+		return;
 
-	if(menu_activePage == SEQ_PAGE)
-	{
-		//use incoming MIDI notes to set sequencer/step note
-		const uint8_t step = activeParameters[PAR_ACTIVE_STEP];
-		const uint8_t trackNr = menu_getActiveVoice(); //max 6 => 0x6 = 0b110
-		const uint8_t patternNr = menu_getViewedPattern();
-
-
-		seq_patternSet.seq_subStepPattern[patternNr][trackNr][step].note = note;
-		activeParameters[PAR_STEP_NOTE] = note;
-		menu_repaint();
-
-	}
-	else
-	{
-
-		if(seq_isTrackMuted(voice))
-			return;
-
-		// check the midi mode for the voice. If it's "any", trigger that note.
-		// if it's some other note, trigger the drum voice only if it matches, and in this case
-		// trigger the default note
-
-		//if(midi_NoteOverride[voice] != 0) {
-		if(activeParameters[PAR_MIDI_NOTE1 + voice] != 0) {
-			// looking for specific note
-			//if(note==midi_NoteOverride[voice])
-			if(note==activeParameters[PAR_MIDI_NOTE1 + voice])
-				note=SEQ_DEFAULT_NOTE; // match found. Play default note
-			else
-				return; // note does not match. Do nothing
-		}
-
-		voiceControl_noteOn(voice,note,vel);
-
-		//Recording Mode - record the note to sequencer and echo to channel of that voice
-		// (we'd want to hear what's being recorded)
-		if(do_rec) {
-			const uint8_t chan=midi_MidiChannels[voice];
-
-			// record note if rec is on
-			seq_addNote(voice,vel, note);
-
-			//if a note is on for that channel send note-off first
-			seq_midiNoteOff(chan);
-			//send the new note to midi/usb out
-			// todo a user played note will end up being turned off if a pattern switch happens.
-			//           to fix this we'd have to differentiate between a user played note and a
-			//           note triggered from sequencer, and also recognize note off on user played note and send it.
-			seq_sendMidiNoteOn(chan, note, vel);
-		}
-
+	// check the note mapping for the voice. If it's "any" (0), trigger the received note.
+	// if it's some other note, trigger the drum voice only if it matches, and in this case
+	// trigger the default note
+	if(activeParameters[PAR_MIDI_NOTE1 + voice] != 0) {
+		if(note==activeParameters[PAR_MIDI_NOTE1 + voice])
+			note=OSC_DEFAULT_NOTE; // match found. Play default note
+		else
+			return; // note does not match. Do nothing
 	}
 
+	voiceControl_noteOn(voice,note,vel);
 }
 //------------------------------------------------------
 //static void midiParser_noteOff(uint8_t voice, uint8_t note, uint8_t vel)
@@ -1716,122 +1614,17 @@ uint8_t midiParser_cc2voiceNr(uint8_t cc)
  */
 void midiParser_parseMidiMessage(MidiMsg msg)
 {
-	// route message if needed
-	if(midiParser_routing.value) {
-		if(msg.bits.source==midiSourceUSB) {
-			if(midiParser_routing.route.usb2midi){
-				// route to midi out port
-				uart_sendMidi(msg);
-			}
-		} else if(msg.bits.source==midiSourceMIDI) {
-			if(midiParser_routing.route.midi2midi) {
-				// route to midi out port
-				uart_sendMidi(msg);
-			}
-			if(midiParser_routing.route.midi2usb) {
-				// route to usb out port
-				usb_sendMidi(msg);
-			}
-		}
-	}
-
 	if(msg.bits.sysxbyte)
-		return; // no further action needed. we don't interpret sysex data right now
+		return; // no further action needed. we don't interpret sysex data
 
 	// FILT filter messages here. Filter inline below to be more optimal
 	// we are interested in the low nibble since we are Rx here
 
 
 	if((msg.status & 0xF0) == 0xF0)
-  {
-		// non-channel specific messages (system messages)
-		switch(msg.status)
-    {
-      case MIDI_CLOCK:
-        if((midiParser_txRxFilter & MIDI_FILTER_SYSTEM) && seq_getExtSync())
-          seq_sync();
-        break;
-      case MIDI_START:
-        if((midiParser_txRxFilter & MIDI_FILTER_SYSTEM) && seq_getExtSync())
-        {
-          sync_midiResetPosition();
-          sync_midiStartStop(1);
-        }
-        break;
-      case MIDI_CONTINUE:
-        if((midiParser_txRxFilter & MIDI_FILTER_SYSTEM) && seq_getExtSync())
-          sync_midiStartStop(1);
-        break;
-      case MIDI_STOP:
-        if((midiParser_txRxFilter & MIDI_FILTER_SYSTEM) && seq_getExtSync())
-          sync_midiStartStop(0);
-        break;
-      case MIDI_SONG_POSITION_POINTER:
-        {
-          /* Two data bytes follow the status. Just like with the Pitch Wheel,
-          * these two bytes are combined into a 14-bit value. (See Pitch Wheel).
-          * This 14-bit value is the MIDI Beat upon which to start the song.
-          * Songs are always assumed to start on a MIDI Beat of 0. Each MIDI
-          * Beat spans 6 MIDI Clocks. In other words, each MIDI Beat is a 16th
-          * note (since there are 24 MIDI Clocks in a quarter note).
-          *
-          */
-          // TODO song position pointer is not implemented yet:
-          // position = msg.data1 | (msg.data2<<7)  (in MIDI beats = 16th notes)
-        }
-        break;
-      case MIDI_MTC_QFRAME:
-        /* Strategy:
-        * If we get through all 8 of the mtc messages with a value of 0, it means that
-        * the song has just started playing. That is the only time we will start the
-        * sequencer. so we will not start it if they start the tape recorder playing half way
-        * through the song. Also, if the sequencer is running, or we are in external sync mode
-        * we will ignore mtc messages as well
-        */
-        if ((midiParser_txRxFilter & MIDI_FILTER_SYSTEM) == 0)
-          break; // ignore filtered
-
-        // keep track of when we got the last mtc. only do this for the 0 msg to save time
-        if((msg.data1 & 0x70)==0) {
-          midiParser_lastMtcReceived=systick_ticks;
-        }
-
-        if(seq_isRunning()) {
-          break; //already running, so we don't care to figure out where we are
-        }
-        if(seq_getExtSync())
-          break; // bypass the lot. we are using external midi clock sync
-
-        // figure out whether we are at 0:0:0:0
-        if((msg.data1 & 0x7F)==0) { // this is the first mtc message of the set AND it's value is 0
-          midiParser_mtcIgnore=0; // reset our level of ignorance
-        } else if(midiParser_mtcIgnore) { // not the first msg and we are ignoring
-          break; // get out of here fast
-        } else if((msg.data1 & 0x70)!=0x70) { // messages 0 to 6 and we are not ignoring yet
-          if((msg.data1 & 0x0F) !=0) {
-            midiParser_mtcIgnore=1;
-            break; // get out fast
-          }
-        } else { // message 7 and we are not ignoring yet
-          if((msg.data1 & 0x01)==0) { // hour high nibble is 0
-            // well, we got all the way thru all 8 messages with 0, so the song has just begun
-            // tell the front that we've started running on our own
-            uart_sendFrontpanelByte(FRONT_SEQ_CC);
-            uart_sendFrontpanelByte(FRONT_SEQ_RUN_STOP);
-            uart_sendFrontpanelByte(1);
-            midiParser_mtcIgnore=1; // in case we happen to miss a 0 message. probably wouldn't happen, but...
-            midiParser_mtcIsRunning=1;
-            midiParser_lastMtcReceived=systick_ticks; // also might not be needed, but...
-            // start the sequencer
-            seq_setRunning(1);
-          }
-        }
-        break;
-
-      default:
-        break;
-		}
-    // msg.status = msg.lastNonSysStatus;
+	{
+		// System messages (clock, start, stop, continue, song position, MTC):
+		// the module has no sequencer or tempo, so they are consumed and ignored.
 	}
   else
   { // channel specific message
@@ -1842,37 +1635,24 @@ void midiParser_parseMidiMessage(MidiMsg msg)
 
 		if((msgonly & 0xE0) == 0x80) {
 			// note on or note off message (one of these two only)
-			if(midiParser_txRxFilter & MIDI_FILTER_NOTES) {
-				int8_t v, q=-1;
-				// if a note message comes in on global channel, then send that note to
-				// the voice that is currently active on the front.
+			if((midiParser_txRxFilter & MIDI_FILTER_NOTES) && msgonly==NOTE_ON && msg.data2) {
+				int8_t v;
+				// a note on the global channel triggers every voice whose note mapping matches
 				if(midi_MidiChannels[7]==chanonly) {
-					q=frontParser_activeTrack; // avoid sending it again later if the active track happens to have the same channel set
-											   // (this might not really matter. does sending a note on twice do any harm?)
-					if(msgonly==NOTE_ON && msg.data2) {
-						midiParser_noteOn(frontParser_activeTrack, msg.data1, msg.data2, 1);
-					} else { // NOTE_OFF or zero velocity note
-						//midiParser_noteOff(frontParser_activeTrack, msg.data1, msg.data2);
+					for(v=0;v<7;v++) {
+						if(activeParameters[PAR_MIDI_NOTE1 + v] == msg.data1)
+							midiParser_noteOn(v, msg.data1, msg.data2);
 					}
 				}
 
 				// check each voice to see if it cares about this message
 				for(v=0;v<7;v++) {
-					if(midi_MidiChannels[v]==chanonly && v != q) { // if channel match and we haven't sent it already for the voice
-						if(msgonly==NOTE_ON && msg.data2) {
-							midiParser_noteOn(v, msg.data1, msg.data2, 1);
-							//Also used in sequencer trigger note function
-						} else { // NOTE_OFF or zero velocity note
-						//	midiParser_noteOff(v, msg.data1, msg.data2);
-						}
-					} // if channel matches
-				} // for each voice
+					if(midi_MidiChannels[v]==chanonly) {
+						midiParser_noteOn(v, msg.data1, msg.data2);
+					}
+				}
 			} // check midi filter
-
-		} else if(msgonly==PROG_CHANGE) {
-			// respond to prog change and change patterns. This responds only when global channel matches the PC message's channel.
-			if((midiParser_txRxFilter & MIDI_FILTER_PROG_C) && (chanonly == midi_MidiChannels[7]))
-				seq_setNextPattern(msg.data1);
+			// note off messages need no action: the drum voices decay on their own
 
 		} else if(msgonly==MIDI_CC){
 
@@ -1883,15 +1663,8 @@ void midiParser_parseMidiMessage(MidiMsg msg)
 			{
 				if((midiParser_txRxFilter & MIDI_FILTER_CC) && (midiParser_isValidChannel(chanonly) ))
 				{
-					//record automation if record is turned on
-					seq_recordAutomation(frontParser_activeTrack, msg.data1, msg.data2);
-
 					//handle midi data
 					midiParser_ccHandler(msg,1, 0, 0.f);
-					//we received a midi cc message forward it to the front panel
-					uart_sendFrontpanelByte(msg.status);
-					uart_sendFrontpanelByte(msg.data1);
-					uart_sendFrontpanelByte(msg.data2);
 				}
 			}
 			else
@@ -1899,15 +1672,8 @@ void midiParser_parseMidiMessage(MidiMsg msg)
 
 				// respond to CC message. This responds only when global channel or voice channel matches the cc message's channel
 				if((midiParser_txRxFilter & MIDI_FILTER_CC) && ((chanonly == midi_MidiChannels[voiceNr]) || (chanonly == midi_MidiChannels[7]) )) {
-					//record automation if record is turned on
-					seq_recordAutomation(frontParser_activeTrack, msg.data1, msg.data2);
-
 					//handle midi data
 					midiParser_ccHandler(msg,1, 0, 0.f);
-					//we received a midi cc message forward it to the front panel
-					uart_sendFrontpanelByte(msg.status);
-					uart_sendFrontpanelByte(msg.data1);
-					uart_sendFrontpanelByte(msg.data2);
 				}
 			}
 		} else {
@@ -2091,43 +1857,6 @@ void midiParser_parseUartData(unsigned char data)
   }
 
 	return;
-}
-
-// 0 - Off - nothing to nothing
-// 1 - U2M - usb in to midi out
-// 2 - M2M - midi in to midi out
-// 3 - A2M - usb in and midi in to midi out
-// 4 - M2U - midi in to usb out
-// 5 - M2A - midi in to usb out and midi out
-
-void midiParser_setRouting(uint8_t value)
-{
-	midiParser_routing.value=0;
-
-	switch(value) {
-	case 1:
-		midiParser_routing.route.usb2midi=1;
-		break;
-	case 2:
-		midiParser_routing.route.midi2midi=1;
-		break;
-	case 3:
-		midiParser_routing.route.usb2midi=1;
-		midiParser_routing.route.midi2midi=1;
-		break;
-	case 4:
-		midiParser_routing.route.midi2usb=1;
-		break;
-	case 5:
-		midiParser_routing.route.midi2midi=1;
-		midiParser_routing.route.midi2usb=1;
-		break;
-	default:
-	case 0:
-
-		break;
-	}
-
 }
 
 void midiParser_setFilter(uint8_t is_tx, uint8_t value)

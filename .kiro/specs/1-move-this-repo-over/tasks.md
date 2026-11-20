@@ -18,12 +18,12 @@ Paths are relative to `/home/chris/Projects/lxr-desktop-app`.
   - [x] 2.5 Update `README.md` (build steps for the Pico 2, wiring, flashing in BOOTSEL mode) and trim the bootloader parts of `NOTICE.md`.
   - [x] 2.6 Verify: `cmake --preset release && cmake --build --preset release` produces `lxr.uf2` (it may still be an empty `main`), and the host target configures.
 
-- [ ] 3. Remove the sequencer and cut engine-to-UI links (R2, R6.1)
-  - [ ] 3.1 Delete `Sequencer/`, `TriggerOut.c`, `USB/`, `cs4344_cs5343.c`, `AudioCodecManager.c`, FatFs use and all LCD/menu/button/LED/encoder/pot/front-panel sources not already removed.
-  - [ ] 3.2 Remove sequencer, clock and menu calls from `MidiParser.c`, `MidiVoiceControl.c`, `CortexParser.c` and `Soundengine.c`. Clock and transport bytes are consumed and dropped. Replace `seq_setMute` with a per-voice engine mute flag.
-  - [ ] 3.3 Remove sequencer-only entries (tempo, swing, step, pattern, per-step locks) from the parameter set while keeping the remaining `ParamEnums` values unchanged. Record the removed IDs in `docs/removed-params.md`.
-  - [ ] 3.4 Remove per-step velocity and parameter-lock modulation paths driven by the sequencer while keeping MIDI-velocity modulation (R2.6).
-  - [ ] 3.5 Add `ALL` to the `check_engine_deps` target in `CMakeLists.txt`. Remove the leftover STM32 pieces still in `Core/` (`main.h`, `delay.c/h`, the `Core/Inc/IO`, `menu` and legacy UI files) and the HD44780 row in `NOTICE.md`. Verify: `check_engine_deps` passes, and a `grep` for `seq_`, `menu_`, `lcd_`, `usb_` in `engine/` and `midi/` finds nothing.
+- [x] 3. Remove the sequencer and cut engine-to-UI links (R2, R6.1)
+  - [x] 3.1 Delete `Sequencer/`, `TriggerOut.c`, `USB/`, `cs4344_cs5343.c`, `AudioCodecManager.c`, FatFs use and all LCD/menu/button/LED/encoder/pot/front-panel sources not already removed.
+  - [x] 3.2 Remove sequencer, clock and menu calls from `MidiParser.c`, `MidiVoiceControl.c`, `CortexParser.c` and `Soundengine.c`. Clock and transport bytes are consumed and dropped. Replace `seq_setMute` with a per-voice engine mute flag.
+  - [x] 3.3 Document the sequencer-only parameters and keep the remaining `ParamEnums` values unchanged. The IDs stay in the enum (CC IDs must not move) and task 4's table leaves them out. Recorded in `docs/removed-params.md`.
+  - [x] 3.4 Remove per-step velocity and parameter-lock modulation paths driven by the sequencer while keeping MIDI-velocity modulation (R2.6).
+  - [x] 3.5 Add `ALL` to the `check_engine_deps` target in `CMakeLists.txt`. Remove the leftover STM32 pieces still in `Core/` (`main.h`, `delay.c/h`, the `Core/Inc/IO`, `menu` and legacy UI files) and the HD44780 row in `NOTICE.md`. Verify: `check_engine_deps` passes, and a `grep` for `seq_`, `menu_`, `lcd_`, `usb_` in `engine/` and `midi/` finds nothing.
 
 - [ ] 4. Parameter metadata table (R6.5)
   - [ ] 4.1 Write a one-off script `host/scripts/gen_param_table.py` that reads `Parameters.h`, `Cc2Text.c`, `CcNr2Text.h` and `MenuText.h` from git history and emits the first version of `engine/param_table.c` (id, name, voice, kind, min, max, default, enum names).

@@ -15,7 +15,7 @@
 #ifndef WAVETABLES_H_
 #define WAVETABLES_H_
 
-#include "stm32f7xx_hal.h"
+#include "Soundengine/platform.h"
 #include <stdio.h>
 
 #define TABLESIZE 4096

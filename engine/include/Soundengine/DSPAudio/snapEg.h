@@ -15,7 +15,7 @@
 #ifndef SNAPEG_H_
 #define SNAPEG_H_
 
-#include "stm32f7xx_hal.h"
+#include "Soundengine/platform.h"
 
 typedef struct Snap_EG_Struct
 {

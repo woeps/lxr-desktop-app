@@ -18,9 +18,6 @@
 #include "Soundengine/DSPAudio/HiHat.h"
 #include "Soundengine/MIDI/MidiMessages.h"
 #include "Soundengine/DSPAudio/CymbalVoice.h"
-#include "Soundengine/Sequencer/sequencer.h"
-#include "Soundengine/TriggerOut.h"
-#include "Soundengine/MIDI/Uart.h"
 #include "Soundengine/MIDI/MidiParser.h"
 //#include "LCD_driver.h"
 uint8_t voiceStatus[NUM_DRUM_VOICES];
@@ -39,50 +36,17 @@ void voiceControl_noteOn(uint8_t voice, uint8_t note, uint8_t vel)
 		Cymbal_trigger(vel, note);
 	else
 		HiHat_trigger(vel,voice-5,note);
-	
-	//Send trigger out signal
-	/*
-	if(trigger_isGateModeOn())
-	{
-		if(vel)
-			trigger_triggerVoice(voice, TRIGGER_ON);
-	} else {
-		trigger_triggerVoice(voice, TRIGGER_PULSE);
-	}
-	*/
-
-	if (active_voices & (1<<voice))
-	{
-    uint8_t midiChan = midi_MidiChannels[voice];
-		seq_sendMidiNoteOn(midiChan, note, vel);
-	}
-
-	// Send to front panel so it can pulse the LED
-	uart_sendFrontpanelByte(NOTE_ON);
-	uart_sendFrontpanelByte(voice);
-	uart_sendFrontpanelByte(0);
 }
 //----------------------------------------------------------------
 void voiceControl_noteOff(uint8_t voice)
 {
-	uint8_t midiChan; // which midi channel to send a note on
-
 	if(voice==0xff)
 	{
 		active_voices = 0;
-		seq_midiNoteOff(0xff);
 		return;
 	}
 
-	//only set voice inactive and send MIDI off when voice is currently playing
-	if(active_voices & (1<<voice))
-	{
-		active_voices &= (~(1<<voice));
-
-		//send midi note off
-		midiChan = midi_MidiChannels[voice];
-		seq_midiNoteOff(midiChan);
-	}
+	active_voices &= (~(1<<voice));
 }
 //----------------------------------------------------------------
 uint8_t voiceControl_isVoicePlaying(uint8_t voice)

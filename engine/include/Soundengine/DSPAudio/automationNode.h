@@ -15,7 +15,7 @@
 #ifndef AUTOMATIONNODE_H_
 #define AUTOMATIONNODE_H_
 //-------------------------------------------------------------
-#include "stm32f7xx_hal.h"
+#include "Soundengine/platform.h"
 #include "Soundengine/MIDI/MidiParser.h"
 //-------------------------------------------------------------
 typedef struct AutomationStruct

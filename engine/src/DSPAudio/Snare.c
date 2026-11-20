@@ -16,9 +16,7 @@
 #include "Soundengine/DSPAudio/Snare.h"
 #include "Soundengine/DSPAudio/squareRootLut.h"
 #include "Soundengine/DSPAudio/modulationNode.h"
-#include "Soundengine/TriggerOut.h"
 #include "Soundengine/MIDI/MidiVoiceControl.h"
-#include "IO/adcPots.h"
 #include "Soundengine/FxBus.h"
 //instance of the snare voice
 INDTCMZ SnareVoice snareVoice;
@@ -193,7 +191,7 @@ void Snare_calcSyncBlock(int16_t* buf, const uint8_t size)
 			//add transient sample
 			//tmp	= __QADD16(transBuf[j],(int16_t)tmp);
 			tmp	+= transBuf[j];
-			buf[j] =   snareVoice.combinedVolume  * tmp * calcOnePole( &snareVoice.FaderVolumeFilter, adc_getFaderVolume(3));
+			buf[j] =   snareVoice.combinedVolume  * tmp * 1.f /* no hardware faders on the module */;
 
 #else
 
@@ -218,7 +216,7 @@ void Snare_calcSyncBlock(int16_t* buf, const uint8_t size)
 			//add transient sample
 			//tmp	= __QADD16(transBuf[j],(int16_t)tmp);
 			tmp	+= transBuf[j];
-			buf[j] =  snareVoice.combinedVolume * tmp * calcOnePole( &snareVoice.FaderVolumeFilter, adc_getFaderVolume(3));
+			buf[j] =  snareVoice.combinedVolume * tmp * 1.f /* no hardware faders on the module */;
 #else
 			//add filter to buffer
 			buf[j] *= snareVoice.mix;

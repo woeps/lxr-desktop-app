@@ -111,75 +111,12 @@ void lfo_dispatchNextValue(Lfo* lfo)
 	modNode_updateValue(&lfo->modTarget,val);
 }
 //-------------------------------------------------------------
+/* The module has no tempo, so tempo-synced LFO rates no longer exist: the
+ * sync setting is ignored and the LFO always runs at its free frequency. */
 IN_ITCM_RAM uint32_t lfo_calcPhaseInc(float freq, uint8_t sync)
 {
-	if(sync==0)//no sync
-	{
-		return freq/(LFO_SR) * 0xffffffff;
-	}
-
-	//sync is on
-
-	float bpm =  seq_getBpm();
-
-	float tempoAsFrequency = bpm > 0.0 ? bpm / 60.f /4: 0.0f; //bpm/60 = beat duration /4 = bar duration
-
-	float scaler;
-
-	switch(sync)
-	{
-		default: //no sync
-
-		return freq/(LFO_SR) * 0xffffffff;
-		break;
-
-		case 1: // 4/1
-		scaler = 0.25f;//NoteTypeScalers[Quadruple] * NoteDivisionScalers[Whole];
-		break;
-
-		case 2: // 2/1
-		scaler = 0.5f;//NoteTypeScalers[Double] * NoteDivisionScalers[Whole];
-		break;
-
-		case 3: // 1/1
-		scaler = 1;//NoteTypeScalers[Regular] * NoteDivisionScalers[Whole];
-		break;
-
-		case 4: // 1/2
-		scaler = 2;// NoteTypeScalers[Regular] * NoteDivisionScalers[Half];
-		break;
-
-		case 5: //1/3
-		scaler = 3;// NoteTypeScalers[Regular] * NoteDivisionScalers[Third];
-		break;
-
-		case 6: // 1/4
-		scaler = 4;// NoteTypeScalers[Regular] * NoteDivisionScalers[Quarter];
-		break;
-
-		case 7: // 1/6
-		scaler = 6;// NoteTypeScalers[Regular] * NoteDivisionScalers[Sixth];
-		break;
-
-		case 8: // 1/8
-		scaler = 8;// NoteTypeScalers[Regular] * NoteDivisionScalers[Eighth];
-		break;
-
-		case 9: // 1/12
-		scaler = 12;//NoteTypeScalers[Regular] * NoteDivisionScalers[Twelfth];
-		break;
-
-		case 10: // 1/16
-		scaler = 16;//NoteTypeScalers[Regular] * NoteDivisionScalers[Sixteenth];
-		break;
-
-		case 11: // 1/32
-		scaler = 32;//NoteTypeScalers[Regular] * NoteDivisionScalers[Sixteenth];
-		break;
-	}
-
-	float lfoSyncfreq = tempoAsFrequency * scaler;
-	return (lfoSyncfreq / (LFO_SR)) * 0xffffffff;
+	(void)sync;
+	return freq/(LFO_SR) * 0xffffffff;
 }
 //-------------------------------------------------------------
 IN_ITCM_RAM void lfo_setFreq(Lfo *lfo, float f)

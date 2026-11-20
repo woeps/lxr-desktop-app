@@ -15,7 +15,7 @@
 #ifndef CYMBALVOICE_H_
 #define CYMBALVOICE_H_
 
-#include "stm32f7xx_hal.h"
+#include "Soundengine/platform.h"
 #include "Oscillator.h"
 #include "config.h"
 #include "ResonantFilter.h"

@@ -14,7 +14,7 @@
 //-------------------------------------------------------------
 #include "Soundengine/globals.h"
 #include "Soundengine/config.h"
-#include "stm32f7xx_hal.h"
+#include "Soundengine/platform.h"
 #include "Soundengine/DSPAudio/1PoleLp.h"
 #include "math.h"
 //-------------------------------------------------------------

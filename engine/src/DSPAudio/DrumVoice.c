@@ -20,9 +20,7 @@
 #include "Soundengine/DSPAudio/BufferTools.h"
 #include "Soundengine/MIDI/ParameterArray.h"
 #include "Soundengine/DSPAudio/modulationNode.h"
-#include "Soundengine/TriggerOut.h"
 #include "Soundengine/MIDI/MidiVoiceControl.h"
-#include "IO/adcPots.h"
 
 INDTCM static float ampSmoothValue = 0.1f;
 //---------------------------------------------------
@@ -303,9 +301,9 @@ IN_ITCM_RAM void calcDrumVoiceSyncBlock(const uint8_t voiceNr, int16_t* buf, con
 #if SMOOTH_MIXER_VOL_PAN_DRIVE
 
 		float mixVol 	= calcOnePole( &voiceArray[voiceNr].MixerPageFilter[0], voiceArray[voiceNr].vol);
-		voiceArray[voiceNr].combinedVolume = mixVol * calcOnePole( &voiceArray[voiceNr].FaderVolumeFilter, adc_getFaderVolume(voiceNr));
+		voiceArray[voiceNr].combinedVolume = mixVol * 1.f /* no hardware faders on the module */;
 #else
-		voiceArray[voiceNr].combinedVolume = voiceArray[voiceNr].vol * calcOnePole( &voiceArray[voiceNr].FaderVolumeFilter, adc_getFaderVolume(voiceNr));
+		voiceArray[voiceNr].combinedVolume = voiceArray[voiceNr].vol * 1.f /* no hardware faders on the module */;
 #endif
 		buf[i] *= voiceArray[voiceNr].combinedVolume;
 	}

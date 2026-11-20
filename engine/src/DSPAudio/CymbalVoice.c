@@ -15,10 +15,8 @@
 #include "Soundengine/DSPAudio/CymbalVoice.h"
 #include "Soundengine/DSPAudio/squareRootLut.h"
 #include "Soundengine/DSPAudio/modulationNode.h"
-#include "Soundengine/TriggerOut.h"
 #include "Soundengine/config.h"
 #include "Soundengine/MIDI/MidiVoiceControl.h"
-#include "IO/adcPots.h"
 #include "Soundengine/FxBus.h"
 
 INDTCMZ CymbalVoice cymbalVoice;
@@ -202,7 +200,7 @@ void Cymbal_calcSyncBlock(int16_t* buf, const uint8_t size)
 			for(j=0;j<size;j++)
 			{
 				//add volume
-				buf[j] *=  cymbalVoice.combinedVolume * calcOnePole( &cymbalVoice.FaderVolumeFilter, adc_getFaderVolume(4));
+				buf[j] *=  cymbalVoice.combinedVolume * 1.f /* no hardware faders on the module */;
 			}
 #else
 			for(j=0;j<size;j++)
@@ -231,7 +229,7 @@ void Cymbal_calcSyncBlock(int16_t* buf, const uint8_t size)
 			for(j=0;j<size;j++)
 			{
 				//add volume
-				buf[j] *=  cymbalVoice.combinedVolume * calcOnePole( &cymbalVoice.FaderVolumeFilter, adc_getFaderVolume(4));
+				buf[j] *=  cymbalVoice.combinedVolume * 1.f /* no hardware faders on the module */;
 			}
 #else
 			for(j=0;j<size;j++)

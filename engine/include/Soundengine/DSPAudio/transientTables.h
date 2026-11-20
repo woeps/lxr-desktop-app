@@ -15,7 +15,7 @@
 #ifndef TRANSIENTTABLES_H_
 #define TRANSIENTTABLES_H_
 
-#include "stm32f7xx_hal.h"
+#include "Soundengine/platform.h"
 #include <stdint.h>
 
 #define NUM_TRANSIENTS 12

@@ -49,10 +49,7 @@ pico_enable_stdio_uart(lxr 0)
 pico_add_extra_outputs(lxr)
 
 # Fails if engine/ or midi/ reach into UI or hardware headers (R6.1).
-# Run it with: cmake --build --preset release --target check_engine_deps
-# It still reports the legacy includes that task 3 removes; task 3.5 adds ALL
-# so every build enforces it.
-add_custom_target(check_engine_deps
+add_custom_target(check_engine_deps ALL
     COMMAND ${CMAKE_COMMAND} -DROOT=${CMAKE_CURRENT_LIST_DIR}
             -P ${CMAKE_CURRENT_LIST_DIR}/cmake/check_engine_deps.cmake
     COMMENT "Checking engine/ and midi/ include rules"
