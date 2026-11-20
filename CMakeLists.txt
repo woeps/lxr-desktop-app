@@ -36,8 +36,20 @@ target_compile_options(lxr_engine_flags INTERFACE
 
 add_executable(lxr
     board/pico2/main.c
+    board/pico2/audio_i2s.c
+    board/pico2/console_uart.c
 )
-target_link_libraries(lxr PRIVATE pico_stdlib lxr_engine_flags)
+pico_generate_pio_header(lxr ${CMAKE_CURRENT_LIST_DIR}/board/pico2/i2s.pio)
+target_include_directories(lxr PRIVATE board/pico2)
+target_link_libraries(lxr PRIVATE
+    pico_stdlib pico_multicore
+    hardware_pio hardware_dma hardware_irq hardware_uart hardware_clocks hardware_vreg
+    lxr_engine_flags)
+
+option(LXR_BOOT_DEMO "Play every voice once after boot (hardware check)" OFF)
+if(LXR_BOOT_DEMO)
+    target_compile_definitions(lxr PRIVATE LXR_BOOT_DEMO=1)
+endif()
 
 # Engine, MIDI parser and UI registry: plain C, no SDK headers (R6.1).
 file(GLOB LXR_ENGINE_SOURCES CONFIGURE_DEPENDS

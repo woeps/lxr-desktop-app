@@ -108,6 +108,14 @@ void lxr_engine_render(int16_t *stereo, uint32_t frames)
 	if(frames != LXR_BLOCK_FRAMES)
 		return;
 
+	/* FPSCR is per core: set flush-to-zero on the core that renders */
+	static uint8_t ftzDone;
+	if(!ftzDone)
+	{
+		lxr_enable_flush_to_zero();
+		ftzDone = 1;
+	}
+
 	Command cmd;
 	while(queuePop(&cmd))
 	{

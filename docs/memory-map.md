@@ -71,8 +71,24 @@ Compiling the same objects with `-Wdouble-promotion` reported about 108 places w
 - Community reports (for example the [Pimoroni overclocking article](https://learn-new.pimoroni.com/article/overclocking-the-pico-2)) say Pico boards run well above their rating with a raised core voltage. These are not guarantees.
 - I could not fetch the datasheet table with the absolute voltage limit and the junction temperature limit in this session, so those two numbers are **not yet confirmed from the datasheet**. The spec's limits stay as they are and stricter than the SDK maximum: **at most 250 MHz, at most 1.20 V, and the on-chip temperature sensor must stay below 70 °C** (a conservative bench limit of mine, not a datasheet figure). Task 9.5 must read the RP2350 datasheet's electrical characteristics before overclocking and lower the limits if they are tighter.
 
-## 6. Pending measurements
+## 6. First real link (tasks 9.1 and 9.2)
+
+Arm GNU 14.2.Rel1, Pico SDK 2.1.1, board `pico2`, `copy_to_ram`, release build:
+
+| Section | Address | Size |
+|---|---|---|
+| `.text` (code and read-only data, copied to RAM at boot) | `0x20000110` | 60,572 B |
+| `.data` (tables and initialised data) | `0x2000EDB0` | 116,012 B |
+| `.bss` (FX buffer, voice state, queues) | `0x2002B2C0` | 75,748 B |
+| `.heap` | `0x2003DAA4` | 2,048 B |
+| Core 1 stack (SCRATCH_X) | `0x20080000` | 2,048 B |
+| Core 0 stack (SCRATCH_Y) | `0x20081000` | 2,048 B |
+
+Main SRAM in use: `0x20000000` to `0x2003DAA4`, **252 KB of 512 KB, about 260 KB free**. The copy-to-RAM decision of section 3 holds. The image in flash is 177 KB (`lxr.uf2` 347 KB).
+
+The stacks are the SDK default 2 KB each. The audio path's largest frame is the mixer (about 400 B of local buffers). The console's largest is a formatted line (128 B plus the SDK printf). Task 9.3 checks this on hardware; if a stack turns out to be short, the fix is to move large locals to statics, not to grow the stack into the scratch banks.
+
+## 7. Pending measurements
 
 - Block render time at 150 MHz: task 9.4.
 - Overclock steps: task 9.5.
-- Real link map and RAM margin: task 9.7.
