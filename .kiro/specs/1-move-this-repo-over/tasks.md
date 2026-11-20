@@ -27,7 +27,7 @@ Paths are relative to `/home/chris/Projects/lxr-desktop-app`.
 
 - [x] 4. Parameter metadata table (R6.5)
   - [x] 4.1 Write a one-off script `host/scripts/gen_param_table.py` that reads `Parameters.h`, `Cc2Text.c`, `CcNr2Text.h` and `MenuText.h` from git history and emits the first version of `engine/param_table.c` (id, name, voice, kind, min, max, default, enum names).
-  - [x] 4.2 Review the generated table by hand: unique lower-case names (for example `filter_freq_1`, `velod4`, `fx_dry_wet`), correct stored ranges, enum names for waveforms and filter types. The names follow the old enum identifiers, so they are not the dotted names of the design's examples. The table has 245 rows: 238 sound parameters plus the MIDI channel, note and filter settings.
+  - [x] 4.2 Review the generated table by hand: unique lower-case names (for example `filter_freq_1`, `velod4`, `fx_dry_wet`), correct stored ranges, enum names for waveforms and filter types. The names follow the old enum identifiers, so they are not the dotted names of the design's examples. The table has 245 rows: 228 sound parameters plus 17 MIDI settings (channels, notes, filters).
   - [x] 4.3 Add the host test that every non-removed `ParamEnums` ID below `END_OF_SOUND_PARAMETERS` has exactly one row and that names are unique.
 
 - [ ] 5. Engine API and command ring (R4.4, R6.2, R6.3, R6.4)
