@@ -73,7 +73,9 @@ static uint8_t parserState = IGNORE;	// state of the parser state machine. Set t
 static void midiParser_setParam(uint16_t id, uint8_t value)
 {
 	const lxr_param_info_t *info = lxr_param_find_id(id);
-	if(!info)
+	/* MIDI reaches sound parameters only, as in the old firmware. The module's
+	 * own MIDI settings (channels, note map, filters) are not changed by MIDI. */
+	if(!info || id >= END_OF_SOUND_PARAMETERS)
 		return;
 	if(value > info->max)
 		value = info->max;

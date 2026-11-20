@@ -43,7 +43,7 @@ things like this:  r3=(r1 & 0x7F)<<8; instead of calling rand() again.
 #define RAND_MAX 32767
 #endif
 #define DITHER_S (0.5f)              			//set to 0.0f for no noise shaping
-#define DITHER_W 32768.f//(pow(2.0,BITS-1))   	//word length (usually bits=16)
+#define DITHER_W 32768.f//(powf(2.0,BITS-1))   	//word length (usually bits=16)
 #define DITHER_WI (1.0f/DITHER_W)
 #define DITHER_D (DITHER_WI / RAND_MAX)     	//dither amplitude (2 lsb)
 #define DITHER_O (DITHER_WI * 0.5f)         	//remove dc offset

@@ -72,7 +72,7 @@ INDTCM const float table_1n914[257] = {
 		};
 
 
-INDTCM const double ecc83Table[129] = {
+INDTCM const float ecc83Table[129] = {
 -0.993818651334, -0.993773150866, -0.993727650399, -0.993682149931,
 -0.993636649463, -0.993591148995, -0.993545648528, -0.99350014806,
 -0.993454647592, -0.993409147125, -0.993363646657, -0.993256563682,
@@ -200,7 +200,7 @@ float foldback(float in, float threshold)
 {
   if (in>threshold || in<-threshold)
   {
-    in= fabs(fabs(fmod(in - threshold, threshold*4)) - threshold*2) - threshold;
+    in= fabsf(fabsf(fmodf(in - threshold, threshold*4)) - threshold*2) - threshold;
   }
   return in;
 }
@@ -210,7 +210,7 @@ void Distortion_process(MasterDistortion *dist, int16_t *fxBuffer, int16_t* outL
 	if(dist->distortionType == DISTORTION_TUBE)
 	{
 		//--- Tone Control ---
-		const double coff = 0.06537948995454451662 + dist->p2 * 0.92410701734426630737;
+		const float coff = 0.06537948995454451662 + dist->p2 * 0.92410701734426630737;
 		//--------------------
 
 		const float outputModifier = (1.0+0.55*dist->p1) +0.55*dist->p1;
@@ -236,8 +236,8 @@ void Distortion_process(MasterDistortion *dist, int16_t *fxBuffer, int16_t* outL
 				float frac1 = (input1&0b0000000111111111) / 512.f;
 				float frac2 = (input2&0b0000000111111111) / 512.f;
 
-				double val1 = ecc83Table[itg1] + (ecc83Table[itg1+1]-ecc83Table[itg1]) * frac1;
-				double val2 = ecc83Table[itg2] + (ecc83Table[itg2+1]-ecc83Table[itg2]) * frac2;
+				float val1 = ecc83Table[itg1] + (ecc83Table[itg1+1]-ecc83Table[itg1]) * frac1;
+				float val2 = ecc83Table[itg2] + (ecc83Table[itg2+1]-ecc83Table[itg2]) * frac2;
 
 
 
@@ -272,7 +272,7 @@ void Distortion_process(MasterDistortion *dist, int16_t *fxBuffer, int16_t* outL
 				int32_t input1 = ((int32_t)((fxBuffer[idx1]) * (1.f + dist->drive)));
 				uint8_t itg1 = (__SSAT(input1,16)>>9)+64;
 				float frac1 = (input1&0b0000000111111111) / 512.f;
-				double val1 = ecc83Table[itg1] + (ecc83Table[itg1+1]-ecc83Table[itg1]) * frac1;
+				float val1 = ecc83Table[itg1] + (ecc83Table[itg1+1]-ecc83Table[itg1]) * frac1;
 
 
 				//--- tone control ---
@@ -295,7 +295,7 @@ void Distortion_process(MasterDistortion *dist, int16_t *fxBuffer, int16_t* outL
 		//x*(2-abs(x))
 
 		//--- Tone Control ---
-		const double coff = 0.06537948995454451662 + dist->p2 * 0.92410701734426630737;
+		const float coff = 0.06537948995454451662 + dist->p2 * 0.92410701734426630737;
 		//--------------------
 
 		if(channels==2)
@@ -393,13 +393,13 @@ void Distortion_process(MasterDistortion *dist, int16_t *fxBuffer, int16_t* outL
 		int32_t x;
 		//simdBuffer simd;
 #if 0
-		double tone =  475 + dist->p1*(32000-475);
-		const double coff = 1. - expf(-2*M_PI*tone/44140);
+		float tone =  475 + dist->p1*(32000-475);
+		const float coff = 1. - expf(-2*M_PI*tone/44140);
 #else
 		//Tone control 475 to 32000 Hz
-		const double coff = 0.06537948995454451662 + dist->p2 * 0.92410701734426630737;
+		const float coff = 0.06537948995454451662 + dist->p2 * 0.92410701734426630737;
 #endif
-		const double gain = 1 + dist->drive*2304;
+		const float gain = 1 + dist->drive*2304;
 
 		if(channels==2)
 		{
@@ -410,8 +410,8 @@ void Distortion_process(MasterDistortion *dist, int16_t *fxBuffer, int16_t* outL
 				const uint8_t idx2 = i*2+1;
 				//power supply 0-9V with 4.5V center => +/- 4.5V
 
-				double signal1 = ( (fxBuffer[idx1])  ) / 32768.;
-				double signal2 = ( (fxBuffer[idx2])  ) / 32768.;  //[-1:1]
+				float signal1 = ( (fxBuffer[idx1])  ) / 32768.;
+				float signal2 = ( (fxBuffer[idx2])  ) / 32768.;  //[-1:1]
 
 				//feedback thru hp
 				//dist->hp1_state[0] += 0.64116641920131193922 * ( dist->p2 * 0.125 - dist->hp1_state[0]);
@@ -430,7 +430,7 @@ void Distortion_process(MasterDistortion *dist, int16_t *fxBuffer, int16_t* outL
 
 				/*
 				Coefficient calculation:
-				x = exp(-2.0*pi*freq/samplerate);
+				x = expf(-2.0*pi*freq/samplerate);
 				a0 = 1.0-x;
 				b1 = -x;
 
@@ -440,8 +440,8 @@ void Distortion_process(MasterDistortion *dist, int16_t *fxBuffer, int16_t* outL
 				b1 = -0,35883358079868806078
 				 */
 
-				//const double a0 = 0.64116641920131193922;
-				//const double b1 = -0.35883358079868806078;
+				//const float a0 = 0.64116641920131193922;
+				//const float b1 = -0.35883358079868806078;
 				dist->hp1_state[0] += 0.64116641920131193922 * (signal1 - dist->hp1_state[0]);
 				dist->hp1_state[1] += 0.64116641920131193922 * (signal2 - dist->hp1_state[1]);
 
@@ -495,14 +495,14 @@ void Distortion_process(MasterDistortion *dist, int16_t *fxBuffer, int16_t* outL
 				//slew limit 0.3V/us 0-9V  =>  ~5.3khz
 				//SR = 44140Hz = 1 sample duration of 22,655... us
 				// slew limit = 22.655*0.3V = 6.79655641141821477118 V/sample
-				double diff = signal1 - dist->slewState[0];
-				double sign = diff > 0 ? 1. : -1.;
-				if(fabs(diff) > 6.79655641141821477118) diff = 6.79655641141821477118 * sign;
+				float diff = signal1 - dist->slewState[0];
+				float sign = diff > 0 ? 1. : -1.;
+				if(fabsf(diff) > 6.79655641141821477118) diff = 6.79655641141821477118 * sign;
 				dist->slewState[0] += diff;
 
 				diff = signal2 - dist->slewState[1];
 				sign = diff > 0 ? 1 : -1;
-				if(fabs(diff) > 6.79655641141821477118) diff = 6.79655641141821477118 * sign;
+				if(fabsf(diff) > 6.79655641141821477118) diff = 6.79655641141821477118 * sign;
 				dist->slewState[1] += diff;
 
 				//we hard clip here to the opamp rails, even if soft clipping would be more appropriate
@@ -553,7 +553,7 @@ void Distortion_process(MasterDistortion *dist, int16_t *fxBuffer, int16_t* outL
 			{
 
 				const uint8_t idx1 = i*2;
-				double signal1 = ( (fxBuffer[idx1])  ) / 32768.f;
+				float signal1 = ( (fxBuffer[idx1])  ) / 32768.f;
 
 				signal1 += dist->lastOut[0] * dist->p1 * 0.125;
 
@@ -578,9 +578,9 @@ void Distortion_process(MasterDistortion *dist, int16_t *fxBuffer, int16_t* outL
 				//slew limit 0.3V/us 0-9V  =>  ~5.3khz
 				//SR = 44140Hz = 1 sample duration of 22,655... us
 				// slew limit = 22.655*0.3V = 6.79655641141821477118 V/sample
-				double diff = signal1 - dist->slewState[0];
-				double sign = diff > 0 ? 1. : -1.;
-				if(fabs(diff) > 6.79655641141821477118) diff = 6.79655641141821477118 * sign;
+				float diff = signal1 - dist->slewState[0];
+				float sign = diff > 0 ? 1. : -1.;
+				if(fabsf(diff) > 6.79655641141821477118) diff = 6.79655641141821477118 * sign;
 				dist->slewState[0] += diff;
 
 				//we hard clip here to the opamp rails, even if soft clipping would be more appropriate

@@ -28,10 +28,10 @@ typedef struct CompressorStruct
 	float ratio;
 	float markupGain;
 
-	//double filter;
+	//float filter;
 	// envelope
-	double  env;
-	//double rms;
+	float  env;
+	//float rms;
 
 
 } Compressor;

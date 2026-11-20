@@ -108,7 +108,7 @@ IN_ITCM_RAM void SVF_directSetFilterValue(ResonantFilter* filter, float val)
 IN_ITCM_RAM float tanhXdX(float x)
 {
 	const float a = x*x;
-    // IIRC I got this as Pade-approx for tanh(sqrt(x))/sqrt(x)
+    // IIRC I got this as Pade-approx for tanhf(sqrtf(x))/sqrtf(x)
 	return ((a + 105)*a + 945) / ((15*a + 420)*a + 945);
 }
 //#endif
@@ -233,8 +233,8 @@ IN_ITCM_RAM void SVF_calcBlockZDF(ResonantFilter* filter, const uint8_t type, in
 
 			// evaluate the non-linear gains
 			/*
-			You can travially remove any saturator by setting the corresponding gain t0,...,t1 to 1. Also, you can simply scale any saturator (i.e. change clipping threshold) to 1/a*tanh(a*x) by writing
-			double t1 = tanhXdX(a*s[0]);
+			You can travially remove any saturator by setting the corresponding gain t0,...,t1 to 1. Also, you can simply scale any saturator (i.e. change clipping threshold) to 1/a*tanhf(a*x) by writing
+			float t1 = tanhXdX(a*s[0]);
 			*/
 	#if ENABLE_NONLINEAR_INTEGRATORS
 			const float scale = 0.5f;
@@ -448,8 +448,8 @@ IN_ITCM_RAM void SVF_calcBlockCheapZDF(ResonantFilter* filter, const uint8_t typ
 
 			// evaluate the non-linear gains
 			/*
-			You can travially remove any saturator by setting the corresponding gain t0,...,t1 to 1. Also, you can simply scale any saturator (i.e. change clipping threshold) to 1/a*tanh(a*x) by writing
-			double t1 = tanhXdX(a*s[0]);
+			You can travially remove any saturator by setting the corresponding gain t0,...,t1 to 1. Also, you can simply scale any saturator (i.e. change clipping threshold) to 1/a*tanhf(a*x) by writing
+			float t1 = tanhXdX(a*s[0]);
 			*/
 	#if 0
 			const float scale = 0.5f;

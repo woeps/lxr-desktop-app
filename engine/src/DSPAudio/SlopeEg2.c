@@ -48,14 +48,14 @@ void slopeEg2_trigger(SlopeEg2* eg)
 	eg->repeatCnt = eg->repeat;
 }
 //--------------------------------------------------
-IN_ITCM_RAM double slopeEg2_calcSlopeValue(double val, double slope)
+IN_ITCM_RAM float slopeEg2_calcSlopeValue(float val, float slope)
 {
-	return (1.0+slope)*val/(1.0+slope*fabs(val));
+	return (1.0+slope)*val/(1.0+slope*fabsf(val));
 }
 //--------------------------------------------------
-IN_ITCM_RAM double slopeEg2_calc(SlopeEg2* eg)
+IN_ITCM_RAM float slopeEg2_calc(SlopeEg2* eg)
 {
-	register double val = eg->value;
+	register float val = eg->value;
 	switch(eg->state)
 	{
 
@@ -134,15 +134,15 @@ f(x) = (1+k)*x/(1+k*abs(x))
 #define TIME_AMOUNT_ATTACK 0.99
 #define TIME_K_ATTACK (2*TIME_AMOUNT_ATTACK/(1.0-TIME_AMOUNT_ATTACK))
 #define TIME_K_DECAY (2*TIME_AMOUNT_DECAY/(1.0-TIME_AMOUNT_DECAY))
-double slopeEg2_calcTime(uint8_t data2, double amount)
+float slopeEg2_calcTime(uint8_t data2, float amount)
 {
-	const double val = (data2)/127.0;
+	const float val = (data2)/127.0;
 #if USE_BIG_SAMPLE_BUFFER
 	//routine is called on ly half as often -> *2
-	const float ret = (1.0-((1.0+amount)*val/(1.0+amount*fabs(val)))) * 2.f;
+	const float ret = (1.0-((1.0+amount)*val/(1.0+amount*fabsf(val)))) * 2.f;
 	return ret > 1.f ? 1.f : ret;
 #else
-	return 1.0-((1.0+amount)*val/(1.0+amount*fabs(val)));
+	return 1.0-((1.0+amount)*val/(1.0+amount*fabsf(val)));
 #endif
 
 }
@@ -161,16 +161,16 @@ IN_ITCM_RAM void slopeEg2_setDecay(SlopeEg2* eg, uint8_t data2, uint8_t isSync)
 			eg->decay /= 16;
 };
 //--------------------------------------------------
-double slopeEg2_calcDecay(uint8_t data2)
+float slopeEg2_calcDecay(uint8_t data2)
 {
 	return slopeEg2_calcTime(data2,TIME_K_DECAY);
 };
 //--------------------------------------------------
 IN_ITCM_RAM void slopeEg2_setSlope(SlopeEg2* eg, uint8_t data2)
 {
-	const double amount 	 	= ((data2/127.f)-0.5f)*1.999f;
+	const float amount 	 	= ((data2/127.f)-0.5f)*1.999f;
 	//negate the amount
-	const double invAmount 	= -amount;
+	const float invAmount 	= -amount;
 
 	eg->slope 		= 2*amount/(1-amount);
 	eg->invSlope	= 2*invAmount/(1-invAmount);

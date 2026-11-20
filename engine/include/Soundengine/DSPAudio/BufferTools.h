@@ -162,38 +162,38 @@ static inline void bufferTool_addGainInterpolated(int16_t* buf, const float gain
 	uint8_t i;
 	for(i=0;i<size;i++)
 	{
-		const double frac = i/(size-1.f);
-		const double currentGain = lastGain + frac*(gain - lastGain);
+		const float frac = i/(size-1.f);
+		const float currentGain = lastGain + frac*(gain - lastGain);
 		buf[i] = buf[i] * currentGain;
 	}
 #endif
 #endif
 }
 //---------------------------------------------------
-static inline void bufferTool_addGainInterpolatedDouble(int16_t* buf, const double gain, const double lastGain, const uint8_t size)
+static inline void bufferTool_addGainInterpolatedDouble(int16_t* buf, const float gain, const float lastGain, const uint8_t size)
 {
 
 	uint8_t i;
 	for(i=0;i<size;i++)
 	{
-		const double frac = i/(size-1.0);
-		const double currentGain = lastGain + frac*(gain - lastGain);
+		const float frac = i/(size-1.0);
+		const float currentGain = lastGain + frac*(gain - lastGain);
 		buf[i] = buf[i] * currentGain;
 	}
 
 }
 //---------------------------------------------------
-static inline void bufferTool_addGainInterpolatedDoubleDithered(Dither* dither, int16_t* buf, const double gain, const double lastGain, const uint8_t size)
+static inline void bufferTool_addGainInterpolatedDoubleDithered(Dither* dither, int16_t* buf, const float gain, const float lastGain, const uint8_t size)
 {
 
 	uint8_t i;
 	for(i=0;i<size;i++)
 	{
-		double in = (buf[i]/32768.0f);
+		float in = (buf[i]/32768.0f);
 		if(in>1.0)in=1.0;
 		else if( in < -1.0)in=-1.0;
-		const double frac = i/(size-1.0);
-		const double currentGain = lastGain + frac*(gain - lastGain);
+		const float frac = i/(size-1.0);
+		const float currentGain = lastGain + frac*(gain - lastGain);
 		buf[i] = dither_process(dither,in* currentGain);
 //		buf[i] = buf[i] * currentGain;
 	}

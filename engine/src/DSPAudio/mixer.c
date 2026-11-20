@@ -262,15 +262,15 @@ static float fastTanh(float var)
 
 
 
-double ecc83(float x, float v)
+float ecc83(float x, float v)
 {
 	/*
-	double input = x -0.05*v*x +0.01*v;//(h100f(x -0.05*v*x +0.01*v))*(1.0+0.55*v) +0.55*v;
+	float input = x -0.05*v*x +0.01*v;//(h100f(x -0.05*v*x +0.01*v))*(1.0+0.55*v) +0.55*v;
 	input += 1.0; // [0:2]
 	input *= 64.0;
 	uint8_t itg = input;
 	float frac = input-itg;
-	double val;
+	float val;
 	if(itg<127)
 		val = (1.0-frac) * ecc83Table[itg] + frac * ecc83Table[itg+1];
 	else val = ecc83Table[127];

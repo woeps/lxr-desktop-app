@@ -70,8 +70,8 @@ typedef struct VoiceStruct
 #endif
 
 #if (AMP_EG_SYNC==0)
-	double ampFilterInput;
-	double lastGain;
+	float ampFilterInput;
+	float lastGain;
 #endif
 
 #if ENABLE_MIX_OSC

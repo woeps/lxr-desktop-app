@@ -33,7 +33,7 @@ int16_t dither_process(Dither* dither, float in)
 	dither->tmp = in + DITHER_O + DITHER_D * (float)(dither->r1 - dither->r2); 	//dc offset and dither
 
 	dither->out = (int)(DITHER_W * dither->tmp);                				//truncate downwards
-	if(dither->tmp<0.0f) dither->out--;                  						//this is faster than floor()
+	if(dither->tmp<0.0f) dither->out--;                  						//this is faster than floorf()
 
 	dither->s2 = dither->s1;
 	dither->s1 = in - DITHER_WI * (float)dither->out;           				//error

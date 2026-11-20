@@ -36,15 +36,15 @@ typedef struct DistortionStruct
 	float p3;		//parameter 3
 
 	//some filter states used in rat
-	double hp1_state[2];
-	double hp2_state[2];
-	double hp3_state[2];
-	double lp1_state[2];
-	double lp2_state[2];
-	double lp3_state[2];
-	double slewState[2];
+	float hp1_state[2];
+	float hp2_state[2];
+	float hp3_state[2];
+	float lp1_state[2];
+	float lp2_state[2];
+	float lp3_state[2];
+	float slewState[2];
 
-	double lastOut[2];
+	float lastOut[2];
 
 
 } MasterDistortion;

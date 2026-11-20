@@ -24,7 +24,7 @@ void initOnePole(OnePoleFilter* filter)
 	filter->r = 0.01f;
 }
 //-------------------------------------------------------------
-IN_ITCM_RAM float calcOnePole(OnePoleFilter* filter, double input)
+IN_ITCM_RAM float calcOnePole(OnePoleFilter* filter, float input)
 {
 	//result = a × b + c
 	filter->b = fmaf(filter->r, input - filter->b, filter->b);
@@ -32,10 +32,10 @@ IN_ITCM_RAM float calcOnePole(OnePoleFilter* filter, double input)
 	return filter->b;
 }
 //-------------------------------------------------------------
-float calcOnePoleAdaptiveVolume(OnePoleFilter* filter, double input)
+float calcOnePoleAdaptiveVolume(OnePoleFilter* filter, float input)
 {
 
-	const double diff = fabs(input-filter->b);
+	const float diff = fabsf(input-filter->b);
 	if(diff >0.5 || (input < 0.01))
 	{
 		filter->b += 0.5f * (input - filter->b);
@@ -69,17 +69,17 @@ void calcOnePoleBlockFixedInput(OnePoleFilter* filter, float input,float* output
 	}
 }
 //-------------------------------------------------------------
-void setOnePoleCoef(OnePoleFilter* filter,double val)
+void setOnePoleCoef(OnePoleFilter* filter,float val)
 {
 	filter->r = val;
 }
 //-------------------------------------------------------------
-void setOnePoleValue(OnePoleFilter* filter,double val)
+void setOnePoleValue(OnePoleFilter* filter,float val)
 {
 	filter->b = val;
 }
 //-------------------------------------------------------------
-void setOnePoleFreq(OnePoleFilter* filter,double f)
+void setOnePoleFreq(OnePoleFilter* filter,float f)
 {
 	filter->r = CALC_FILTER_FREQ(f);
 }

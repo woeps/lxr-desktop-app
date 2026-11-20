@@ -26,7 +26,7 @@ enum
 	RATIO_8
 };
 
-static const double DC_OFFSET = 1.0E-25;
+static const float DC_OFFSET = 1.0E-25;
 
 void Compressor_init(Compressor *c)
 {
@@ -41,14 +41,14 @@ void Compressor_init(Compressor *c)
 }
 
 // linear -> dB conversion
-static double lin2dB( double lin ) {
-	static const double LOG_2_DB = 8.6858896380650365530225783783321;	// 20 / ln( 10 )
+static float lin2dB( float lin ) {
+	static const float LOG_2_DB = 8.6858896380650365530225783783321;	// 20 / ln( 10 )
 	return logf( lin ) * LOG_2_DB;
 }
 
 // dB -> linear conversion
-static double dB2lin( double dB ) {
-	static const double DB_2_LOG = 0.11512925464970228420089957273422;	// ln( 10 ) / 20
+static float dB2lin( float dB ) {
+	static const float DB_2_LOG = 0.11512925464970228420089957273422;	// ln( 10 ) / 20
 	return expf( dB * DB_2_LOG );
 }
 
@@ -56,7 +56,7 @@ static double dB2lin( double dB ) {
 void Compressor_setAttack(Compressor *c, float a)
 {
 	c->attack = 0.03f + a *100.f; //[ms]
-	c->attack = exp( -1000.0 / ( c->attack * REAL_FS ) );
+	c->attack = expf( -1000.0 / ( c->attack * REAL_FS ) );
 }
 void Compressor_setTreshold(Compressor *c, float t)
 {
@@ -70,7 +70,7 @@ void Compressor_setGain(Compressor *c, float g)
 void Compressor_setRelease(Compressor *c, float r)
 {
 	c->release = 25+r*175.f; //[ms]
-	c->release = exp( -1000.0 / ( c->release * REAL_FS ) );
+	c->release = expf( -1000.0 / ( c->release * REAL_FS ) );
 }
 
 void Compressor_setRatio(Compressor *c, uint8_t r)
@@ -117,21 +117,21 @@ void Compressor_process(Compressor *c, int16_t *fxBuffer,int16_t* outL, int16_t*
 		{
 			//--- Compressor ---
 			float in = 0.5 * (fxBuffer[i*2]/32768.f) + 0.5 * (fxBuffer[i*2+1]/32768.f);
-			double peak = fabs(in);
+			float peak = fabsf(in);
 
 			//value over thresh
 			peak += DC_OFFSET;
-			double peakdB = lin2dB(peak);
-			double overdB = peakdB - c->tresh;
+			float peakdB = lin2dB(peak);
+			float overdB = peakdB - c->tresh;
 			if ( overdB < 0.0 )
 				overdB = 0.0;
 
 			// dynamic selection: attack or release?
-			double  coeff = overdB > c->env ? c->attack : c->release;
+			float  coeff = overdB > c->env ? c->attack : c->release;
 			c->env = overdB + coeff * (c->env - overdB);
 			//c->env = c->env + (1-coeff) * (overdB -c->env); //should be the same as above, without 1-
 
-			double gr = c->env * (c->ratio - 1.0);
+			float gr = c->env * (c->ratio - 1.0);
 			gr = dB2lin(gr);
 			//debugWatch = gr;
 
@@ -158,21 +158,21 @@ void Compressor_process(Compressor *c, int16_t *fxBuffer,int16_t* outL, int16_t*
 			const uint8_t idx1 = i*2;
 			//--- Compressor ---
 			float in = fxBuffer[idx1]/32768.f;
-			double peak = fabs(in);
+			float peak = fabsf(in);
 
 			//value over thresh
 			peak += DC_OFFSET;
-			double peakdB = lin2dB(peak);
-			double overdB = peakdB - c->tresh;
+			float peakdB = lin2dB(peak);
+			float overdB = peakdB - c->tresh;
 			if ( overdB < 0.0 )
 				overdB = 0.0;
 
 			// dynamic selection: attack or release?
-			double  coeff = overdB > c->env ? c->attack : c->release;
+			float  coeff = overdB > c->env ? c->attack : c->release;
 			c->env = overdB + coeff * (c->env - overdB);
 			//c->env = c->env + (1-coeff) * (overdB -c->env); //should be the same as above, without 1-
 
-			double gr = c->env * (c->ratio - 1.0);
+			float gr = c->env * (c->ratio - 1.0);
 			gr = dB2lin(gr);
 			//debugWatch = gr;
 

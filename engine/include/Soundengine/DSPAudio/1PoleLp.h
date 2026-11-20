@@ -21,17 +21,17 @@
 
 typedef struct OnePoleStruct
 {
-	double r;
-	double b;
+	float r;
+	float b;
 } OnePoleFilter;
 //-------------------------------------------------------------
 void initOnePole(OnePoleFilter* filter);
-float calcOnePole(OnePoleFilter* filter, double input);
-float calcOnePoleAdaptiveVolume(OnePoleFilter* filter, double input);
+float calcOnePole(OnePoleFilter* filter, float input);
+float calcOnePoleAdaptiveVolume(OnePoleFilter* filter, float input);
 void calcOnePoleBlock(OnePoleFilter* filter, int16_t* buf, const uint8_t size);
 void calcOnePoleBlockFixedInput(OnePoleFilter* filter, float input,float* output, const uint8_t size);
-void setOnePoleCoef(OnePoleFilter* filter,double val);
-void setOnePoleValue(OnePoleFilter* filter,double val);
-void setOnePoleFreq(OnePoleFilter* filter,double f);
+void setOnePoleCoef(OnePoleFilter* filter,float val);
+void setOnePoleValue(OnePoleFilter* filter,float val);
+void setOnePoleFreq(OnePoleFilter* filter,float f);
 
 #endif /* ONE_POLELP_H_ */
