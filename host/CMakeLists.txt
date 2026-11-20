@@ -80,3 +80,22 @@ target_link_libraries(lxr_console PRIVATE lxr_console_ui)
 add_executable(test_console test_console.c)
 target_link_libraries(test_console PRIVATE lxr_console_ui)
 add_test(NAME console COMMAND test_console)
+
+# --- render tool, WAV comparison, golden audio (task 8) ---------------------------------
+add_executable(lxr_render lxr_render.c)
+target_link_libraries(lxr_render PRIVATE lxr_engine_host)
+
+add_executable(wavcmp wavcmp.c)
+target_link_libraries(wavcmp PRIVATE m)
+target_compile_options(wavcmp PRIVATE -Wno-double-promotion)
+
+# Each script is rendered and compared with its committed golden WAV.
+foreach(script voices cc_sweep dense_retrigger)
+    add_test(NAME golden_${script}
+        COMMAND ${CMAKE_COMMAND}
+            -DRENDER=$<TARGET_FILE:lxr_render> -DWAVCMP=$<TARGET_FILE:wavcmp>
+            -DSCRIPT=${CMAKE_CURRENT_LIST_DIR}/scripts/${script}.txt
+            -DGOLDEN=${CMAKE_CURRENT_LIST_DIR}/golden/${script}.wav
+            -DOUT=${CMAKE_CURRENT_BINARY_DIR}/${script}.wav
+            -P ${CMAKE_CURRENT_LIST_DIR}/golden_test.cmake)
+endforeach()

@@ -131,6 +131,11 @@ static void test_nrpn(void)
 	FEED(0xB0, 99, 0, 98, idx, 6, 42);
 	CHECK(ncalls == 1 && calls[0].kind == 'P' && calls[0].a == PAR_FX_DRY_WET && calls[0].b == 42,
 	      "NRPN: %d calls, id %u value %u", ncalls, calls[0].a, calls[0].b);
+
+	/* NRPN cannot reach the module's MIDI settings */
+	ncalls = 0;
+	FEED(0xB0, 99, (uint8_t)((PAR_MIDI_CHAN_1 - 128) >> 7), 98, (uint8_t)((PAR_MIDI_CHAN_1 - 128) & 0x7f), 6, 5);
+	CHECK(ncalls == 0, "NRPN changed a MIDI setting");
 }
 
 static void test_realtime_bytes_ignored_inside_message(void)
