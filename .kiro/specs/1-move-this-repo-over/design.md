@@ -1,4 +1,4 @@
-# Design: LXR sound module on Raspberry Pi Pico 2 (RP2350)
+# Design: LXR sound module on RP2350 (Waveshare RP2350-Zero)
 
 Implements `requirements.md` in this directory. Requirement numbers are written as R<n>.
 
@@ -29,7 +29,7 @@ The LXR drum engine moves to the RP2350 as a MIDI-driven sound module. The code 
 ## 2. Repository layout after the change
 
 ```
-CMakeLists.txt               pico-sdk project (board pico2), host test target
+CMakeLists.txt               pico-sdk project (board waveshare_rp2350_zero, or pico2), host test target
 cmake/pico_sdk_import.cmake
 engine/                      from Core/Src/Soundengine/{DSPAudio,FxBus.c,Soundengine.c}, Parameters.c
   include/lxr/engine.h       the Engine API (section 3)
@@ -39,7 +39,7 @@ midi/                        midi_parser.c (from MidiParser.c, MidiVoiceControl.
 ui/
   ui_iface.h                 UI layer interface (section 5)
   console/console.c          serial console
-board/pico2/                 audio_i2s.c + i2s.pio, midi_uart.c, console_uart.c, preset_flash.c, main.c, pins.h
+board/rp2350/                 audio_i2s.c + i2s.pio, midi_uart.c, console_usb.c, preset_flash.c, main.c, pins.h, clocks.h
 host/                        test_render.c, test_console.c, golden/*.wav, scripts/*.txt
 docs/memory-map.md           committed linker map summary (R5.2)
 ```
@@ -110,7 +110,7 @@ Core 0 never writes engine state directly. `lxr_trigger` and `lxr_param_set` pus
 | Sequencer-only `ParamEnums` (tempo, swing, step/pattern, per-step locks) | Remove from the engine table. Enum values for the remaining parameters are **not** renumbered, so CC/NRPN IDs stay as today (R2.5, R4.5). |
 | `TriggerOut.c` | Delete (hardware trigger jacks of the desktop unit). |
 | `Preset/` | Rewrite as pure serialize/deserialize (section 7). Pattern data is skipped (R2.4). |
-| `Uart.c` (STM32 HAL) | Replace by `board/pico2/midi_uart.c` plus a ring buffer. |
+| `Uart.c` (STM32 HAL) | Replace by `board/rp2350/midi_uart.c` plus a ring buffer. |
 
 A CMake target `check_engine_deps` greps the sources and fails the build if any file under `engine/` or `midi/` includes `menu`, `lcd`, `button`, `led`, `encoder`, `pico/`, `hardware/` or `stm32` headers (R6.1).
 
@@ -142,7 +142,9 @@ void ui_register(const ui_t *ui);              /* at most 4 */
 | `watch on\|off` | Print `id name=value` for each parameter change. The callback queues the text and the main loop prints it. |
 | `status` | Print `lxr_stats_t`. |
 
-Console output goes through a 1 KB TX ring drained by UART1 interrupts. It drops text and never blocks when the ring is full, so the console cannot stall core 0's MIDI work (R7.7). Line editing is limited to backspace.
+Console output goes through a 1 KB TX ring. `console_usb.c` hands a character to the USB CDC driver only when its transmit buffer has room, so the ring drops text and never blocks when no terminal is reading, and the console cannot stall core 0's MIDI work (R7.7). Line editing is limited to backspace.
+
+The console uses the SDK's `stdio_usb` (TinyUSB, CDC class only). Its device task runs from a low-priority interrupt on core 0. `stdio_usb` also exposes the reset interface, so `picotool load -f lxr.uf2` reboots the module into BOOTSEL and flashes it without the BOOT button.
 
 ## 6. Board layer
 
@@ -155,7 +157,7 @@ Console output goes through a 1 KB TX ring drained by UART1 interrupts. It drops
 
 ### 6.2 Memory and flash (R5.2, R5.4)
 
-Budget (RP2350: 520 KB SRAM, 4 MB flash on Pico 2):
+Budget (RP2350: 520 KB SRAM, 4 MB flash on both the RP2350-Zero and the Pico 2):
 
 | Item | Estimate |
 |---|---|
@@ -174,17 +176,17 @@ The Cortex-M33 FPU is single-precision. The engine builds with `-Wdouble-promoti
 
 ### 6.4 Pin table (R7.6)
 
-All pins live in `board/pico2/pins.h` (R7.5). GP numbers refer to the Pico 2 header.
+All pins live in `board/rp2350/pins.h` (R7.5). Every pin is on the edge headers of both the RP2350-Zero and the Pico 2. The Pico pin column is for the Pico 2 only.
 
 | Function | GPIO | Pico pin | Notes |
 |---|---|---|---|
 | MIDI IN (UART0 RX) | GP1 | 2 | From 6N138 output, 1 kΩ pull-up to 3V3 |
-| Console TX (UART1) | GP4 | 6 | To adapter RX |
-| Console RX (UART1) | GP5 | 7 | From adapter TX |
 | I2S DIN | GP9 | 12 | To PCM5102A DIN |
 | I2S BCK | GP10 | 14 | To PCM5102A BCK (side-set base) |
 | I2S LRCK | GP11 | 15 | To PCM5102A LCK (BCK + 1, required by the PIO program) |
-| Reserved for a later UI | GP12 to GP15, GP18, GP19 | | Encoder A/B/push, I2C SDA/SCL for the OLED |
+| Serial console | USB | | USB CDC on the board's USB-C (RP2350-Zero) or micro-USB (Pico 2) port |
+| Status LED | GP25 (Pico 2 only) | 1 Hz heartbeat. The RP2350-Zero's WS2812 on GP16 is not driven. |
+| Reserved for a later UI | GP12, GP13, GP14, GP6, GP7 | | Encoder A, B, push; I2C1 SDA, SCL for the OLED |
 
 PCM5102A module strapping: SCK to GND (internal PLL), FMT to GND (I2S), XSMT to 3V3 (unmute), FLT to GND, DEMP to GND. Power from VBUS (5 V) or 3V3, depending on the module's regulator.
 
@@ -202,7 +204,7 @@ On boot core 0 reads the last-used slot from the globals sector. If that slot's 
 
 ### 7.3 Saving without audio glitches (R8.2)
 
-With the copy-to-RAM image (6.2) core 1 never reads flash, so core 0 can erase and program a sector while audio continues. Core 0 calls the SDK flash erase and program routines with interrupts disabled **on core 0 only**. MIDI arrives on core 0's UART, and an erase takes 50 to 100 ms, but the UART FIFO holds only 32 bytes (about 10 ms at 31250 baud). So the MIDI UART RX is read by DMA into a 512-byte ring that runs without the CPU, and core 0 drains the ring after the save. Task 12 sends MIDI during a save and checks that no bytes are lost.
+With the copy-to-RAM image (6.2) core 1 never reads flash, so core 0 can erase and program a sector while audio continues. Core 0 calls `flash_range_erase` and `flash_range_program` directly with interrupts disabled **on core 0 only**. It must not use `flash_safe_execute`, which by default pauses core 1 through the multicore lockout and would stop the audio. While interrupts are off the USB device task does not run, so the console stalls for the length of the erase (50 to 100 ms). USB CDC tolerates this; the host just sees a short delay. MIDI arrives on core 0's UART, and an erase takes 50 to 100 ms, but the UART FIFO holds only 32 bytes (about 10 ms at 31250 baud). So the MIDI UART RX is read by DMA into a 512-byte ring that runs without the CPU, and core 0 drains the ring after the save. Task 12 sends MIDI during a save and checks that no bytes are lost.
 
 If copy-to-RAM does not fit, the saver fades the master output to silence over 5 ms, saves, and fades back. That is an audible gap and needs user approval.
 
@@ -219,7 +221,7 @@ UART0 runs at 31250 baud, 8N1, RX only. A DMA channel in ring mode fills a 512-b
 The original M7 at 216 MHz was dual-issue and used ITCM. The M33 at 150 MHz is single-issue, so I expect the usable throughput to be roughly 2.5 to 3 times lower. The repo does not document the desktop firmware's CPU load, so the first real number comes from a hardware measurement.
 
 1. **Single render core at 150 MHz.** Core 1 renders everything. Measure `worst_block_us` with all six voices triggered together and all FX on. Pass criterion: worst Block under 1000 µs (69% of the 1450 µs Block period).
-2. **If stage 1 fails, overclock first.** Raise the system clock in steps through the SDK (`set_sys_clock_khz`, preceded by `vreg_set_voltage`): 150 MHz (default 1.10 V), then 200 MHz, then 250 MHz at a raised core voltage. Hard limits: **250 MHz and 1.20 V core voltage at most**, with no changes outside what the SDK exposes. Each step is kept only if all of the following hold: the Block pass criterion is met, a 10-minute full-load soak (R3.2) shows no underruns, no crash and no MIDI errors, and the chip stays within a temperature check (the on-chip sensor, read by the `status` console command, stays below 70 °C). The lowest passing step wins. The clock is a single constant in `board/pico2/clocks.h`, so it is easy to change back. The board layer recomputes the PIO divider (6.1) and the flash clock divider for the new system clock. Overclocking is outside the chip's official 150 MHz rating, so the final frequency and voltage are documented in `docs/memory-map.md` and the README and are the user's explicit choice.
+2. **If stage 1 fails, overclock first.** Raise the system clock in steps through the SDK (`set_sys_clock_khz`, preceded by `vreg_set_voltage`): 150 MHz (default 1.10 V), then 200 MHz, then 250 MHz at a raised core voltage. Hard limits: **250 MHz and 1.20 V core voltage at most**, with no changes outside what the SDK exposes. Each step is kept only if all of the following hold: the Block pass criterion is met, a 10-minute full-load soak (R3.2) shows no underruns, no crash and no MIDI errors, and the chip stays within a temperature check (the on-chip sensor, read by the `status` console command, stays below 70 °C). The lowest passing step wins. The clock is a single constant in `board/rp2350/clocks.h`, so it is easy to change back. The board layer recomputes the PIO divider (6.1) and the flash clock divider for the new system clock. Overclocking is outside the chip's official 150 MHz rating, so the final frequency and voltage are documented in `docs/memory-map.md` and the README and are the user's explicit choice.
 3. **If overclocking is not enough**, split rendering over both cores: voices 1 to 3 and the snare on core 1, cymbal, hi-hat and FX bus on core 0, summed through a shared buffer at a cost of one Block of latency. This is a large change, so it only happens if the measurement still requires it, and the user approves it first (task 13). Reduced-quality options (shorter reverb, fewer FX) are the last resort and also need approval (R5.3).
 
 ## 10. Host test build (R5.5, R6.6)

@@ -1,8 +1,8 @@
-# Requirements: LXR sound module on Raspberry Pi Pico 2 (RP2350)
+# Requirements: LXR sound module on RP2350 (Waveshare RP2350-Zero)
 
 ## Introduction
 
-The repository at `/home/chris/Projects/lxr-desktop-app` is the LXR V2 desktop drum machine firmware for an STM32F765 (Cortex-M7, 216 MHz, hardware double-precision-capable FPU, I2S codec CS4344, SD card, LCD, buttons, encoders, step sequencer, DIN and USB MIDI). This feature turns it into a **headless-capable drum sound module** for the Raspberry Pi Pico 2 (RP2350, dual Cortex-M33 at up to 150 MHz, single-precision FPU, 520 KB SRAM, external QSPI flash). The module is played from MIDI. It has no step sequencer. The user interface is a separate layer that talks to the sound engine through a defined interface, so the engine runs identically with any UI or none. The first release has no front-panel hardware: sounds are edited over MIDI and a serial console. An encoder-and-OLED panel is a planned later iteration (see Requirement 7).
+The repository at `/home/chris/Projects/lxr-desktop-app` is the LXR V2 desktop drum machine firmware for an STM32F765 (Cortex-M7, 216 MHz, hardware double-precision-capable FPU, I2S codec CS4344, SD card, LCD, buttons, encoders, step sequencer, DIN and USB MIDI). This feature turns it into a **headless-capable drum sound module** for RP2350 boards, by default the Waveshare RP2350-Zero, with the Raspberry Pi Pico 2 also supported (RP2350, dual Cortex-M33 at up to 150 MHz, single-precision FPU, 520 KB SRAM, external QSPI flash). The module is played from MIDI. It has no step sequencer. The user interface is a separate layer that talks to the sound engine through a defined interface, so the engine runs identically with any UI or none. The first release has no front-panel hardware: sounds are edited over MIDI and a serial console. An encoder-and-OLED panel is a planned later iteration (see Requirement 7).
 
 ## Glossary
 
@@ -17,12 +17,12 @@ The repository at `/home/chris/Projects/lxr-desktop-app` is the LXR V2 desktop d
 
 ### Requirement 1: Build and run on the RP2350
 
-**User story:** As the builder, I want the firmware to build for the Pico 2 so that I can run the drum engine on that board.
+**User story:** As the builder, I want the firmware to build for the RP2350-Zero (and the Pico 2) so that I can run the drum engine on that board.
 
 #### Acceptance criteria
-1. WHEN `cmake --preset release` and `cmake --build --preset release` are run with the Pico SDK and an arm-none-eabi toolchain on PATH, THEN the build SHALL produce a `.uf2` and an `.elf` for board `pico2` with no STM32 HAL, CMSIS-STM32 or STM32 startup/linker file in the link.
+1. WHEN `cmake --preset release` and `cmake --build --preset release` are run with the Pico SDK and an arm-none-eabi toolchain on PATH, THEN the build SHALL produce a `.uf2` and an `.elf` for board `waveshare_rp2350_zero` by default, and for `pico2` with `-DPICO_BOARD=pico2`, with no STM32 HAL, CMSIS-STM32 or STM32 startup/linker file in the link.
 2. WHEN the `.uf2` is copied to the board in BOOTSEL mode, THEN the Module SHALL boot and be ready to play within 2 seconds of power-up.
-3. The Module SHALL run on a stock Pico 2 board with no hardware beyond what Requirements 3, 4 and 7 list.
+3. The Module SHALL run on a stock RP2350-Zero or Pico 2 board with no hardware beyond what Requirements 3, 4 and 7 list.
 4. The repo SHALL target the RP2350 only. All STM32 sources and files (`Drivers/`, `Middlewares/`, `FATFS/`, `USB_DEVICE_MIDI/`, `STM32F765VGTX_FLASH.ld`, STM32 startup and HAL-MSP code, bootloader-image tooling) SHALL be removed from the build and from the tree. Git history keeps the STM32 version.
 5. The GPL-3.0 licence headers and `NOTICE.md` terms SHALL be preserved on all carried-over files.
 
@@ -54,8 +54,8 @@ The repository at `/home/chris/Projects/lxr-desktop-app` is the LXR V2 desktop d
 **User story:** As the player, I want to trigger and edit sounds from MIDI.
 
 #### Acceptance criteria
-1. The Module SHALL accept MIDI only as 5-pin DIN serial MIDI: 31250 baud, 8N1, on a Pico 2 UART RX pin, through an opto-isolated input circuit (6N138 or equivalent, per the MIDI 1.0 electrical spec).
-2. The Module SHALL NOT include USB MIDI or any TinyUSB device stack for MIDI. The USB port SHALL be used only for power and for flashing in BOOTSEL mode.
+1. The Module SHALL accept MIDI only as 5-pin DIN serial MIDI: 31250 baud, 8N1, on a UART RX pin, through an opto-isolated input circuit (6N138 or equivalent, per the MIDI 1.0 electrical spec).
+2. The Module SHALL NOT include USB MIDI. The USB port SHALL be used for power, for flashing (BOOTSEL mass storage and picotool reset-to-BOOTSEL) and for the serial console (USB CDC, Requirement 7.2).
 3. WHEN a Note On for a mapped note arrives on a Voice's MIDI channel, THEN the Voice SHALL trigger with the note velocity applied as in the current firmware.
 4. WHEN a Control Change or NRPN that the current firmware accepts for sound parameters arrives, THEN the matching Engine parameter SHALL change with the same value scaling as today.
 5. The Module SHALL keep the existing parameter CC/NRPN map so existing controller templates keep working, minus removed sequencer parameters.
@@ -94,7 +94,7 @@ The repository at `/home/chris/Projects/lxr-desktop-app` is the LXR V2 desktop d
 
 #### Acceptance criteria
 1. The first release SHALL have **no front-panel UI hardware**. The Module SHALL be fully playable and have every sound parameter edited over DIN MIDI CC/NRPN.
-2. The Module SHALL provide a **serial console UI** on a second Pico 2 UART (115200 baud, 8N1, TX and RX on GPIOs listed in `design.md`), separate from the MIDI UART, usable with a USB-serial adapter or the Pico Debug Probe.
+2. The Module SHALL provide a **serial console UI** on the board's USB port as a USB CDC serial device, usable with any serial terminal on the host computer and needing no extra hardware.
 3. The console SHALL support these commands: `help`, `params [voice]` (list names, ranges, current values), `get <param>`, `set <param> <value>`, `trigger <voice> [velocity]`, `preset load <n>`, `preset save <n>`, `preset list`, `status` (CPU load, worst Block time, MIDI error counter, underrun count).
 4. Each console command SHALL call only the Engine API. IF a parameter name or value is invalid, THEN the console SHALL print an error naming the problem and change nothing.
 5. WHEN a parameter changes from MIDI, THEN an enabled `watch` command SHALL print the change from the Engine API callback.
@@ -107,7 +107,7 @@ The repository at `/home/chris/Projects/lxr-desktop-app` is the LXR V2 desktop d
 **User story:** As the player, I want sounds to persist across power cycles.
 
 #### Acceptance criteria
-1. The Module SHALL store presets in on-board flash (a reserved sector range at the end of the Pico 2's flash), not on an SD card, unless the user decides otherwise.
+1. The Module SHALL store presets in on-board flash (a reserved sector range at the end of the board's 4 MB flash), not on an SD card, unless the user decides otherwise.
 2. WHEN a preset is saved, THEN the audio output SHALL NOT glitch. Flash writes SHALL be performed so the audio path keeps running (for example by running audio from RAM during erase/program, or by deferring writes to a quiet moment).
 3. WHEN the Module powers up, THEN it SHALL load the last saved preset or a factory default if flash is blank or corrupt (CRC mismatch).
 4. The Module SHALL provide at least 16 preset slots.
@@ -120,3 +120,4 @@ The repository at `/home/chris/Projects/lxr-desktop-app` is the LXR V2 desktop d
 - An encoder-and-OLED or knob front panel (later iteration).
 - Polished enclosure, PCB design and front-panel artwork.
 - Wireless (Pico 2 W) features.
+- Driving the RP2350-Zero's WS2812 RGB LED.

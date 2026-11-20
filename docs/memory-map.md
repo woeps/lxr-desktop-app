@@ -92,3 +92,7 @@ The stacks are the SDK default 2 KB each. The audio path's largest frame is the 
 
 - Block render time at 150 MHz: task 9.4.
 - Overclock steps: task 9.5.
+
+## 8. USB console and RP2350-Zero (task 9.8)
+
+Board `waveshare_rp2350_zero` (4 MB flash, same RP2350A as the Pico 2), console on USB CDC (`stdio_usb`, TinyUSB CDC only): text + data 191,856 B, bss 80,640 B. The USB stack adds about 15 KB of code and 5 KB of RAM. Main SRAM in use is about 267 KB of 512 KB.

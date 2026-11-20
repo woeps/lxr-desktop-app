@@ -1,6 +1,6 @@
-# LXR drum sound module (Raspberry Pi Pico 2, RP2350)
+# LXR drum sound module (RP2350: Waveshare RP2350-Zero or Raspberry Pi Pico 2)
 
-Firmware that turns a Raspberry Pi Pico 2 into a six-voice MIDI drum sound module based on the LXR V2
+Firmware that turns a Waveshare RP2350-Zero (or a Raspberry Pi Pico 2) into a six-voice MIDI drum sound module based on the LXR V2
 drum engine: three drum voices, snare, hi-hat and cymbal, with a master FX bus (delay, reverb,
 compressor, distortion, ring modulator). It is played over 5-pin DIN MIDI and sounds come out of a
 PCM5102A I2S DAC. There is no step sequencer.
@@ -42,10 +42,17 @@ The result is `build/release/lxr.uf2` (and `lxr.elf`).
 
 ## Flashing
 
-1. Hold the BOOTSEL button on the Pico 2 while plugging in the USB cable. A drive named `RP2350` appears.
+1. Hold the BOOT button while plugging in the USB cable. A drive named `RP2350` appears.
+   Once the module firmware is running, `picotool load -f build/release/lxr.uf2` reboots it into
+   BOOTSEL and flashes it without the button.
 2. Copy `build/release/lxr.uf2` onto that drive. The board reboots into the firmware.
 
-The USB port is used for power and flashing only. The module has no USB MIDI.
+The USB port carries power, flashing and the serial console (a USB serial device; open it with any
+terminal, e.g. `screen /dev/ttyACM0` or `picocom /dev/ttyACM0`, and type `help`). The module has no
+USB MIDI; MIDI comes in on the 5-pin DIN input.
+
+The default board is the Waveshare RP2350-Zero. For a Pico 2, configure with
+`cmake --preset release -DPICO_BOARD=pico2`.
 
 ## Source layout
 
@@ -54,7 +61,7 @@ The USB port is used for power and flashing only. The module has no USB MIDI.
 | `engine/` | Drum voices, mixer, FX bus, parameters and presets. No hardware or UI code. |
 | `midi/` | MIDI byte parser and the CC/NRPN parameter map. |
 | `ui/` | User interface layers on top of the engine (a serial console is planned first). |
-| `board/pico2/` | Pico SDK code: audio, UARTs, flash, cores, pin assignments. |
+| `board/rp2350/` | Pico SDK code: audio, UARTs, flash, cores, pin assignments. |
 | `host/` | Host-side test build that runs the engine without hardware. |
 | `docs/` | Measurements and notes. |
 | `cmake/` | SDK import and build checks. |

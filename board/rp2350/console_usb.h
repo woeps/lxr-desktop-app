@@ -1,5 +1,5 @@
 /*
- * console_uart.h: connects the console UI to UART1.
+ * console_usb.h: connects the console UI to the USB serial port (USB CDC).
  *
  * Copyright (C) 2026 Erica Synths
  * SPDX-License-Identifier: GPL-3.0-only
@@ -9,10 +9,10 @@
  * NOTICE.md. See LICENSE and NOTICE.md in the root of the repository.
  */
 
-#ifndef LXR_CONSOLE_UART_H_
-#define LXR_CONSOLE_UART_H_
+#ifndef LXR_CONSOLE_USB_H_
+#define LXR_CONSOLE_USB_H_
 
-/** Sets up UART1 on the console pins and hands it to the console UI. */
-void console_uart_init(void);
+/** Starts the USB serial device and hands it to the console UI. */
+void console_usb_init(void);
 
-#endif /* LXR_CONSOLE_UART_H_ */
+#endif /* LXR_CONSOLE_USB_H_ */

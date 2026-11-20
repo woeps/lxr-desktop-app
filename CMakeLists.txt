@@ -3,21 +3,22 @@
 
 cmake_minimum_required(VERSION 3.21)
 
-# LXR drum sound module for the Raspberry Pi Pico 2 (RP2350).
+# LXR drum sound module for RP2350 boards: Waveshare RP2350-Zero (default) or
+# Raspberry Pi Pico 2 (-DPICO_BOARD=pico2).
 #
 #   cmake --preset release
 #   cmake --build --preset release
 #
 # Produces build/<preset>/lxr.uf2. See README.md.
 
-set(PICO_BOARD pico2 CACHE STRING "Board type")
+set(PICO_BOARD waveshare_rp2350_zero CACHE STRING "Board type")
 set(PICO_PLATFORM rp2350-arm-s CACHE STRING "Platform")
 
 include(${CMAKE_CURRENT_LIST_DIR}/cmake/pico_sdk_import.cmake)
 
 project(lxr
     VERSION 2.0
-    DESCRIPTION "LXR drum sound module for the Raspberry Pi Pico 2"
+    DESCRIPTION "LXR drum sound module for RP2350 boards"
     LANGUAGES C CXX ASM
 )
 
@@ -35,12 +36,12 @@ target_compile_options(lxr_engine_flags INTERFACE
 )
 
 add_executable(lxr
-    board/pico2/main.c
-    board/pico2/audio_i2s.c
-    board/pico2/console_uart.c
+    board/rp2350/main.c
+    board/rp2350/audio_i2s.c
+    board/rp2350/console_usb.c
 )
-pico_generate_pio_header(lxr ${CMAKE_CURRENT_LIST_DIR}/board/pico2/i2s.pio)
-target_include_directories(lxr PRIVATE board/pico2)
+pico_generate_pio_header(lxr ${CMAKE_CURRENT_LIST_DIR}/board/rp2350/i2s.pio)
+target_include_directories(lxr PRIVATE board/rp2350)
 target_link_libraries(lxr PRIVATE
     pico_stdlib pico_multicore
     hardware_pio hardware_dma hardware_irq hardware_uart hardware_clocks hardware_vreg
@@ -78,8 +79,9 @@ add_custom_command(TARGET lxr_engine POST_BUILD
 # The engine runs from RAM (docs/memory-map.md, section 3).
 pico_set_binary_type(lxr copy_to_ram)
 
-# USB is for power and BOOTSEL flashing only: no stdio over USB, no USB MIDI.
-pico_enable_stdio_usb(lxr 0)
+# USB carries power, flashing and the serial console (USB CDC). No USB MIDI.
+# The console module starts stdio_usb itself (console_usb.c).
+pico_enable_stdio_usb(lxr 1)
 pico_enable_stdio_uart(lxr 0)
 
 pico_add_extra_outputs(lxr)

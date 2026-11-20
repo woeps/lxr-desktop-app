@@ -9,7 +9,7 @@
             "binaryDir": "${sourceDir}/build/${presetName}",
             "cacheVariables": {
                 "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
-                "PICO_BOARD": "pico2",
+                "PICO_BOARD": "waveshare_rp2350_zero",
                 "PICO_SDK_PATH": "$env{HOME}/.pico-sdk/sdk/2.1.1",
                 "PICO_TOOLCHAIN_PATH": "$env{HOME}/.pico-sdk/toolchain/14_2_Rel1",
                 "picotool_DIR": "$env{HOME}/.pico-sdk/picotool/2.1.1/picotool"

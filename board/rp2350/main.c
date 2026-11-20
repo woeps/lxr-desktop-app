@@ -1,7 +1,7 @@
 /*
  * main.c: board entry point for the Pico 2.
  *
- * Core 0 (control): MIDI input, UI layers (console), flash saves.
+ * Core 0 (control): MIDI input, UI layers (console on USB), flash saves, USB stack.
  * Core 1 (audio):   I2S output, renders one Block per DMA buffer.
  *
  * Copyright (C) 2026 Erica Synths
@@ -19,7 +19,7 @@
 #include "pins.h"
 #include "clocks.h"
 #include "audio_i2s.h"
-#include "console_uart.h"
+#include "console_usb.h"
 #include "lxr/engine.h"
 #include "ui_iface.h"
 #include "console/console.h"
@@ -54,13 +54,15 @@ int main(void)
 {
 	setClock();
 
+#ifdef LXR_PIN_LED
 	gpio_init(LXR_PIN_LED);
 	gpio_set_dir(LXR_PIN_LED, GPIO_OUT);
+#endif
 
 	lxr_engine_init(LXR_SAMPLE_RATE);
 
 #if LXR_ENABLE_CONSOLE
-	console_uart_init();
+	console_usb_init();
 	ui_register(&console_ui);
 #endif
 	ui_init_all();
@@ -84,7 +86,9 @@ int main(void)
 		if(time_reached(nextBlink))
 		{
 			led = !led;
+#ifdef LXR_PIN_LED
 			gpio_put(LXR_PIN_LED, led);
+#endif
 			nextBlink = make_timeout_time_ms(500);
 		}
 	}
