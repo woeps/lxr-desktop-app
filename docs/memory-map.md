@@ -93,6 +93,23 @@ The stacks are the SDK default 2 KB each. The audio path's largest frame is the 
 | Date | Board | Clock / Vcore | Load | worst_block_us | avg_block_us | underruns | Notes |
 |---|---|---|---|---|---|---|---|
 | 2026-11-21 | RP2350-Zero | 150 MHz / 1.10 V | snare triggered from the console, no FX | 1038 | not yet measured | 0 | first run (task 9.3); over the 1000 us budget, under the 1451 us Block period |
+| 2026-11-21 | RP2350-Zero | 150 MHz / 1.10 V | `bench del 10` | 1142 | 1097 | 0 | FAIL (budget 1000 us), 37.9 C |
+| 2026-11-21 | RP2350-Zero | 150 MHz / 1.10 V | `bench drv 10` | 1102 | 1077 | 0 | FAIL (budget 1000 us), 38.3 C |
+| 2026-11-21 | RP2350-Zero | 150 MHz / 1.10 V | `bench cmp 10` | 1149 | 1123 | 0 | FAIL (budget 1000 us), 38.3 C |
+| 2026-11-21 | RP2350-Zero | 200 MHz / 1.10 V | `bench del 10` | 857 | 822 | 0 | pass, 38.8 C |
+| 2026-11-21 | RP2350-Zero | 200 MHz / 1.10 V | `bench drv 10` | 826 | 807 | 0 | pass, 39.1 C |
+| 2026-11-21 | RP2350-Zero | 200 MHz / 1.10 V | `bench cmp 10` | 860 | 841 | 0 | pass, 39.1 C |
+| 2026-11-21 | RP2350-Zero | 250 MHz / 1.10 V | `bench del 10` | 685 | 658 | 0 | pass, 39.7 C |
+| 2026-11-21 | RP2350-Zero | 250 MHz / 1.10 V | `bench drv 10` | 661 | 645 | 0 | pass, 39.9 C |
+| 2026-11-21 | RP2350-Zero | 250 MHz / 1.10 V | `bench cmp 10` | 689 | 673 | 0 | pass, 40.3 C |
+
+Findings (task 9.4 / 9.5):
+- At the rated 150 MHz the full load needs up to 1149 us per Block (79% of the 1451 us Block period). That misses the 1000 us budget, so the overclock step of design section 9 applies.
+- Render time scales almost exactly with the clock (1149 us x 150/200 = 862 us, measured 860 us), so the render is CPU-bound, not limited by memory access.
+- The compressor is the heaviest effect, the distortion the lightest.
+- **200 MHz at the stock 1.10 V is the lowest step that passes: 860 us worst, 59% of the Block period.** 250 MHz gives 689 us.
+- The core voltage stays at the default 1.10 V, so the voltage limit is not touched. Die temperature stays below 41 C at all steps (limit 70 C).
+- Pending: 10-minute soak at 200 MHz (`bench cmp 600`) before 200 MHz becomes the default.
 
 ## 7. Pending measurements
 
