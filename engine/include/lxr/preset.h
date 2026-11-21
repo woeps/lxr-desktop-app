@@ -71,4 +71,40 @@ void lxr_globals_pack(uint8_t last_slot, uint8_t sector[LXR_PRESET_SECTOR_SIZE])
  *  (unknown ids and out-of-range values are skipped) and last_slot is set (clamped to 0..15). */
 lxr_preset_status_t lxr_globals_unpack(const uint8_t sector[LXR_PRESET_SECTOR_SIZE], uint8_t *last_slot);
 
+/* ---- preset storage (control core) --------------------------------------------- */
+
+/** Sector index of the globals sector for lxr_storage_t (slots are 0 .. LXR_PRESET_SLOTS-1). */
+#define LXR_STORAGE_GLOBALS LXR_PRESET_SLOTS
+
+/** Where sectors live. The board implements this (flash), the host tests use RAM. */
+typedef struct {
+	/** Copies sector `index` (0..16) into buf. Returns 0, or -1 on error. */
+	int (*read)(uint8_t index, uint8_t buf[LXR_PRESET_SECTOR_SIZE]);
+	/** Erases sector `index` and writes buf. Returns 0, or -1 on error. Must keep audio running. */
+	int (*write)(uint8_t index, const uint8_t buf[LXR_PRESET_SECTOR_SIZE]);
+} lxr_storage_t;
+
+/** Sets the storage. Without one, load/save/name return -1. */
+void lxr_preset_set_storage(const lxr_storage_t *storage);
+
+/** Loads slot 0..15 into the engine. Returns LXR_PRESET_OK, LXR_PRESET_BLANK / CORRUPT (nothing changed),
+ *  or -3 for no storage / bad slot. Remembers the slot in the globals sector as the boot slot. */
+int lxr_preset_load(uint8_t slot);
+
+/** Saves the current sound to slot 0..15 under name (8 characters, NULL keeps the slot's old name or
+ *  uses "slotNN"), together with the MIDI settings and the slot as the boot slot. Returns 0 or -3. */
+int lxr_preset_save(uint8_t slot, const char *name);
+
+/** Name of slot 0..15 (9 bytes incl. terminator). Returns the slot's lxr_preset_status_t, or -3. */
+int lxr_preset_name(uint8_t slot, char name[LXR_PRESET_NAME_LEN + 1]);
+
+/** Boot: applies the saved MIDI settings and loads the last used slot. A blank or corrupt slot or
+ *  globals sector loads the factory sound instead. Returns the loaded slot, or -1 for factory. */
+int lxr_preset_boot(void);
+
+/** Slot that the last load or save used (the boot slot), or -1 if none since boot. */
+int lxr_preset_current(void);
+
+#define LXR_PRESET_NO_STORAGE (-3)
+
 #endif /* LXR_PRESET_H_ */

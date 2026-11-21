@@ -322,3 +322,10 @@ void lxr_stats_report_midi_debug(const uint32_t regs[3])
 	for(int i = 0; i < 3; i++)
 		stats.midi_debug[i] = regs[i];
 }
+
+void lxr_stats_report_flash_write(uint32_t us)
+{
+	stats.flash_write_us = us;
+	if(us > stats.flash_write_max_us)
+		stats.flash_write_max_us = us;
+}

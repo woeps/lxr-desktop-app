@@ -40,12 +40,13 @@ add_executable(lxr
     board/rp2350/audio_i2s.c
     board/rp2350/console_usb.c
     board/rp2350/midi_uart.c
+    board/rp2350/preset_flash.c
 )
 pico_generate_pio_header(lxr ${CMAKE_CURRENT_LIST_DIR}/board/rp2350/i2s.pio)
 target_include_directories(lxr PRIVATE board/rp2350)
 target_link_libraries(lxr PRIVATE
     pico_stdlib pico_multicore
-    hardware_pio hardware_dma hardware_irq hardware_uart hardware_clocks hardware_vreg hardware_adc
+    hardware_pio hardware_dma hardware_irq hardware_uart hardware_clocks hardware_vreg hardware_adc hardware_flash
     lxr_engine_flags)
 
 # System clock and core voltage (design section 9, task 9.5). The RP2350 is rated for

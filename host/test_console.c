@@ -14,6 +14,12 @@
 #include "lxr/engine.h"
 #include "ui_iface.h"
 #include "console/console.h"
+#include "lxr/preset.h"
+
+static uint8_t flashSim[LXR_PRESET_SLOTS + 1][LXR_PRESET_SECTOR_SIZE];
+static int simRead(uint8_t i, uint8_t buf[LXR_PRESET_SECTOR_SIZE]) { memcpy(buf, flashSim[i], LXR_PRESET_SECTOR_SIZE); return 0; }
+static int simWrite(uint8_t i, const uint8_t buf[LXR_PRESET_SECTOR_SIZE]) { memcpy(flashSim[i], buf, LXR_PRESET_SECTOR_SIZE); return 0; }
+static const lxr_storage_t simStorage = { simRead, simWrite };
 
 static const char *input;
 static char output[64 * 1024];
@@ -157,6 +163,32 @@ int main(void)
 	lxr_stats_report_midi_line(1, 30);
 	run("midi\n");
 	CHECK(HAS("midi bytes 20") && HAS("high (idle, ok)") && HAS("edges 30") && HAS("last: 94 95") && HAS(" A3\r\n"), "midi log: %s", output);
+
+	/* presets: no storage, then a RAM-backed one */
+	run("preset load 2\n");
+	CHECK(HAS("error: slot 2 is no storage"), "preset without storage: %s", output);
+	memset(flashSim, 0xFF, sizeof flashSim);
+	lxr_preset_set_storage(&simStorage);
+	run("preset list\n");
+	CHECK(HAS(" 0  empty") && HAS("15  empty"), "preset list empty: %s", output);
+	run("set vol3 44\npreset save 2 Rimshot\n");
+	CHECK(HAS("saved slot 2 'Rimshot'"), "preset save: %s", output);
+	run("preset list\n");
+	CHECK(HAS("* 2  Rimshot") && HAS(" 3  empty"), "preset list: %s", output);
+	run("set vol3 100\npreset load 2\n");
+	CHECK(HAS("loaded slot 2 'Rimshot'"), "preset load: %s", output);
+	uint8_t vol3 = 0;
+	lxr_param_get(lxr_param_find("vol3")->id, &vol3);
+	CHECK(vol3 == 44, "vol3 after preset load %u", vol3);
+	run("preset load 5\n");
+	CHECK(HAS("error: slot 5 is empty"), "load empty slot: %s", output);
+	run("preset save 16\n");
+	CHECK(HAS("error: slot must be 0..15"), "bad slot: %s", output);
+	run("preset save 1 ninechars\n");
+	CHECK(HAS("error: name longer than 8"), "long name: %s", output);
+	run("preset frob\n");
+	CHECK(HAS("error: usage: preset"), "preset usage: %s", output);
+	lxr_preset_set_storage(NULL);
 
 	run("frobnicate\n");
 	CHECK(HAS("error: unknown command 'frobnicate'"), "unknown command: %s", output);

@@ -22,6 +22,8 @@
 #include "audio_i2s.h"
 #include "console_usb.h"
 #include "midi_uart.h"
+#include "preset_flash.h"
+#include "lxr/preset.h"
 #include "lxr/engine.h"
 #include "ui_iface.h"
 #include "console/console.h"
@@ -74,6 +76,10 @@ int main(void)
 #endif
 
 	lxr_engine_init(LXR_SAMPLE_RATE);
+
+	/* saved MIDI settings and the last used preset, or the factory sound (R8.3) */
+	if(preset_flash_init() == 0)
+		lxr_preset_boot();
 
 	adc_init();
 	adc_set_temp_sensor_enabled(true);

@@ -153,3 +153,95 @@ lxr_preset_status_t lxr_globals_unpack(const uint8_t sector[LXR_PRESET_SECTOR_SI
 	}
 	return LXR_PRESET_OK;
 }
+
+/* ---- preset storage ----------------------------------------------------------------- */
+
+static const lxr_storage_t *storage;
+static int currentSlot = -1;
+static uint8_t work[LXR_PRESET_SECTOR_SIZE];      /* one sector buffer, control core only */
+static uint8_t compare[LXR_PRESET_SECTOR_SIZE];
+
+void lxr_preset_set_storage(const lxr_storage_t *s)
+{
+	storage = s;
+}
+
+int lxr_preset_current(void)
+{
+	return currentSlot;
+}
+
+/** Writes the globals sector (MIDI settings + boot slot), skipping the write if nothing changed. */
+static int saveGlobals(uint8_t bootSlot)
+{
+	lxr_globals_pack(bootSlot, work);
+	if(storage->read(LXR_STORAGE_GLOBALS, compare) == 0 && memcmp(work, compare, LXR_PRESET_SECTOR_SIZE) == 0)
+		return 0;
+	return storage->write(LXR_STORAGE_GLOBALS, work);
+}
+
+int lxr_preset_load(uint8_t slot)
+{
+	if(!storage || slot >= LXR_PRESET_SLOTS || storage->read(slot, work) != 0)
+		return LXR_PRESET_NO_STORAGE;
+	uint8_t values[LXR_SOUND_PARAM_COUNT];
+	const lxr_preset_status_t st = lxr_preset_unpack(work, NULL, values);
+	if(st != LXR_PRESET_OK)
+		return st;
+	lxr_sound_set(values);
+	currentSlot = slot;
+	saveGlobals(slot);
+	return LXR_PRESET_OK;
+}
+
+int lxr_preset_name(uint8_t slot, char name[LXR_PRESET_NAME_LEN + 1])
+{
+	name[0] = '\0';
+	if(!storage || slot >= LXR_PRESET_SLOTS || storage->read(slot, work) != 0)
+		return LXR_PRESET_NO_STORAGE;
+	uint8_t values[LXR_SOUND_PARAM_COUNT];
+	return lxr_preset_unpack(work, name, values);
+}
+
+int lxr_preset_save(uint8_t slot, const char *name)
+{
+	if(!storage || slot >= LXR_PRESET_SLOTS)
+		return LXR_PRESET_NO_STORAGE;
+	char keep[LXR_PRESET_NAME_LEN + 1];
+	if(!name)
+	{
+		if(lxr_preset_name(slot, keep) == LXR_PRESET_OK && keep[0])
+			name = keep;
+		else
+		{
+			keep[0] = 's'; keep[1] = 'l'; keep[2] = 'o'; keep[3] = 't';
+			keep[4] = (char)('0' + slot / 10); keep[5] = (char)('0' + slot % 10); keep[6] = '\0';
+			name = keep;
+		}
+	}
+	uint8_t values[LXR_SOUND_PARAM_COUNT];
+	lxr_sound_get(values);
+	lxr_preset_pack(name, values, work);
+	if(storage->write(slot, work) != 0)
+		return LXR_PRESET_NO_STORAGE;
+	currentSlot = slot;
+	saveGlobals(slot);
+	return 0;
+}
+
+int lxr_preset_boot(void)
+{
+	uint8_t slot = 0;
+	uint8_t values[LXR_SOUND_PARAM_COUNT];
+	if(storage && storage->read(LXR_STORAGE_GLOBALS, work) == 0 && lxr_globals_unpack(work, &slot) == LXR_PRESET_OK
+	   && storage->read(slot, work) == 0 && lxr_preset_unpack(work, NULL, values) == LXR_PRESET_OK)
+	{
+		lxr_sound_set(values);
+		currentSlot = slot;
+		return slot;
+	}
+	lxr_preset_factory(values);
+	lxr_sound_set(values);
+	currentSlot = -1;
+	return -1;
+}

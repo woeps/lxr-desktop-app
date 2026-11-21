@@ -87,6 +87,8 @@ typedef struct {
 	int8_t midi_line;         /* MIDI input line level reported by the board: 1 high (idle), 0 low, -1 unknown */
 	uint32_t midi_line_edges; /* falling edges seen on the MIDI input pin (board report), independent of the UART */
 	uint32_t midi_debug[3];   /* board-specific raw registers for the `midi` check (RP2350: DMA CTRL, DMA count, UART FR) */
+	uint32_t flash_write_us;  /* duration of the last preset/globals flash write, 0 if none yet */
+	uint32_t flash_write_max_us; /* longest flash write since boot */
 	uint32_t queue_drops;     /* commands lost because the queue was full */
 	uint32_t sys_clock_khz;   /* reported by the board, 0 if unknown */
 	int16_t temp_c_x10;       /* die temperature in 0.1 degC reported by the board, INT16_MIN if unknown */
@@ -111,6 +113,9 @@ void lxr_stats_report_midi_line(int level, uint32_t falling_edges);
 
 /** Board report of raw MIDI input registers, shown by the console's `midi` check. Control core. */
 void lxr_stats_report_midi_debug(const uint32_t regs[3]);
+
+/** Board report: duration of the last flash sector write (erase + program) in microseconds. */
+void lxr_stats_report_flash_write(uint32_t us);
 
 /** Counts one audio underrun. Audio core. */
 void lxr_stats_report_underrun(void);

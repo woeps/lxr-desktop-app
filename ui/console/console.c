@@ -11,6 +11,7 @@
 
 #include "console.h"
 #include "lxr/engine.h"
+#include "lxr/preset.h"
 
 #include <stdarg.h>
 #include <stdio.h>
@@ -112,7 +113,10 @@ static void cmdHelp(void)
 	       "  status [reset]           CPU, temperature and error counters (reset restarts worst/avg)\r\n"
 	       "  bench [fx] [seconds]     full-load test: all voices every 46 ms, drum 1 into fx (default del 10)\r\n"
 	       "  bench stop               end a running bench\r\n"
-	       "  midi                     MIDI input check: bytes received, errors, line level, last bytes\r\n");
+	       "  midi                     MIDI input check: bytes received, errors, line level, last bytes\r\n"
+	       "  preset list              the 16 preset slots\r\n"
+	       "  preset load <0-15>       load a slot (it also becomes the boot slot)\r\n"
+	       "  preset save <0-15> [name] save the current sound and MIDI settings (name: 8 characters)\r\n");
 }
 
 static void cmdParams(const char *filter)
@@ -251,6 +255,86 @@ static void cmdMidi(void)
 	putStr("\r\n");
 }
 
+/* ---- preset: list, load, save (task 12.2) ---- */
+
+static const char *presetStatusText(int st)
+{
+	switch(st)
+	{
+		case LXR_PRESET_OK: return "ok";
+		case LXR_PRESET_BLANK: return "empty";
+		case LXR_PRESET_CORRUPT: return "corrupt";
+		default: return "no storage";
+	}
+}
+
+static int parseSlot(const char *s, uint8_t *slot)
+{
+	long v;
+	if(parseNumber(s, &v) != 0 || v < 0 || v >= (long)LXR_PRESET_SLOTS)
+	{
+		out("error: slot must be 0..%u\r\n", LXR_PRESET_SLOTS - 1);
+		return -1;
+	}
+	*slot = (uint8_t)v;
+	return 0;
+}
+
+static void cmdPreset(const char *sub, const char *arg, const char *name)
+{
+	uint8_t slot;
+	if(sub && strcasecmp(sub, "list") == 0)
+	{
+		const int current = lxr_preset_current();
+		for(uint8_t i = 0; i < LXR_PRESET_SLOTS; i++)
+		{
+			char n[LXR_PRESET_NAME_LEN + 1];
+			const int st = lxr_preset_name(i, n);
+			out("%c%2u  %s\r\n", i == current ? '*' : ' ', i, st == LXR_PRESET_OK ? n : presetStatusText(st));
+		}
+		return;
+	}
+	if(sub && strcasecmp(sub, "load") == 0)
+	{
+		if(parseSlot(arg, &slot) != 0) return;
+		const int st = lxr_preset_load(slot);
+		if(st == LXR_PRESET_OK)
+		{
+			char n[LXR_PRESET_NAME_LEN + 1];
+			lxr_preset_name(slot, n);
+			out("loaded slot %u '%s'\r\n", slot, n);
+		}
+		else
+			out("error: slot %u is %s, nothing loaded\r\n", slot, presetStatusText(st));
+		return;
+	}
+	if(sub && strcasecmp(sub, "save") == 0)
+	{
+		if(parseSlot(arg, &slot) != 0) return;
+		if(name && strlen(name) > LXR_PRESET_NAME_LEN)
+		{
+			out("error: name longer than %u characters\r\n", LXR_PRESET_NAME_LEN);
+			return;
+		}
+		if(lxr_preset_save(slot, name) != 0)
+		{
+			putStr("error: no preset storage\r\n");
+			return;
+		}
+		char n[LXR_PRESET_NAME_LEN + 1];
+		lxr_preset_name(slot, n);
+		lxr_stats_t s;
+		lxr_get_stats(&s);
+		out("saved slot %u '%s'", slot, n);
+		if(s.flash_write_max_us)
+			out(" (flash write %lu ms, longest %lu ms)", (unsigned long)(s.flash_write_us / 1000u),
+			    (unsigned long)(s.flash_write_max_us / 1000u));
+		putStr("\r\n");
+		return;
+	}
+	putStr("error: usage: preset list | preset load <0-15> | preset save <0-15> [name]\r\n");
+}
+
 /* ---- bench: full-load measurement (task 9.4) ----
  * Routes drum 1 into the FX bus with the chosen effect, retriggers all seven
  * voice slots every 32 Blocks (46 ms, 32nd notes at about 160 bpm) and reports
@@ -382,6 +466,7 @@ static void execute(char *line)
 	else if(strcasecmp(cmd, "status") == 0) cmdStatus(argv[1]);
 	else if(strcasecmp(cmd, "bench") == 0) cmdBench(argv[1], argv[2]);
 	else if(strcasecmp(cmd, "midi") == 0) cmdMidi();
+	else if(strcasecmp(cmd, "preset") == 0) cmdPreset(argv[1], argv[2], argv[3]);
 	else out("error: unknown command '%s', type help\r\n", cmd);
 }
 
@@ -450,6 +535,12 @@ static void onParamChanged(uint16_t id, uint8_t value)
 static void consoleInit(void)
 {
 	putStr("LXR sound module. type help\r\n");
+	const int slot = lxr_preset_current();
+	char n[LXR_PRESET_NAME_LEN + 1];
+	if(slot >= 0 && lxr_preset_name((uint8_t)slot, n) == LXR_PRESET_OK)
+		out("sound: slot %d '%s'\r\n", slot, n);
+	else
+		putStr("sound: factory\r\n");
 }
 
 const ui_t console_ui = { "console", consoleInit, console_poll, onParamChanged };
