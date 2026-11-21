@@ -118,6 +118,9 @@ if(Python3_FOUND)
             -DIMPORT=${CMAKE_CURRENT_LIST_DIR}/scripts/import_kit.py
             -DINFO=$<TARGET_FILE:lxr_preset_info> -DWORK=${CMAKE_CURRENT_BINARY_DIR}/import_kit
             -P ${CMAKE_CURRENT_LIST_DIR}/import_kit_test.cmake)
+    # the README's MIDI table must match the parameter table
+    add_test(NAME readme_midi_map
+        COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/scripts/gen_midi_map.py --check)
 endif()
 
 # --- compiled-in render scripts for the Pico's `render` command (task 14.1) ------------

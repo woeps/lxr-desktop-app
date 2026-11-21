@@ -98,10 +98,277 @@ These are settings like any other and are stored with the presets: the channel o
 0 = any note), and a global channel (`midi_chan_global`, 0 = off) on which a note plays every voice
 whose trigger note matches it.
 
-Sound parameters follow the LXR CC/NRPN map: parameters 0 to 126 are CC 1 to 127 (CC number =
-parameter number + 1), parameters from 128 up are NRPN (CC 99 = 0, CC 98 = parameter number - 128,
-then the value on CC 6). Velocity can be routed to a parameter per voice. Note off, clock, transport,
+Sound parameters are set with CC and NRPN messages: CC 1 to 127 set parameters 0 to 126, and NRPN n
+sets parameter 128 + n (CC 99 = 0, CC 98 = n, then the value on CC 6). A CC that belongs to one
+voice is accepted on that voice's channel (channel 6 for the hi-hat) or the global channel; CCs for
+the effect and other shared parameters, and all NRPNs, are accepted on any channel the module listens
+on. The full list is in [MIDI implementation](#midi-implementation). Note off, clock, transport,
 program change and system exclusive messages are ignored.
+
+## MIDI implementation
+
+Every sound parameter, generated from the firmware's parameter table. "Values" is the range the
+parameter accepts; a CC value above it is clipped. Named values are listed as number=name. The
+console shows the same parameters by name (`params`, `get`, `set`).
+
+<!-- midi-map:begin -->
+| MIDI | Parameter | Voice | Values | Default | Controls |
+|---|---|---|---|---|---|
+| CC 2 | `osc_wave_drum1` | drum 1 | 0=Sin 1=Tri 2=Saw 3=Rec 4=Noi 5=PWM | Sin | oscillator waveform |
+| CC 3 | `osc_wave_drum2` | drum 2 | 0=Sin 1=Tri 2=Saw 3=Rec 4=Noi 5=PWM | Sin | oscillator waveform |
+| CC 4 | `osc_wave_drum3` | drum 3 | 0=Sin 1=Tri 2=Saw 3=Rec 4=Noi 5=PWM | Sin | oscillator waveform |
+| CC 5 | `osc_wave_snare` | snare | 0=Sin 1=Tri 2=Saw 3=Rec 4=Noi 5=PWM | Tri | oscillator waveform |
+| CC 7 | `wave1_cym` | cymbal | 0=Sin 1=Tri 2=Saw 3=Rec 4=Noi 5=PWM | Noi | oscillator waveform |
+| CC 8 | `wave1_hh` | hi-hat | 0=Sin 1=Tri 2=Saw 3=Rec 4=Noi 5=PWM | Sin | oscillator waveform |
+| CC 9 | `coarse1` | drum 1 | 0 to 127 | 31 | pitch, coarse |
+| CC 10 | `fine1` | drum 1 | 0 to 127 | 63 | pitch, fine (about ±50 cent) |
+| CC 11 | `coarse2` | drum 2 | 0 to 127 | 41 | pitch, coarse |
+| CC 12 | `fine2` | drum 2 | 0 to 127 | 63 | pitch, fine (about ±50 cent) |
+| CC 13 | `coarse3` | drum 3 | 0 to 127 | 58 | pitch, coarse |
+| CC 14 | `fine3` | drum 3 | 0 to 127 | 63 | pitch, fine (about ±50 cent) |
+| CC 15 | `coarse4` | snare | 0 to 127 | 45 | pitch, coarse |
+| CC 16 | `fine4` | snare | 0 to 127 | 64 | pitch, fine (about ±50 cent) |
+| CC 17 | `coarse5` | cymbal | 0 to 127 | 127 | pitch, coarse |
+| CC 18 | `fine5` | cymbal | 0 to 127 | 63 | pitch, fine (about ±50 cent) |
+| CC 19 | `coarse6` | hi-hat | 0 to 127 | 50 | pitch, coarse |
+| CC 20 | `fine6` | hi-hat | 0 to 127 | 63 | pitch, fine (about ±50 cent) |
+| CC 21 | `mod_wave_drum1` | drum 1 | 0=Sin 1=Tri 2=Saw 3=Rec 4=Noi 5=PWM | Sin | modulator waveform |
+| CC 22 | `mod_wave_drum2` | drum 2 | 0=Sin 1=Tri 2=Saw 3=Rec 4=Noi 5=PWM | Sin | modulator waveform |
+| CC 23 | `mod_wave_drum3` | drum 3 | 0=Sin 1=Tri 2=Saw 3=Rec 4=Noi 5=PWM | Sin | modulator waveform |
+| CC 24 | `wave2_cym` | cymbal | 0=Sin 1=Tri 2=Saw 3=Rec 4=Noi 5=PWM | Sin | modulator 1 waveform |
+| CC 25 | `wave3_cym` | cymbal | 0=Sin 1=Tri 2=Saw 3=Rec 4=Noi 5=PWM | Sin | modulator 2 waveform |
+| CC 26 | `wave2_hh` | hi-hat | 0=Sin 1=Tri 2=Saw 3=Rec 4=Noi 5=PWM | Sin | modulator 1 waveform |
+| CC 27 | `wave3_hh` | hi-hat | 0=Sin 1=Tri 2=Saw 3=Rec 4=Noi 5=PWM | Sin | modulator 2 waveform |
+| CC 28 | `noise_freq1` | snare | 0 to 127 | 127 | noise frequency |
+| CC 29 | `mix1` | snare | 0 to 127 | 61 | noise mix |
+| CC 30 | `mod_osc_f1_cym` | cymbal | 0 to 127 | 0 | modulator 1 pitch |
+| CC 31 | `mod_osc_f2_cym` | cymbal | 0 to 127 | 0 | modulator 2 pitch |
+| CC 32 | `mod_osc_gain1_cym` | cymbal | 0 to 127 | 0 | modulator 1 FM amount |
+| CC 33 | `mod_osc_gain2_cym` | cymbal | 0 to 127 | 0 | modulator 2 FM amount |
+| CC 34 | `mod_osc_f1` | hi-hat | 0 to 127 | 56 | modulator 1 pitch |
+| CC 35 | `mod_osc_f2` | hi-hat | 0 to 127 | 127 | modulator 2 pitch |
+| CC 36 | `mod_osc_gain1` | hi-hat | 0 to 127 | 127 | modulator 1 FM amount |
+| CC 37 | `mod_osc_gain2` | hi-hat | 0 to 127 | 127 | modulator 2 FM amount |
+| CC 38 | `filter_freq_1` | drum 1 | 0 to 127 | 127 | filter cutoff |
+| CC 39 | `filter_freq_2` | drum 2 | 0 to 127 | 127 | filter cutoff |
+| CC 40 | `filter_freq_3` | drum 3 | 0 to 127 | 127 | filter cutoff |
+| CC 41 | `filter_freq_4` | snare | 0 to 127 | 127 | filter cutoff |
+| CC 42 | `filter_freq_5` | cymbal | 0 to 127 | 68 | filter cutoff |
+| CC 43 | `filter_freq_6` | hi-hat | 0 to 127 | 104 | filter cutoff |
+| CC 44 | `reso_1` | drum 1 | 0 to 127 | 0 | filter resonance |
+| CC 45 | `reso_2` | drum 2 | 0 to 127 | 0 | filter resonance |
+| CC 46 | `reso_3` | drum 3 | 0 to 127 | 0 | filter resonance |
+| CC 47 | `reso_4` | snare | 0 to 127 | 0 | filter resonance |
+| CC 48 | `reso_5` | cymbal | 0 to 127 | 0 | filter resonance |
+| CC 49 | `reso_6` | hi-hat | 0 to 127 | 0 | filter resonance |
+| CC 50 | `veloa1` | drum 1 | 0 to 127 | 0 | amp envelope attack |
+| CC 51 | `velod1` | drum 1 | 0 to 127 | 21 | amp envelope decay |
+| CC 52 | `veloa2` | drum 2 | 0 to 127 | 0 | amp envelope attack |
+| CC 53 | `velod2` | drum 2 | 0 to 127 | 13 | amp envelope decay |
+| CC 54 | `veloa3` | drum 3 | 0 to 127 | 0 | amp envelope attack |
+| CC 55 | `velod3` | drum 3 | 0 to 127 | 3 | amp envelope decay |
+| CC 56 | `veloa4` | snare | 0 to 127 | 0 | amp envelope attack |
+| CC 57 | `velod4` | snare | 0 to 127 | 10 | amp envelope decay |
+| CC 58 | `veloa5` | cymbal | 0 to 127 | 0 | amp envelope attack |
+| CC 59 | `velod5` | cymbal | 0 to 127 | 107 | amp envelope decay |
+| CC 60 | `veloa6` | hi-hat | 0 to 127 | 0 | amp envelope attack |
+| CC 61 | `velod6_closed` | hi-hat | 0 to 127 | 5 | amp envelope decay, closed hi-hat |
+| CC 62 | `velod6_open` | hi-hat | 0 to 127 | 17 | amp envelope decay, open hi-hat |
+| CC 63 | `vol_slope1` | drum 1 | 0 to 127 | 46 | amp envelope curve |
+| CC 64 | `vol_slope2` | drum 2 | 0 to 127 | 11 | amp envelope curve |
+| CC 65 | `vol_slope3` | drum 3 | 0 to 127 | 4 | amp envelope curve |
+| CC 66 | `vol_slope4` | snare | 0 to 127 | 10 | amp envelope curve |
+| CC 67 | `vol_slope5` | cymbal | 0 to 127 | 0 | amp envelope curve |
+| CC 68 | `vol_slope6` | hi-hat | 0 to 127 | 6 | amp envelope curve |
+| CC 69 | `repeat4` | snare | 0 to 127 | 0 | amp envelope repeats (clap-like retriggers) |
+| CC 70 | `repeat5` | cymbal | 0 to 127 | 0 | amp envelope repeats (clap-like retriggers) |
+| CC 71 | `mod_eg1` | drum 1 | 0 to 127 | 26 | pitch envelope decay |
+| CC 72 | `mod_eg2` | drum 2 | 0 to 127 | 93 | pitch envelope decay |
+| CC 73 | `mod_eg3` | drum 3 | 0 to 127 | 7 | pitch envelope decay |
+| CC 74 | `mod_eg4` | snare | 0 to 127 | 14 | pitch envelope decay |
+| CC 75 | `modamnt1` | drum 1 | 0 to 127 | 44 | pitch envelope amount |
+| CC 76 | `modamnt2` | drum 2 | 0 to 127 | 14 | pitch envelope amount |
+| CC 77 | `modamnt3` | drum 3 | 0 to 127 | 127 | pitch envelope amount |
+| CC 78 | `modamnt4` | snare | 0 to 127 | 81 | pitch envelope amount |
+| CC 79 | `pitch_slope1` | drum 1 | 0 to 127 | 22 | pitch envelope curve |
+| CC 80 | `pitch_slope2` | drum 2 | 0 to 127 | 10 | pitch envelope curve |
+| CC 81 | `pitch_slope3` | drum 3 | 0 to 127 | 14 | pitch envelope curve |
+| CC 82 | `pitch_slope4` | snare | 0 to 127 | 15 | pitch envelope curve |
+| CC 83 | `fmamnt1` | drum 1 | 0 to 127 | 0 | FM amount |
+| CC 84 | `fm_freq1` | drum 1 | 0 to 127 | 0 | modulator pitch |
+| CC 85 | `fmamnt2` | drum 2 | 0 to 127 | 0 | FM amount |
+| CC 86 | `fm_freq2` | drum 2 | 0 to 127 | 0 | modulator pitch |
+| CC 87 | `fmamnt3` | drum 3 | 0 to 127 | 0 | FM amount |
+| CC 88 | `fm_freq3` | drum 3 | 0 to 127 | 0 | modulator pitch |
+| CC 89 | `vol1` | drum 1 | 0 to 127 | 127 | volume |
+| CC 90 | `vol2` | drum 2 | 0 to 127 | 127 | volume |
+| CC 91 | `vol3` | drum 3 | 0 to 127 | 127 | volume |
+| CC 92 | `vol4` | snare | 0 to 127 | 127 | volume |
+| CC 93 | `vol5` | cymbal | 0 to 127 | 127 | volume |
+| CC 94 | `vol6` | hi-hat | 0 to 127 | 127 | volume |
+| CC 95 | `pan1` | drum 1 | 0 to 127 | 63 | pan |
+| CC 96 | `pan2` | drum 2 | 0 to 127 | 63 | pan |
+| CC 97 | `pan3` | drum 3 | 0 to 127 | 63 | pan |
+| CC 100 | `pan4` | snare | 0 to 127 | 63 | pan |
+| CC 101 | `pan5` | cymbal | 0 to 127 | 63 | pan |
+| CC 102 | `pan6` | hi-hat | 0 to 127 | 63 | pan |
+| CC 103 | `drive1` | drum 1 | 0 to 127 | 63 | drive |
+| CC 104 | `drive2` | drum 2 | 0 to 127 | 63 | drive |
+| CC 105 | `drive3` | drum 3 | 0 to 127 | 63 | drive |
+| CC 106 | `snare_distortion` | snare | 0 to 127 | 63 | drive |
+| CC 107 | `cymbal_distortion` | cymbal | 0 to 127 | 63 | drive |
+| CC 108 | `hat_distortion` | hi-hat | 0 to 127 | 63 | drive |
+| CC 109 | `voice_decimation1` | drum 1 | 0 to 127 | 127 | sample-rate reduction |
+| CC 110 | `voice_decimation2` | drum 2 | 0 to 127 | 127 | sample-rate reduction |
+| CC 111 | `voice_decimation3` | drum 3 | 0 to 127 | 127 | sample-rate reduction |
+| CC 112 | `voice_decimation4` | snare | 0 to 127 | 127 | sample-rate reduction |
+| CC 113 | `voice_decimation5` | cymbal | 0 to 127 | 127 | sample-rate reduction |
+| CC 114 | `voice_decimation6` | hi-hat | 0 to 127 | 127 | sample-rate reduction |
+| CC 115 | `voice_decimation_all` | all | 0 to 127 | 127 | sample-rate reduction, all voices |
+| CC 116 | `freq_lfo1` | drum 1 | 0 to 127 | 0 | LFO rate |
+| CC 117 | `freq_lfo2` | drum 2 | 0 to 127 | 0 | LFO rate |
+| CC 118 | `freq_lfo3` | drum 3 | 0 to 127 | 0 | LFO rate |
+| CC 119 | `freq_lfo4` | snare | 0 to 127 | 0 | LFO rate |
+| CC 120 | `freq_lfo5` | cymbal | 0 to 127 | 0 | LFO rate |
+| CC 121 | `freq_lfo6` | hi-hat | 0 to 127 | 0 | LFO rate |
+| CC 122 | `amount_lfo1` | drum 1 | 0 to 127 | 0 | LFO amount |
+| CC 123 | `amount_lfo2` | drum 2 | 0 to 127 | 0 | LFO amount |
+| CC 124 | `amount_lfo3` | drum 3 | 0 to 127 | 0 | LFO amount |
+| CC 125 | `amount_lfo4` | snare | 0 to 127 | 0 | LFO amount |
+| CC 126 | `amount_lfo5` | cymbal | 0 to 127 | 0 | LFO amount |
+| CC 127 | `amount_lfo6` | hi-hat | 0 to 127 | 0 | LFO amount |
+| NRPN 0 | `filter_drive_1` | drum 1 | 0 to 127 | 0 | filter drive |
+| NRPN 1 | `filter_drive_2` | drum 2 | 0 to 127 | 0 | filter drive |
+| NRPN 2 | `filter_drive_3` | drum 3 | 0 to 127 | 0 | filter drive |
+| NRPN 3 | `filter_drive_4` | snare | 0 to 127 | 0 | filter drive |
+| NRPN 4 | `filter_drive_5` | cymbal | 0 to 127 | 0 | filter drive |
+| NRPN 5 | `filter_drive_6` | hi-hat | 0 to 127 | 0 | filter drive |
+| NRPN 6 | `mix_mod_1` | drum 1 | 0=FM 1=Mix | FM | modulator mode: FM, or mixed with the oscillator |
+| NRPN 7 | `mix_mod_2` | drum 2 | 0=FM 1=Mix | FM | modulator mode: FM, or mixed with the oscillator |
+| NRPN 8 | `mix_mod_3` | drum 3 | 0=FM 1=Mix | FM | modulator mode: FM, or mixed with the oscillator |
+| NRPN 9 | `volume_mod_on_off1` | drum 1 | 0 to 1 | 0 | velocity controls the volume (0 off, 1 on) |
+| NRPN 10 | `volume_mod_on_off2` | drum 2 | 0 to 1 | 0 | velocity controls the volume (0 off, 1 on) |
+| NRPN 11 | `volume_mod_on_off3` | drum 3 | 0 to 1 | 0 | velocity controls the volume (0 off, 1 on) |
+| NRPN 12 | `volume_mod_on_off4` | snare | 0 to 1 | 0 | velocity controls the volume (0 off, 1 on) |
+| NRPN 13 | `volume_mod_on_off5` | cymbal | 0 to 1 | 0 | velocity controls the volume (0 off, 1 on) |
+| NRPN 14 | `volume_mod_on_off6` | hi-hat | 0 to 1 | 0 | velocity controls the volume (0 off, 1 on) |
+| NRPN 15 | `velo_mod_amt_1` | drum 1 | 0 to 127 | 0 | velocity modulation amount |
+| NRPN 16 | `velo_mod_amt_2` | drum 2 | 0 to 127 | 0 | velocity modulation amount |
+| NRPN 17 | `velo_mod_amt_3` | drum 3 | 0 to 127 | 0 | velocity modulation amount |
+| NRPN 18 | `velo_mod_amt_4` | snare | 0 to 127 | 0 | velocity modulation amount |
+| NRPN 19 | `velo_mod_amt_5` | cymbal | 0 to 127 | 0 | velocity modulation amount |
+| NRPN 20 | `velo_mod_amt_6` | hi-hat | 0 to 127 | 0 | velocity modulation amount |
+| NRPN 21 | `vel_dest_1` | drum 1 | 0 to 228 | none | velocity modulation destination: index into the modulation target list (see below) |
+| NRPN 22 | `vel_dest_2` | drum 2 | 0 to 228 | none | velocity modulation destination: index into the modulation target list (see below) |
+| NRPN 23 | `vel_dest_3` | drum 3 | 0 to 228 | none | velocity modulation destination: index into the modulation target list (see below) |
+| NRPN 24 | `vel_dest_4` | snare | 0 to 228 | none | velocity modulation destination: index into the modulation target list (see below) |
+| NRPN 25 | `vel_dest_5` | cymbal | 0 to 228 | none | velocity modulation destination: index into the modulation target list (see below) |
+| NRPN 26 | `vel_dest_6` | hi-hat | 0 to 228 | none | velocity modulation destination: index into the modulation target list (see below) |
+| NRPN 27 | `wave_lfo1` | drum 1 | 0=sin 1=tri 2=sup 3=sdn 4=sqr 5=rnd 6=xup 7=xdn | sin | LFO waveform |
+| NRPN 28 | `wave_lfo2` | drum 2 | 0=sin 1=tri 2=sup 3=sdn 4=sqr 5=rnd 6=xup 7=xdn | sin | LFO waveform |
+| NRPN 29 | `wave_lfo3` | drum 3 | 0=sin 1=tri 2=sup 3=sdn 4=sqr 5=rnd 6=xup 7=xdn | sin | LFO waveform |
+| NRPN 30 | `wave_lfo4` | snare | 0=sin 1=tri 2=sup 3=sdn 4=sqr 5=rnd 6=xup 7=xdn | sin | LFO waveform |
+| NRPN 31 | `wave_lfo5` | cymbal | 0=sin 1=tri 2=sup 3=sdn 4=sqr 5=rnd 6=xup 7=xdn | sin | LFO waveform |
+| NRPN 32 | `wave_lfo6` | hi-hat | 0=sin 1=tri 2=sup 3=sdn 4=sqr 5=rnd 6=xup 7=xdn | sin | LFO waveform |
+| NRPN 33 | `voice_lfo1` | drum 1 | 0 to 127 | 1 | no effect (the LFO destination already selects the voice) |
+| NRPN 34 | `voice_lfo2` | drum 2 | 0 to 127 | 1 | no effect (the LFO destination already selects the voice) |
+| NRPN 35 | `voice_lfo3` | drum 3 | 0 to 127 | 1 | no effect (the LFO destination already selects the voice) |
+| NRPN 36 | `voice_lfo4` | snare | 0 to 127 | 1 | no effect (the LFO destination already selects the voice) |
+| NRPN 37 | `voice_lfo5` | cymbal | 0 to 127 | 1 | no effect (the LFO destination already selects the voice) |
+| NRPN 38 | `voice_lfo6` | hi-hat | 0 to 127 | 1 | no effect (the LFO destination already selects the voice) |
+| NRPN 39 | `target_lfo1` | drum 1 | 0 to 228 | none | LFO destination: index into the modulation target list (see below) |
+| NRPN 40 | `target_lfo2` | drum 2 | 0 to 228 | none | LFO destination: index into the modulation target list (see below) |
+| NRPN 41 | `target_lfo3` | drum 3 | 0 to 228 | none | LFO destination: index into the modulation target list (see below) |
+| NRPN 42 | `target_lfo4` | snare | 0 to 228 | none | LFO destination: index into the modulation target list (see below) |
+| NRPN 43 | `target_lfo5` | cymbal | 0 to 228 | none | LFO destination: index into the modulation target list (see below) |
+| NRPN 44 | `target_lfo6` | hi-hat | 0 to 228 | none | LFO destination: index into the modulation target list (see below) |
+| NRPN 45 | `retrigger_lfo1` | drum 1 | 0=off 1=v1 2=v2 3=v3 4=v4 5=v5 6=v6 | off | LFO retrigger |
+| NRPN 46 | `retrigger_lfo2` | drum 2 | 0=off 1=v1 2=v2 3=v3 4=v4 5=v5 6=v6 | off | LFO retrigger |
+| NRPN 47 | `retrigger_lfo3` | drum 3 | 0=off 1=v1 2=v2 3=v3 4=v4 5=v5 6=v6 | off | LFO retrigger |
+| NRPN 48 | `retrigger_lfo4` | snare | 0=off 1=v1 2=v2 3=v3 4=v4 5=v5 6=v6 | off | LFO retrigger |
+| NRPN 49 | `retrigger_lfo5` | cymbal | 0=off 1=v1 2=v2 3=v3 4=v4 5=v5 6=v6 | off | LFO retrigger |
+| NRPN 50 | `retrigger_lfo6` | hi-hat | 0=off 1=v1 2=v2 3=v3 4=v4 5=v5 6=v6 | off | LFO retrigger |
+| NRPN 57 | `offset_lfo1` | drum 1 | 0 to 127 | 0 | LFO start phase |
+| NRPN 58 | `offset_lfo2` | drum 2 | 0 to 127 | 0 | LFO start phase |
+| NRPN 59 | `offset_lfo3` | drum 3 | 0 to 127 | 0 | LFO start phase |
+| NRPN 60 | `offset_lfo4` | snare | 0 to 127 | 0 | LFO start phase |
+| NRPN 61 | `offset_lfo5` | cymbal | 0 to 127 | 0 | LFO start phase |
+| NRPN 62 | `offset_lfo6` | hi-hat | 0 to 127 | 0 | LFO start phase |
+| NRPN 63 | `filter_type_1` | drum 1 | 0=LP 1=HP 2=BP 3=UBP 4=Nch 5=Pek 6=LP2 7=off | LP | filter type |
+| NRPN 64 | `filter_type_2` | drum 2 | 0=LP 1=HP 2=BP 3=UBP 4=Nch 5=Pek 6=LP2 7=off | LP | filter type |
+| NRPN 65 | `filter_type_3` | drum 3 | 0=LP 1=HP 2=BP 3=UBP 4=Nch 5=Pek 6=LP2 7=off | LP | filter type |
+| NRPN 66 | `filter_type_4` | snare | 0=LP 1=HP 2=BP 3=UBP 4=Nch 5=Pek 6=LP2 7=off | LP | filter type |
+| NRPN 67 | `filter_type_5` | cymbal | 0=LP 1=HP 2=BP 3=UBP 4=Nch 5=Pek 6=LP2 7=off | HP | filter type |
+| NRPN 68 | `filter_type_6` | hi-hat | 0=LP 1=HP 2=BP 3=UBP 4=Nch 5=Pek 6=LP2 7=off | HP | filter type |
+| NRPN 69 | `trans1_vol` | drum 1 | 0 to 127 | 0 | transient level |
+| NRPN 70 | `trans2_vol` | drum 2 | 0 to 127 | 0 | transient level |
+| NRPN 71 | `trans3_vol` | drum 3 | 0 to 127 | 0 | transient level |
+| NRPN 72 | `trans4_vol` | snare | 0 to 127 | 0 | transient level |
+| NRPN 73 | `trans5_vol` | cymbal | 0 to 127 | 0 | transient level |
+| NRPN 74 | `trans6_vol` | hi-hat | 0 to 127 | 0 | transient level |
+| NRPN 75 | `trans1_wave` | drum 1 | 0=Snp 1=Ofs 2=Clk 3=Ck2 4=Tik 5=Kik 6=Rim 7=Drp 8=Hat 9=Clp 10=Kk2 11=Snr 12=Tom 13=Sp2 | Snp | transient sample |
+| NRPN 76 | `trans2_wave` | drum 2 | 0=Snp 1=Ofs 2=Clk 3=Ck2 4=Tik 5=Kik 6=Rim 7=Drp 8=Hat 9=Clp 10=Kk2 11=Snr 12=Tom 13=Sp2 | Snp | transient sample |
+| NRPN 77 | `trans3_wave` | drum 3 | 0=Snp 1=Ofs 2=Clk 3=Ck2 4=Tik 5=Kik 6=Rim 7=Drp 8=Hat 9=Clp 10=Kk2 11=Snr 12=Tom 13=Sp2 | Snp | transient sample |
+| NRPN 78 | `trans4_wave` | snare | 0=Snp 1=Ofs 2=Clk 3=Ck2 4=Tik 5=Kik 6=Rim 7=Drp 8=Hat 9=Clp 10=Kk2 11=Snr 12=Tom 13=Sp2 | Snp | transient sample |
+| NRPN 79 | `trans5_wave` | cymbal | 0=Snp 1=Ofs 2=Clk 3=Ck2 4=Tik 5=Kik 6=Rim 7=Drp 8=Hat 9=Clp 10=Kk2 11=Snr 12=Tom 13=Sp2 | Snp | transient sample |
+| NRPN 80 | `trans6_wave` | hi-hat | 0=Snp 1=Ofs 2=Clk 3=Ck2 4=Tik 5=Kik 6=Rim 7=Drp 8=Hat 9=Clp 10=Kk2 11=Snr 12=Tom 13=Sp2 | Snp | transient sample |
+| NRPN 81 | `trans1_freq` | drum 1 | 0 to 127 | 0 | transient pitch |
+| NRPN 82 | `trans2_freq` | drum 2 | 0 to 127 | 0 | transient pitch |
+| NRPN 83 | `trans3_freq` | drum 3 | 0 to 127 | 0 | transient pitch |
+| NRPN 84 | `trans4_freq` | snare | 0 to 127 | 0 | transient pitch |
+| NRPN 85 | `trans5_freq` | cymbal | 0 to 127 | 0 | transient pitch |
+| NRPN 86 | `trans6_freq` | hi-hat | 0 to 127 | 0 | transient pitch |
+| NRPN 87 | `audio_out1` | drum 1 | 0=St1 1=St2 2=L1 3=R1 4=L2 5=R2 6=FX | St1 | output: St1 main stereo out, L1/R1 left or right only, FX through the effect; St2, L2 and R2 play on the main out |
+| NRPN 88 | `audio_out2` | drum 2 | 0=St1 1=St2 2=L1 3=R1 4=L2 5=R2 6=FX | St1 | output: St1 main stereo out, L1/R1 left or right only, FX through the effect; St2, L2 and R2 play on the main out |
+| NRPN 89 | `audio_out3` | drum 3 | 0=St1 1=St2 2=L1 3=R1 4=L2 5=R2 6=FX | St1 | output: St1 main stereo out, L1/R1 left or right only, FX through the effect; St2, L2 and R2 play on the main out |
+| NRPN 90 | `audio_out4` | snare | 0=St1 1=St2 2=L1 3=R1 4=L2 5=R2 6=FX | St1 | output: St1 main stereo out, L1/R1 left or right only, FX through the effect; St2, L2 and R2 play on the main out |
+| NRPN 91 | `audio_out5` | cymbal | 0=St1 1=St2 2=L1 3=R1 4=L2 5=R2 6=FX | St1 | output: St1 main stereo out, L1/R1 left or right only, FX through the effect; St2, L2 and R2 play on the main out |
+| NRPN 92 | `audio_out6` | hi-hat | 0=St1 1=St2 2=L1 3=R1 4=L2 5=R2 6=FX | St1 | output: St1 main stereo out, L1/R1 left or right only, FX through the effect; St2, L2 and R2 play on the main out |
+| NRPN 100 | `pwm_1` | drum 1 | 0 to 127 | 0 | pulse width (PWM waveform) |
+| NRPN 101 | `pwm_2` | drum 2 | 0 to 127 | 0 | pulse width (PWM waveform) |
+| NRPN 102 | `pwm_3` | drum 3 | 0 to 127 | 0 | pulse width (PWM waveform) |
+| NRPN 103 | `pwm_4` | snare | 0 to 127 | 0 | pulse width (PWM waveform) |
+| NRPN 104 | `pwm_5` | cymbal | 0 to 127 | 0 | pulse width (PWM waveform) |
+| NRPN 105 | `pwm_6` | hi-hat | 0 to 127 | 0 | pulse width (PWM waveform) |
+| NRPN 106 | `fx_type` | all | 0=off 1=drv 2=rng 3=cmp 4=del | off | effect |
+| NRPN 107 | `fx_routing` | all | 0=St1 1=St2 2=L1 3=R1 4=L2 5=R2 | St1 | effect output (as for the voices' output) |
+| NRPN 108 | `fx_dry_wet` | all | 0 to 100 | 0 | effect dry/wet (0 to 100) |
+| NRPN 109 | `fx_dist_type` | all | 0=tub 1=fld 2=clp | tub | distortion type |
+| NRPN 110 | `fx_p1` | all | 0 to 127 | 0 | effect parameter 1: drv drive, rng frequency, cmp attack, del time |
+| NRPN 111 | `fx_p2` | all | 0 to 127 | 0 | effect parameter 2: drv shape 1, cmp release, del time range |
+| NRPN 112 | `fx_p3` | all | 0 to 127 | 0 | effect parameter 3: drv shape 2, cmp threshold, del filter |
+| NRPN 113 | `fx_p4` | all | 0 to 127 | 0 | effect parameter 4: drv shape 3, cmp make-up gain, del feedback |
+| NRPN 114 | `fx_ratio` | all | 0=1:1 1=2:1 2=3:1 3=4:1 4=6:1 5=8:1 | 1:1 | compressor ratio |
+| NRPN 115 | `fx_wave` | all | 0=Sin 1=Tri 2=Saw 3=Rec 4=Noi 5=PWM | Sin | ring modulator waveform |
+| NRPN 116 | `fx_reverb_type` | all | 0=Plt | Plt | no effect (this firmware has no reverb) |
+| NRPN 117 | `fx_delay_type` | all | 0=Del 1=Pp | Del | delay type |
+<!-- midi-map:end -->
+
+The velocity and LFO destinations (`vel_dest_1` to `vel_dest_6`, `target_lfo1` to `target_lfo6`) are an index into
+the modulation target list below; the console's `get` shows the target's name. Index 0 turns the
+modulation off.
+
+<!-- mod-targets:begin -->
+0 `none`, 1 `voice_decimation_all`
+
+2 `coarse1`, 3 `fine1`, 4 `osc_wave_drum1`, 5 `pwm_1`, 6 `veloa1`, 7 `velod1`, 8 `vol_slope1`, 9 `mod_eg1`, 10 `pitch_slope1`, 11 `modamnt1`, 12 `vel_dest_1`, 13 `velo_mod_amt_1`, 14 `volume_mod_on_off1`, 15 `fmamnt1`, 16 `fm_freq1`, 17 `mod_wave_drum1`, 18 `mix_mod_1`, 19 `trans1_wave`, 20 `trans1_vol`, 21 `trans1_freq`, 22 `filter_freq_1`, 23 `reso_1`, 24 `filter_type_1`, 25 `filter_drive_1`, 26 `freq_lfo1`, 27 `sync_lfo1`, 28 `amount_lfo1`, 29 `wave_lfo1`, 30 `retrigger_lfo1`, 31 `offset_lfo1`, 32 `vol1`, 33 `pan1`, 34 `voice_decimation1`, 35 `drive1`, 36 `fx_p1`, 37 `fx_p2`, 38 `fx_p3`, 39 `fx_p4`
+
+40 `coarse2`, 41 `fine2`, 42 `osc_wave_drum2`, 43 `pwm_2`, 44 `veloa2`, 45 `velod2`, 46 `vol_slope2`, 47 `mod_eg2`, 48 `pitch_slope2`, 49 `modamnt2`, 50 `vel_dest_2`, 51 `velo_mod_amt_2`, 52 `volume_mod_on_off2`, 53 `fmamnt2`, 54 `fm_freq2`, 55 `mod_wave_drum2`, 56 `mix_mod_2`, 57 `trans2_wave`, 58 `trans2_vol`, 59 `trans2_freq`, 60 `filter_freq_2`, 61 `reso_2`, 62 `filter_type_2`, 63 `filter_drive_2`, 64 `freq_lfo2`, 65 `sync_lfo2`, 66 `amount_lfo2`, 67 `wave_lfo2`, 68 `retrigger_lfo2`, 69 `offset_lfo2`, 70 `vol2`, 71 `pan2`, 72 `voice_decimation2`, 73 `drive2`, 74 `fx_p1`, 75 `fx_p2`, 76 `fx_p3`, 77 `fx_p4`
+
+78 `coarse3`, 79 `fine3`, 80 `osc_wave_drum3`, 81 `pwm_3`, 82 `veloa3`, 83 `velod3`, 84 `vol_slope3`, 85 `mod_eg3`, 86 `pitch_slope3`, 87 `modamnt3`, 88 `vel_dest_3`, 89 `velo_mod_amt_3`, 90 `volume_mod_on_off3`, 91 `fmamnt3`, 92 `fm_freq3`, 93 `mod_wave_drum3`, 94 `mix_mod_3`, 95 `trans3_wave`, 96 `trans3_vol`, 97 `trans3_freq`, 98 `filter_freq_3`, 99 `reso_3`, 100 `filter_type_3`, 101 `filter_drive_3`, 102 `freq_lfo3`, 103 `sync_lfo3`, 104 `amount_lfo3`, 105 `wave_lfo3`, 106 `retrigger_lfo3`, 107 `offset_lfo3`, 108 `vol3`, 109 `pan3`, 110 `voice_decimation3`, 111 `drive3`, 112 `fx_p1`, 113 `fx_p2`, 114 `fx_p3`, 115 `fx_p4`
+
+116 `coarse4`, 117 `fine4`, 118 `noise_freq1`, 119 `mix1`, 120 `osc_wave_snare`, 121 `pwm_4`, 122 `veloa4`, 123 `velod4`, 124 `repeat4`, 125 `vol_slope4`, 126 `mod_eg4`, 127 `pitch_slope4`, 128 `modamnt4`, 129 `vel_dest_4`, 130 `velo_mod_amt_4`, 131 `volume_mod_on_off4`, 132 `trans4_wave`, 133 `trans4_vol`, 134 `trans4_freq`, 135 `filter_freq_4`, 136 `reso_4`, 137 `filter_type_4`, 138 `filter_drive_4`, 139 `freq_lfo4`, 140 `sync_lfo4`, 141 `amount_lfo4`, 142 `wave_lfo4`, 143 `retrigger_lfo4`, 144 `offset_lfo4`, 145 `vol4`, 146 `pan4`, 147 `voice_decimation4`, 148 `snare_distortion`, 149 `fx_p1`, 150 `fx_p2`, 151 `fx_p3`, 152 `fx_p4`
+
+153 `coarse5`, 154 `fine5`
+
+155 `wave1_cym`, 156 `pwm_5`, 157 `veloa5`, 158 `velod5`, 159 `repeat5`, 160 `vol_slope5`, 161 `vel_dest_5`, 162 `velo_mod_amt_5`, 163 `volume_mod_on_off5`, 164 `mod_osc_f1_cym`, 165 `mod_osc_f2_cym`, 166 `mod_osc_gain1_cym`, 167 `mod_osc_gain2_cym`, 168 `wave2_cym`, 169 `wave3_cym`, 170 `trans5_wave`, 171 `trans5_vol`, 172 `trans5_freq`, 173 `filter_freq_5`, 174 `reso_5`, 175 `filter_type_5`, 176 `filter_drive_5`, 177 `freq_lfo5`, 178 `sync_lfo5`, 179 `amount_lfo5`, 180 `wave_lfo5`, 181 `retrigger_lfo5`, 182 `offset_lfo5`, 183 `vol5`, 184 `pan5`, 185 `voice_decimation5`, 186 `cymbal_distortion`, 187 `fx_p1`, 188 `fx_p2`, 189 `fx_p3`, 190 `fx_p4`
+
+191 `coarse6`, 192 `fine6`
+
+193 `wave1_hh`, 194 `pwm_6`, 195 `veloa6`, 196 `velod6_closed`, 197 `velod6_open`, 198 `vol_slope6`, 199 `vel_dest_6`, 200 `velo_mod_amt_6`, 201 `volume_mod_on_off6`, 202 `mod_osc_f1`, 203 `mod_osc_f2`, 204 `mod_osc_gain1`, 205 `mod_osc_gain2`, 206 `wave2_hh`, 207 `wave3_hh`, 208 `trans6_wave`, 209 `trans6_vol`, 210 `trans6_freq`, 211 `filter_freq_6`, 212 `reso_6`, 213 `filter_type_6`, 214 `filter_drive_6`, 215 `freq_lfo6`, 216 `sync_lfo6`, 217 `amount_lfo6`, 218 `wave_lfo6`, 219 `retrigger_lfo6`, 220 `offset_lfo6`, 221 `vol6`, 222 `pan6`, 223 `voice_decimation6`, 224 `hat_distortion`, 225 `fx_p1`, 226 `fx_p2`, 227 `fx_p3`, 228 `fx_p4`
+<!-- mod-targets:end -->
+
+After a change to the parameter table, regenerate both lists with `host/scripts/gen_midi_map.py`.
 
 ## Console
 

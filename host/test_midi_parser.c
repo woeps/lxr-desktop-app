@@ -210,8 +210,25 @@ static void test_rx_word_error_flags(void)
 	CHECK(midiBytes == 8, "byte counter %u, expected 8", midiBytes);
 }
 
+uint8_t midiParser_cc2voiceNr(uint8_t cc);   /* MidiParser.c: 1..6 = voice that owns the CC, 0 or 7 = none */
+
+static void test_table_voices_match_parser(void)
+{
+	/* the console's per-voice lists use the table's voice field, MIDI uses the parser's
+	 * channel table: both must agree for every CC parameter */
+	for(uint16_t i = 0; i < lxr_param_count(); i++)
+	{
+		const lxr_param_info_t *p = lxr_param_info(i);
+		if(p->id >= 127) continue;
+		const uint8_t v = midiParser_cc2voiceNr((uint8_t)(p->id + 1));
+		const int parserVoice = (v >= 1 && v <= 6) ? v - 1 : -1;
+		CHECK(parserVoice == p->voice, "%s (CC %u): table voice %d, parser voice %d", p->name, p->id + 1, p->voice, parserVoice);
+	}
+}
+
 int main(void)
 {
+	test_table_voices_match_parser();
 	test_rx_word_error_flags();
 	test_note_on_routes_by_channel();
 	test_note_off_and_zero_velocity_ignored();

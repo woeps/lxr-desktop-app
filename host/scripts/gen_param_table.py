@@ -140,6 +140,12 @@ VOICE_SUFFIX = re.compile(r"_([1-6])$")
 
 def voice_of(short):
     """Voice 0..5 (drum1-3, snare, cymbal, hi-hat) from the parameter name, or -1."""
+    # names whose digit is not the voice (checked against midiParser_cc2voiceNr):
+    # CC 28/29 belong to the snare, CC 34..37 to the hi-hat's two modulators
+    fixed = {"noise_freq1": 3, "mix1": 3,
+             "mod_osc_f1": 5, "mod_osc_f2": 5, "mod_osc_gain1": 5, "mod_osc_gain2": 5}
+    if short in fixed:
+        return fixed[short]
     if short.startswith(("fx_", "midi_")):
         return -1
     for prefix, v in (("snare", 3), ("cymbal", 4), ("hat_", 5), ("velod6", 5)):
