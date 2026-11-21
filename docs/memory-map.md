@@ -109,7 +109,8 @@ Findings (task 9.4 / 9.5):
 - The compressor is the heaviest effect, the distortion the lightest.
 - **200 MHz at the stock 1.10 V is the lowest step that passes: 860 us worst, 59% of the Block period.** 250 MHz gives 689 us.
 - The core voltage stays at the default 1.10 V, so the voltage limit is not touched. Die temperature stays below 41 C at all steps (limit 70 C).
-- Pending: 10-minute soak at 200 MHz (`bench cmp 600`) before 200 MHz becomes the default.
+- 10-minute soak at 250 MHz / 1.10 V (`bench cmp 600`, 2026-11-21): worst 689 us, avg 673 us, 0 underruns, die temperature rising from 41.0 to 41.5 C and flat after 3 minutes. Pass.
+- **Decision (user, 2026-11-21): 250 MHz at 1.10 V is the default clock.** It passed the soak and leaves more headroom (47% of the Block period) than 200 MHz (59%), which was the lowest passing step but was not soak-tested. This departs from design section 9's "lowest passing step" rule by the user's choice.
 
 ## 7. Pending measurements
 

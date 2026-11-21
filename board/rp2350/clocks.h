@@ -1,9 +1,10 @@
 /*
  * clocks.h: system clock and core voltage (design section 9).
  *
- * 150 MHz at the default 1.10 V is the RP2350's rated clock. Raise it only
- * through the overclock steps of task 9.5, which also fixes the limits
- * (at most 250 MHz, at most 1.20 V, die temperature below 70 degC).
+ * The RP2350 is rated for 150 MHz. That misses the render budget under full
+ * load (1149 us per Block), so the module runs at 250 MHz at the stock 1.10 V:
+ * 689 us worst case, 10-minute soak without underruns at 41.5 degC (task 9.5,
+ * docs/memory-map.md section 9). Limits: at most 250 MHz, at most 1.20 V.
  *
  * Copyright (C) 2026 Erica Synths
  * SPDX-License-Identifier: GPL-3.0-only
@@ -17,7 +18,7 @@
 #define LXR_CLOCKS_H_
 
 #ifndef LXR_SYS_CLOCK_KHZ
-#define LXR_SYS_CLOCK_KHZ    150000
+#define LXR_SYS_CLOCK_KHZ    250000
 #endif
 
 /* Core voltage for the clock above, as a hardware/vreg.h VREG_VOLTAGE_x_yy name. */

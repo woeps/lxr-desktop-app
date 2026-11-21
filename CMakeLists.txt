@@ -47,8 +47,9 @@ target_link_libraries(lxr PRIVATE
     hardware_pio hardware_dma hardware_irq hardware_uart hardware_clocks hardware_vreg hardware_adc
     lxr_engine_flags)
 
-# System clock and core voltage (design section 9, task 9.5). 150 MHz / 1.10 V is the rated setting.
-set(LXR_SYS_CLOCK_KHZ 150000 CACHE STRING "System clock in kHz")
+# System clock and core voltage (design section 9, task 9.5). The RP2350 is rated for
+# 150 MHz; the module runs at 250 MHz at the stock 1.10 V (docs/memory-map.md section 9).
+set(LXR_SYS_CLOCK_KHZ 250000 CACHE STRING "System clock in kHz (250 MHz at 1.10 V: chosen in task 9.5, soak-tested)")
 set(LXR_VREG_VOLTAGE VREG_VOLTAGE_1_10 CACHE STRING "Core voltage (hardware/vreg.h name), at most VREG_VOLTAGE_1_20")
 set_property(CACHE LXR_VREG_VOLTAGE PROPERTY STRINGS VREG_VOLTAGE_1_10 VREG_VOLTAGE_1_15 VREG_VOLTAGE_1_20)
 if(LXR_SYS_CLOCK_KHZ GREATER 250000)

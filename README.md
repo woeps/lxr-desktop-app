@@ -51,6 +51,10 @@ The USB port carries power, flashing and the serial console (a USB serial device
 terminal, e.g. `screen /dev/ttyACM0` or `picocom /dev/ttyACM0`, and type `help`). The module has no
 USB MIDI; MIDI comes in on the 5-pin DIN input.
 
+The firmware runs the RP2350 at 250 MHz (rated: 150 MHz) at the stock 1.10 V core voltage, because
+the full drum engine needs it; see [docs/memory-map.md](docs/memory-map.md) section 9. Build with
+`-DLXR_SYS_CLOCK_KHZ=150000` for the rated clock (some heavy patches will then underrun).
+
 The default board is the Waveshare RP2350-Zero. For a Pico 2, configure with
 `cmake --preset release -DPICO_BOARD=pico2`.
 
