@@ -44,8 +44,20 @@ pico_generate_pio_header(lxr ${CMAKE_CURRENT_LIST_DIR}/board/rp2350/i2s.pio)
 target_include_directories(lxr PRIVATE board/rp2350)
 target_link_libraries(lxr PRIVATE
     pico_stdlib pico_multicore
-    hardware_pio hardware_dma hardware_irq hardware_uart hardware_clocks hardware_vreg
+    hardware_pio hardware_dma hardware_irq hardware_uart hardware_clocks hardware_vreg hardware_adc
     lxr_engine_flags)
+
+# System clock and core voltage (design section 9, task 9.5). 150 MHz / 1.10 V is the rated setting.
+set(LXR_SYS_CLOCK_KHZ 150000 CACHE STRING "System clock in kHz")
+set(LXR_VREG_VOLTAGE VREG_VOLTAGE_1_10 CACHE STRING "Core voltage (hardware/vreg.h name), at most VREG_VOLTAGE_1_20")
+set_property(CACHE LXR_VREG_VOLTAGE PROPERTY STRINGS VREG_VOLTAGE_1_10 VREG_VOLTAGE_1_15 VREG_VOLTAGE_1_20)
+if(LXR_SYS_CLOCK_KHZ GREATER 250000)
+    message(FATAL_ERROR "LXR_SYS_CLOCK_KHZ above the 250 MHz limit of design section 9")
+endif()
+if(NOT LXR_VREG_VOLTAGE MATCHES "^VREG_VOLTAGE_1_(10|15|20)$")
+    message(FATAL_ERROR "LXR_VREG_VOLTAGE must be VREG_VOLTAGE_1_10, _1_15 or _1_20 (limit 1.20 V)")
+endif()
+target_compile_definitions(lxr PRIVATE LXR_SYS_CLOCK_KHZ=${LXR_SYS_CLOCK_KHZ} LXR_VREG_VOLTAGE=${LXR_VREG_VOLTAGE})
 
 option(LXR_BOOT_DEMO "Play every voice once after boot (hardware check)" OFF)
 if(LXR_BOOT_DEMO)

@@ -46,8 +46,8 @@ void lxr_engine_init(uint32_t sample_rate);
  *  Applies all queued changes first. frames must equal LXR_BLOCK_FRAMES. */
 void lxr_engine_render(int16_t *stereo, uint32_t frames);
 
-/** Records the time one Block took and whether the output ran dry. Audio core. */
-void lxr_stats_report_block(uint32_t block_us, int underrun);
+/** Records the time one Block took. Audio core. */
+void lxr_stats_report_block(uint32_t block_us);
 
 /* ---- control core ---------------------------------------------------------- */
 
@@ -67,16 +67,28 @@ int lxr_param_get(uint16_t id, uint8_t *value);
 void lxr_set_param_callback(lxr_param_cb cb, void *user);
 
 typedef struct {
-	uint32_t blocks;          /* Blocks rendered */
-	uint32_t worst_block_us;  /* longest Block render time so far */
-	uint32_t underruns;
+	uint32_t blocks;          /* Blocks rendered since boot */
+	uint32_t worst_block_us;  /* longest Block render time since the last reset */
+	uint32_t avg_block_us;    /* mean Block render time since the last reset */
+	uint32_t underruns;       /* Blocks played again because they were not rendered in time, since the last reset */
 	uint32_t midi_errors;     /* framing errors, overruns, resyncs */
 	uint32_t queue_drops;     /* commands lost because the queue was full */
+	uint32_t sys_clock_khz;   /* reported by the board, 0 if unknown */
+	int16_t temp_c_x10;       /* die temperature in 0.1 degC reported by the board, INT16_MIN if unknown */
 } lxr_stats_t;
 
 void lxr_get_stats(lxr_stats_t *out);
 
+/** Restarts worst/avg Block time and the underrun count. Takes effect on the next rendered Block. */
+void lxr_stats_reset(void);
+
 /** Counts one MIDI input error (framing error, overrun). Control core. */
 void lxr_stats_count_midi_error(void);
+
+/** Counts one audio underrun. Audio core. */
+void lxr_stats_report_underrun(void);
+
+/** Board facts for the statistics (clock, die temperature). Control core. */
+void lxr_stats_report_board(uint32_t sys_clock_khz, int16_t temp_c_x10);
 
 #endif /* LXR_ENGINE_H_ */

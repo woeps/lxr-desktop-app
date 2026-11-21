@@ -15,6 +15,7 @@
 #include "pico/multicore.h"
 #include "hardware/clocks.h"
 #include "hardware/vreg.h"
+#include "hardware/adc.h"
 
 #include "pins.h"
 #include "clocks.h"
@@ -40,6 +41,18 @@ static void audioCoreMain(void)
 	audio_i2s_run();
 }
 
+/** Die temperature in 0.1 degC from the on-chip sensor (RP2350 datasheet: 27 degC at 0.706 V, -1.721 mV/degC). */
+static int16_t readTemperature(void)
+{
+	adc_select_input(ADC_TEMPERATURE_CHANNEL_NUM);
+	uint32_t sum = 0;
+	for(int i = 0; i < 16; i++)
+		sum += adc_read();
+	const float volts = (float)sum / 16.0f * 3.3f / 4096.0f;
+	const float celsius = 27.0f - (volts - 0.706f) / 0.001721f;
+	return (int16_t)(celsius * 10.0f);
+}
+
 static void setClock(void)
 {
 	if(LXR_SYS_CLOCK_KHZ != 150000)
@@ -60,6 +73,10 @@ int main(void)
 #endif
 
 	lxr_engine_init(LXR_SAMPLE_RATE);
+
+	adc_init();
+	adc_set_temp_sensor_enabled(true);
+	lxr_stats_report_board(clock_get_hz(clk_sys) / 1000u, readTemperature());
 
 #if LXR_ENABLE_CONSOLE
 	console_usb_init();
@@ -90,6 +107,8 @@ int main(void)
 			gpio_put(LXR_PIN_LED, led);
 #endif
 			nextBlink = make_timeout_time_ms(500);
+			if(led)
+				lxr_stats_report_board(clock_get_hz(clk_sys) / 1000u, readTemperature());
 		}
 	}
 }

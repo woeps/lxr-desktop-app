@@ -109,7 +109,9 @@ static void cmdHelp(void)
 	       "  set <param> <value>      change a value (number, or name for list values)\r\n"
 	       "  trigger <voice> [vel]    play a voice (d1 d2 d3 snare cym hh hho), vel 1..127\r\n"
 	       "  watch on|off             print every parameter change\r\n"
-	       "  status                   CPU and error counters\r\n");
+	       "  status [reset]           CPU, temperature and error counters (reset restarts worst/avg)\r\n"
+	       "  bench [fx] [seconds]     full-load test: all voices every 46 ms, drum 1 into fx (default del 10)\r\n"
+	       "  bench stop               end a running bench\r\n");
 }
 
 static void cmdParams(const char *filter)
@@ -204,13 +206,138 @@ static void cmdWatch(const char *arg)
 	out("watch %s\r\n", watchOn ? "on" : "off");
 }
 
-static void cmdStatus(void)
+static void cmdStatus(const char *arg)
+{
+	if(arg && strcasecmp(arg, "reset") == 0)
+	{
+		lxr_stats_reset();
+		putStr("status reset: worst/avg Block time and underruns restart now\r\n");
+		return;
+	}
+	lxr_stats_t s;
+	lxr_get_stats(&s);
+	out("blocks %lu  worst_block_us %lu  avg_block_us %lu  underruns %lu  midi_errors %lu  queue_drops %lu  console_drops %lu\r\n",
+	    (unsigned long)s.blocks, (unsigned long)s.worst_block_us, (unsigned long)s.avg_block_us,
+	    (unsigned long)s.underruns, (unsigned long)s.midi_errors, (unsigned long)s.queue_drops, (unsigned long)txDropped);
+	if(s.sys_clock_khz)
+		out("clock %lu kHz", (unsigned long)s.sys_clock_khz);
+	if(s.temp_c_x10 != INT16_MIN)
+		out("  temp %d.%d C", s.temp_c_x10 / 10, abs(s.temp_c_x10 % 10));
+	if(s.sys_clock_khz || s.temp_c_x10 != INT16_MIN)
+		putStr("\r\n");
+}
+
+/* ---- bench: full-load measurement (task 9.4) ----
+ * Routes drum 1 into the FX bus with the chosen effect, retriggers all seven
+ * voice slots every 32 Blocks (46 ms, 32nd notes at about 160 bpm) and reports
+ * the worst and mean Block render time. The changed parameters are restored
+ * afterwards. Time is counted in rendered Blocks, so it works on any build. */
+
+#define BENCH_TRIGGER_BLOCKS 32u
+#define BLOCKS_PER_SECOND (44100u / LXR_BLOCK_FRAMES)
+
+static struct {
+	int active;
+	uint32_t startBlocks, lastTrigger, lastReport, durationBlocks;
+	uint8_t savedFxType, savedDryWet, savedOut1;
+	uint8_t fxType;
+	uint32_t step;
+} bench;
+
+static uint16_t paramId(const char *name)
+{
+	const lxr_param_info_t *p = lxr_param_find(name);
+	return p ? p->id : 0xffff;
+}
+
+static void benchReport(const char *label)
 {
 	lxr_stats_t s;
 	lxr_get_stats(&s);
-	out("blocks %lu  worst_block_us %lu  underruns %lu  midi_errors %lu  queue_drops %lu  console_drops %lu\r\n",
-	    (unsigned long)s.blocks, (unsigned long)s.worst_block_us, (unsigned long)s.underruns,
-	    (unsigned long)s.midi_errors, (unsigned long)s.queue_drops, (unsigned long)txDropped);
+	const lxr_param_info_t *fx = lxr_param_find("fx_type");
+	out("bench %s fx=%s %lus: worst_block_us %lu  avg_block_us %lu  underruns %lu",
+	    label, fx->enum_names[bench.fxType],
+	    (unsigned long)((s.blocks - bench.startBlocks) / BLOCKS_PER_SECOND),
+	    (unsigned long)s.worst_block_us, (unsigned long)s.avg_block_us, (unsigned long)s.underruns);
+	if(s.temp_c_x10 != INT16_MIN)
+		out("  temp %d.%d C", s.temp_c_x10 / 10, abs(s.temp_c_x10 % 10));
+	putStr("\r\n");
+}
+
+static void benchStop(const char *label)
+{
+	benchReport(label);
+	lxr_param_set(paramId("fx_type"), bench.savedFxType);
+	lxr_param_set(paramId("fx_dry_wet"), bench.savedDryWet);
+	lxr_param_set(paramId("audio_out1"), bench.savedOut1);
+	bench.active = 0;
+}
+
+static void cmdBench(const char *fxName, const char *secondsArg)
+{
+	if(bench.active)
+	{
+		if(fxName && strcasecmp(fxName, "stop") == 0) benchStop("stopped");
+		else putStr("error: bench is running, type 'bench stop'\r\n");
+		return;
+	}
+	if(fxName && strcasecmp(fxName, "stop") == 0) { putStr("error: no bench running\r\n"); return; }
+
+	const lxr_param_info_t *fx = lxr_param_find("fx_type");
+	int fxIndex = 4; /* delay */
+	if(fxName)
+	{
+		fxIndex = -1;
+		for(unsigned i = fx->min; i <= fx->max; i++)
+			if(strcasecmp(fxName, fx->enum_names[i]) == 0) fxIndex = (int)i;
+		if(fxIndex < 0) { out("error: unknown fx '%s' (off drv rng cmp del)\r\n", fxName); return; }
+	}
+	long seconds = 10;
+	if(secondsArg && (parseNumber(secondsArg, &seconds) != 0 || seconds < 1 || seconds > 3600))
+	{
+		putStr("error: seconds must be 1..3600\r\n");
+		return;
+	}
+
+	lxr_param_get(paramId("fx_type"), &bench.savedFxType);
+	lxr_param_get(paramId("fx_dry_wet"), &bench.savedDryWet);
+	lxr_param_get(paramId("audio_out1"), &bench.savedOut1);
+	lxr_param_set(paramId("fx_type"), (uint8_t)fxIndex);
+	lxr_param_set(paramId("fx_dry_wet"), 60);
+	lxr_param_set(paramId("audio_out1"), 6); /* FX bus */
+	lxr_stats_reset();
+
+	lxr_stats_t s;
+	lxr_get_stats(&s);
+	bench.fxType = (uint8_t)fxIndex;
+	bench.startBlocks = bench.lastReport = s.blocks;
+	bench.lastTrigger = s.blocks - BENCH_TRIGGER_BLOCKS;
+	bench.durationBlocks = (uint32_t)seconds * BLOCKS_PER_SECOND;
+	bench.step = 0;
+	bench.active = 1;
+	out("bench started: fx=%s for %ld s, all voices every 46 ms\r\n", fx->enum_names[fxIndex], seconds);
+}
+
+static void benchPoll(void)
+{
+	if(!bench.active) return;
+	lxr_stats_t s;
+	lxr_get_stats(&s);
+	if(s.blocks - bench.lastTrigger >= BENCH_TRIGGER_BLOCKS)
+	{
+		static const uint8_t vel[7] = { 127, 64, 100, 30, 90, 110, 70 };
+		for(int v = 0; v < LXR_NUM_VOICE_SLOTS; v++)
+			lxr_trigger((lxr_voice_t)v, vel[(bench.step + (uint32_t)v) % 7]);
+		bench.step++;
+		bench.lastTrigger = s.blocks;
+	}
+	if(s.blocks - bench.lastReport >= 60u * BLOCKS_PER_SECOND)
+	{
+		benchReport("running");
+		bench.lastReport = s.blocks;
+	}
+	if(s.blocks - bench.startBlocks >= bench.durationBlocks)
+		benchStop("done");
 }
 
 static void execute(char *line)
@@ -228,7 +355,8 @@ static void execute(char *line)
 	else if(strcasecmp(cmd, "set") == 0) cmdSet(argv[1], argv[2]);
 	else if(strcasecmp(cmd, "trigger") == 0) cmdTrigger(argv[1], argv[2]);
 	else if(strcasecmp(cmd, "watch") == 0) cmdWatch(argv[1]);
-	else if(strcasecmp(cmd, "status") == 0) cmdStatus();
+	else if(strcasecmp(cmd, "status") == 0) cmdStatus(argv[1]);
+	else if(strcasecmp(cmd, "bench") == 0) cmdBench(argv[1], argv[2]);
 	else out("error: unknown command '%s', type help\r\n", cmd);
 }
 
@@ -279,6 +407,7 @@ void console_poll(void)
 			lineOverflow = 1;
 		}
 	}
+	benchPoll();
 	drainOutput();
 }
 

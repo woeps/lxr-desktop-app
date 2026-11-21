@@ -88,6 +88,12 @@ Main SRAM in use: `0x20000000` to `0x2003DAA4`, **252 KB of 512 KB, about 260 KB
 
 The stacks are the SDK default 2 KB each. The audio path's largest frame is the mixer (about 400 B of local buffers). The console's largest is a formatted line (128 B plus the SDK printf). Task 9.3 checks this on hardware; if a stack turns out to be short, the fix is to move large locals to statics, not to grow the stack into the scratch banks.
 
+## 9. Hardware measurements
+
+| Date | Board | Clock / Vcore | Load | worst_block_us | avg_block_us | underruns | Notes |
+|---|---|---|---|---|---|---|---|
+| 2026-11-21 | RP2350-Zero | 150 MHz / 1.10 V | snare triggered from the console, no FX | 1038 | not yet measured | 0 | first run (task 9.3); over the 1000 us budget, under the 1451 us Block period |
+
 ## 7. Pending measurements
 
 - Block render time at 150 MHz: task 9.4.

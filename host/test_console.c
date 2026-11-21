@@ -122,7 +122,34 @@ int main(void)
 	run("watch off\n");
 
 	run("status\n");
-	CHECK(HAS("worst_block_us") && HAS("midi_errors"), "status: %s", output);
+	CHECK(HAS("worst_block_us") && HAS("avg_block_us") && HAS("midi_errors"), "status: %s", output);
+	run("status reset\n");
+	CHECK(HAS("status reset"), "status reset: %s", output);
+
+	/* bench: runs for its duration on the Block count, then restores the parameters */
+	uint8_t fxBefore = 0, outBefore = 0;
+	lxr_param_get(lxr_param_find("fx_type")->id, &fxBefore);
+	lxr_param_get(lxr_param_find("audio_out1")->id, &outBefore);
+	run("bench del 1\n");
+	CHECK(HAS("bench started: fx=del for 1 s"), "bench start: %s", output);
+	uint8_t fxDuring = 0;
+	lxr_param_get(lxr_param_find("fx_type")->id, &fxDuring);
+	CHECK(fxDuring == 4, "bench did not select the delay (%u)", fxDuring);
+	outLen = 0; output[0] = 0;
+	for(int i = 0; i < 800 && !HAS("bench done"); i++)
+	{
+		ui_poll_all();
+		lxr_engine_render(block, LXR_BLOCK_FRAMES);
+	}
+	CHECK(HAS("bench done fx=del 1s: worst_block_us"), "bench result: %s", output);
+	uint8_t fxAfter = 0, outAfter = 0;
+	lxr_param_get(lxr_param_find("fx_type")->id, &fxAfter);
+	lxr_param_get(lxr_param_find("audio_out1")->id, &outAfter);
+	CHECK(fxAfter == fxBefore && outAfter == outBefore, "bench did not restore fx_type/audio_out1");
+	run("bench frobnicator\n");
+	CHECK(HAS("error: unknown fx 'frobnicator'"), "bench bad fx: %s", output);
+	run("bench del 2\nbench stop\n");
+	CHECK(HAS("bench stopped"), "bench stop: %s", output);
 
 	run("frobnicate\n");
 	CHECK(HAS("error: unknown command 'frobnicate'"), "unknown command: %s", output);

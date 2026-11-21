@@ -62,7 +62,10 @@ static int queuePop(Command *cmd)
 
 static lxr_param_cb paramCallback;
 static void *paramCallbackUser;
-static lxr_stats_t stats;
+static lxr_stats_t stats = { .temp_c_x10 = INT16_MIN };
+static uint64_t blockTimeSum;      /* audio core */
+static uint32_t blockTimeCount;    /* audio core */
+static volatile uint8_t statsResetRequest;
 
 /* ---- audio core ---- */
 
@@ -130,16 +133,41 @@ void lxr_engine_render(int16_t *stereo, uint32_t frames)
 		}
 	}
 
+	stats.blocks++;
 	soundengine_renderBlock(stereo);
 }
 
-void lxr_stats_report_block(uint32_t block_us, int underrun)
+void lxr_stats_report_block(uint32_t block_us)
 {
-	stats.blocks++;
+	if(statsResetRequest)
+	{
+		stats.worst_block_us = 0;
+		stats.underruns = 0;
+		blockTimeSum = 0;
+		blockTimeCount = 0;
+		statsResetRequest = 0;
+	}
 	if(block_us > stats.worst_block_us)
 		stats.worst_block_us = block_us;
-	if(underrun)
-		stats.underruns++;
+	blockTimeSum += block_us;
+	blockTimeCount++;
+	stats.avg_block_us = (uint32_t)(blockTimeSum / blockTimeCount);
+}
+
+void lxr_stats_report_underrun(void)
+{
+	stats.underruns++;
+}
+
+void lxr_stats_reset(void)
+{
+	statsResetRequest = 1;
+}
+
+void lxr_stats_report_board(uint32_t sys_clock_khz, int16_t temp_c_x10)
+{
+	stats.sys_clock_khz = sys_clock_khz;
+	stats.temp_c_x10 = temp_c_x10;
 }
 
 /* ---- control core ---- */

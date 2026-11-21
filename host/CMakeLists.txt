@@ -84,6 +84,7 @@ add_test(NAME console COMMAND test_console)
 # --- render tool, WAV comparison, golden audio (task 8) ---------------------------------
 add_executable(lxr_render lxr_render.c)
 target_link_libraries(lxr_render PRIVATE lxr_engine_host)
+target_compile_options(lxr_render PRIVATE -Wno-double-promotion)
 
 add_executable(wavcmp wavcmp.c)
 target_link_libraries(wavcmp PRIVATE m)

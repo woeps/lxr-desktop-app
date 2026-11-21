@@ -46,7 +46,7 @@ static void __not_in_flash_func(dmaIrq)(void)
 			dma_hw->ints1 = bit;
 			dma_channel_set_read_addr((uint)dmaChannel[i], buffers[i], false);
 			if(freeMask & (1u << i))
-				lxr_stats_report_block(0, 1);   /* not rendered in time: it plays the old Block again */
+				lxr_stats_report_underrun();   /* not rendered in time: it plays the old Block again */
 			freeMask |= 1u << i;
 		}
 	}
@@ -91,7 +91,7 @@ static void renderInto(int i)
 {
 	const uint32_t t0 = time_us_32();
 	lxr_engine_render((int16_t *)buffers[i], LXR_BLOCK_FRAMES);
-	lxr_stats_report_block(time_us_32() - t0, 0);
+	lxr_stats_report_block(time_us_32() - t0);
 }
 
 void audio_i2s_start(void)

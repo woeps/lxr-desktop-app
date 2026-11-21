@@ -127,12 +127,24 @@ int main(void)
 	peakOfBlocks(2);
 	CHECK(lxr_param_set(vol1->id, 50) == 0, "queue still full after draining");
 
-	/* stats */
-	lxr_stats_report_block(300, 0);
-	lxr_stats_report_block(900, 1);
+	/* stats: worst and average since the last reset, reset applied on the next Block */
+	lxr_stats_reset();
+	lxr_stats_report_block(300);
+	lxr_stats_report_block(900);
+	lxr_stats_report_underrun();
 	lxr_stats_count_midi_error();
 	lxr_get_stats(&st);
-	CHECK(st.worst_block_us == 900 && st.underruns == 1 && st.midi_errors == 1, "stats worst %u underruns %u midi %u", st.worst_block_us, st.underruns, st.midi_errors);
+	CHECK(st.worst_block_us == 900 && st.avg_block_us == 600 && st.underruns == 1 && st.midi_errors == 1,
+	      "stats worst %u avg %u underruns %u midi %u", st.worst_block_us, st.avg_block_us, st.underruns, st.midi_errors);
+	CHECK(st.temp_c_x10 == INT16_MIN && st.sys_clock_khz == 0, "board facts not unknown before the board reports");
+	lxr_stats_reset();
+	lxr_stats_report_block(100);
+	lxr_get_stats(&st);
+	CHECK(st.worst_block_us == 100 && st.avg_block_us == 100 && st.underruns == 0, "reset: worst %u avg %u underruns %u",
+	      st.worst_block_us, st.avg_block_us, st.underruns);
+	lxr_stats_report_board(200000, 412);
+	lxr_get_stats(&st);
+	CHECK(st.sys_clock_khz == 200000 && st.temp_c_x10 == 412, "board facts");
 
 	/* UI layers: both are notified, init and poll are called */
 	static const ui_t uiA = { "a", uiAInitFn, NULL, uiAChanged };
