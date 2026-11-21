@@ -111,7 +111,8 @@ static void cmdHelp(void)
 	       "  watch on|off             print every parameter change\r\n"
 	       "  status [reset]           CPU, temperature and error counters (reset restarts worst/avg)\r\n"
 	       "  bench [fx] [seconds]     full-load test: all voices every 46 ms, drum 1 into fx (default del 10)\r\n"
-	       "  bench stop               end a running bench\r\n");
+	       "  bench stop               end a running bench\r\n"
+	       "  midi                     MIDI input check: bytes received, errors, line level, last bytes\r\n");
 }
 
 static void cmdParams(const char *filter)
@@ -225,6 +226,27 @@ static void cmdStatus(const char *arg)
 		out("  temp %d.%d C", s.temp_c_x10 / 10, abs(s.temp_c_x10 % 10));
 	if(s.sys_clock_khz || s.temp_c_x10 != INT16_MIN)
 		putStr("\r\n");
+}
+
+/* ---- midi: input check ---- */
+
+static void cmdMidi(void)
+{
+	lxr_stats_t s;
+	lxr_get_stats(&s);
+	out("midi bytes %lu  errors %lu  line %s\r\n", (unsigned long)s.midi_bytes, (unsigned long)s.midi_errors,
+	    s.midi_line < 0 ? "unknown" : (s.midi_line ? "high (idle, ok)" : "LOW (check pull-up / wiring)"));
+	uint8_t log[16];
+	const int n = lxr_get_midi_log(log);
+	if(n == 0)
+	{
+		putStr("no bytes received yet\r\n");
+		return;
+	}
+	putStr("last:");
+	for(int i = 0; i < n; i++)
+		out(" %02X", log[i]);
+	putStr("\r\n");
 }
 
 /* ---- bench: full-load measurement (task 9.4) ----
@@ -357,6 +379,7 @@ static void execute(char *line)
 	else if(strcasecmp(cmd, "watch") == 0) cmdWatch(argv[1]);
 	else if(strcasecmp(cmd, "status") == 0) cmdStatus(argv[1]);
 	else if(strcasecmp(cmd, "bench") == 0) cmdBench(argv[1], argv[2]);
+	else if(strcasecmp(cmd, "midi") == 0) cmdMidi();
 	else out("error: unknown command '%s', type help\r\n", cmd);
 }
 

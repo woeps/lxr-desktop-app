@@ -113,6 +113,7 @@ int main(void)
 			nextBlink = make_timeout_time_ms(500);
 			if(led)
 				lxr_stats_report_board(clock_get_hz(clk_sys) / 1000u, readTemperature());
+			lxr_stats_report_midi_line(gpio_get(LXR_PIN_MIDI_RX));
 		}
 	}
 }

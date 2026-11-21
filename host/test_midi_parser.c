@@ -36,6 +36,8 @@ int lxr_param_set(uint16_t id, uint8_t value)
 }
 
 void lxr_stats_count_midi_error(void) { midiErrors++; }
+static uint32_t midiBytes;
+void lxr_stats_count_midi_byte(uint8_t byte) { (void)byte; midiBytes++; }
 
 /* ---- helpers ---- */
 
@@ -205,6 +207,7 @@ static void test_rx_word_error_flags(void)
 	midiParser_processRxWord(62);
 	midiParser_processRxWord(90);
 	CHECK(ncalls == 1 && calls[0].a == 1 && calls[0].b == 62 && calls[0].c == 90, "no resync after error flags");
+	CHECK(midiBytes == 8, "byte counter %u, expected 8", midiBytes);
 }
 
 int main(void)

@@ -151,6 +151,13 @@ int main(void)
 	run("bench del 2\nbench stop\n");
 	CHECK(HAS("bench stopped"), "bench stop: %s", output);
 
+	run("midi\n");
+	CHECK(HAS("midi bytes 0") && HAS("line unknown") && HAS("no bytes received yet"), "midi empty: %s", output);
+	for(int i = 0; i < 20; i++) lxr_stats_count_midi_byte((uint8_t)(0x90 + i));
+	lxr_stats_report_midi_line(1);
+	run("midi\n");
+	CHECK(HAS("midi bytes 20") && HAS("high (idle, ok)") && HAS("last: 94 95") && HAS(" A3\r\n"), "midi log: %s", output);
+
 	run("frobnicate\n");
 	CHECK(HAS("error: unknown command 'frobnicate'"), "unknown command: %s", output);
 

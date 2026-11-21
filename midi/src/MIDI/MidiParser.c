@@ -431,6 +431,7 @@ void midiParser_reportError(void)
 //-----------------------------------------------------------
 void midiParser_processRxWord(uint16_t uartDr)
 {
+	lxr_stats_count_midi_byte((uint8_t)(uartDr & 0xff));
 	if(uartDr & MIDI_RX_ERROR_FLAGS)
 		midiParser_reportError();
 	else

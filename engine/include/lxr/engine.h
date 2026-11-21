@@ -72,6 +72,8 @@ typedef struct {
 	uint32_t avg_block_us;    /* mean Block render time since the last reset */
 	uint32_t underruns;       /* Blocks played again because they were not rendered in time, since the last reset */
 	uint32_t midi_errors;     /* framing errors, overruns, resyncs */
+	uint32_t midi_bytes;      /* MIDI bytes received (including ones with errors) */
+	int8_t midi_line;         /* MIDI input line level reported by the board: 1 high (idle), 0 low, -1 unknown */
 	uint32_t queue_drops;     /* commands lost because the queue was full */
 	uint32_t sys_clock_khz;   /* reported by the board, 0 if unknown */
 	int16_t temp_c_x10;       /* die temperature in 0.1 degC reported by the board, INT16_MIN if unknown */
@@ -84,6 +86,15 @@ void lxr_stats_reset(void);
 
 /** Counts one MIDI input error (framing error, overrun). Control core. */
 void lxr_stats_count_midi_error(void);
+
+/** Records one received MIDI byte (for the byte counter and the last-bytes log). Control core. */
+void lxr_stats_count_midi_byte(uint8_t byte);
+
+/** Copies up to 16 most recently received MIDI bytes, oldest first. Returns how many. */
+int lxr_get_midi_log(uint8_t out[16]);
+
+/** Board report of the MIDI input line level (1 = idle high, 0 = low). Control core. */
+void lxr_stats_report_midi_line(int level);
 
 /** Counts one audio underrun. Audio core. */
 void lxr_stats_report_underrun(void);

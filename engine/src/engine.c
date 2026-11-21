@@ -62,7 +62,7 @@ static int queuePop(Command *cmd)
 
 static lxr_param_cb paramCallback;
 static void *paramCallbackUser;
-static lxr_stats_t stats = { .temp_c_x10 = INT16_MIN };
+static lxr_stats_t stats = { .temp_c_x10 = INT16_MIN, .midi_line = -1 };
 static uint64_t blockTimeSum;      /* audio core */
 static uint32_t blockTimeCount;    /* audio core */
 static volatile uint8_t statsResetRequest;
@@ -231,4 +231,25 @@ void lxr_get_stats(lxr_stats_t *out)
 void lxr_stats_count_midi_error(void)
 {
 	stats.midi_errors++;
+}
+
+static uint8_t midiLog[16];
+
+void lxr_stats_count_midi_byte(uint8_t byte)
+{
+	midiLog[stats.midi_bytes & 15u] = byte;
+	stats.midi_bytes++;
+}
+
+int lxr_get_midi_log(uint8_t out[16])
+{
+	const uint32_t n = stats.midi_bytes < 16u ? stats.midi_bytes : 16u;
+	for(uint32_t i = 0; i < n; i++)
+		out[i] = midiLog[(stats.midi_bytes - n + i) & 15u];
+	return (int)n;
+}
+
+void lxr_stats_report_midi_line(int level)
+{
+	stats.midi_line = (int8_t)(level ? 1 : 0);
 }
