@@ -1,5 +1,5 @@
 /*
- * midi_uart.h: DIN MIDI input on UART0 RX with a DMA ring (design section 8).
+ * midi_uart.h: Serial MIDI input (3.5 mm TRS, Type A) on UART0 RX with a DMA ring (design section 8).
  *
  * Copyright (C) 2026 Erica Synths
  * SPDX-License-Identifier: GPL-3.0-only

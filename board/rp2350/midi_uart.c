@@ -1,5 +1,5 @@
 /*
- * midi_uart.c: DIN MIDI input on UART0 RX (design section 8).
+ * midi_uart.c: Serial MIDI input (3.5 mm TRS, Type A) on UART0 RX (design section 8).
  *
  * A DMA channel in endless mode copies every received UART data register
  * value (data byte plus the error flags in bits 8..11) into a 512-entry ring,

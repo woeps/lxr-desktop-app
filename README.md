@@ -2,7 +2,7 @@
 
 Firmware that turns a Waveshare RP2350-Zero (or a Raspberry Pi Pico 2) into a six-voice MIDI drum sound module based on the LXR V2
 drum engine: three drum voices, snare, hi-hat and cymbal, with a master FX bus (delay, reverb,
-compressor, distortion, ring modulator). It is played over 5-pin DIN MIDI and sounds come out of a
+compressor, distortion, ring modulator). It is played over serial MIDI on a 3.5 mm TRS jack (Type A) and sounds come out of a
 PCM5102A I2S DAC. There is no step sequencer.
 
 > **Port in progress.** This tree is being moved from the LXR V2 desktop firmware (STM32F765) to the
@@ -49,7 +49,7 @@ The result is `build/release/lxr.uf2` (and `lxr.elf`).
 
 The USB port carries power, flashing and the serial console (a USB serial device; open it with any
 terminal, e.g. `screen /dev/ttyACM0` or `picocom /dev/ttyACM0`, and type `help`). The module has no
-USB MIDI; MIDI comes in on the 5-pin DIN input.
+USB MIDI; MIDI comes in on the TRS MIDI input (H11L1 optocoupler into GP1).
 
 The firmware runs the RP2350 at 250 MHz (rated: 150 MHz) at the stock 1.10 V core voltage, because
 the full drum engine needs it; see [docs/memory-map.md](docs/memory-map.md) section 9. Build with

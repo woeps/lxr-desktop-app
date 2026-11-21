@@ -54,7 +54,7 @@ The repository at `/home/chris/Projects/lxr-desktop-app` is the LXR V2 desktop d
 **User story:** As the player, I want to trigger and edit sounds from MIDI.
 
 #### Acceptance criteria
-1. The Module SHALL accept MIDI only as 5-pin DIN serial MIDI: 31250 baud, 8N1, on a UART RX pin, through an opto-isolated input circuit (H11L1, or an equivalent such as a 6N138, per the MIDI 1.0 electrical spec).
+1. The Module SHALL accept MIDI only as serial MIDI 1.0 on a 3.5 mm TRS jack (MIDI Association CA-033 Type A: ring = current source, tip = current sink): 31250 baud, 8N1, on a UART RX pin, through an opto-isolated input circuit (H11L1, or an equivalent such as a 6N138, per the MIDI 1.0 electrical spec).
 2. The Module SHALL NOT include USB MIDI. The USB port SHALL be used for power, for flashing (BOOTSEL mass storage and picotool reset-to-BOOTSEL) and for the serial console (USB CDC, Requirement 7.2).
 3. WHEN a Note On for a mapped note arrives on a Voice's MIDI channel, THEN the Voice SHALL trigger with the note velocity applied as in the current firmware.
 4. WHEN a Control Change or NRPN that the current firmware accepts for sound parameters arrives, THEN the matching Engine parameter SHALL change with the same value scaling as today.
@@ -93,7 +93,7 @@ The repository at `/home/chris/Projects/lxr-desktop-app` is the LXR V2 desktop d
 **User story:** As the builder, I want the module to need no front-panel parts for now, with a text console for editing and testing, so the engine/UI split is proven before any panel hardware is chosen.
 
 #### Acceptance criteria
-1. The first release SHALL have **no front-panel UI hardware**. The Module SHALL be fully playable and have every sound parameter edited over DIN MIDI CC/NRPN.
+1. The first release SHALL have **no front-panel UI hardware**. The Module SHALL be fully playable and have every sound parameter edited over serial MIDI CC/NRPN.
 2. The Module SHALL provide a **serial console UI** on the board's USB port as a USB CDC serial device, usable with any serial terminal on the host computer and needing no extra hardware.
 3. The console SHALL support these commands: `help`, `params [voice]` (list names, ranges, current values), `get <param>`, `set <param> <value>`, `trigger <voice> [velocity]`, `preset load <n>`, `preset save <n>`, `preset list`, `status` (CPU load, worst Block time, MIDI error counter, underrun count).
 4. Each console command SHALL call only the Engine API. IF a parameter name or value is invalid, THEN the console SHALL print an error naming the problem and change nothing.

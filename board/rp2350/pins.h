@@ -15,7 +15,7 @@
 #ifndef LXR_PINS_H_
 #define LXR_PINS_H_
 
-/* DIN MIDI input (UART0 RX), from the H11L1 output (pin 4). */
+/* Serial MIDI input (UART0 RX), 3.5 mm TRS Type A jack via the H11L1 output (pin 4). */
 #define LXR_PIN_MIDI_RX      1
 #define LXR_MIDI_UART        uart0
 

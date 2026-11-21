@@ -9,7 +9,7 @@ The LXR drum engine moves to the RP2350 as a MIDI-driven sound module. The code 
 ```
   board/   (pico-sdk: PIO I2S, UARTs, flash, cores)         <- hardware only
      |
-  midi/    (DIN byte stream -> Engine API calls)
+  midi/    (serial MIDI byte stream -> Engine API calls)
   ui/      (serial console now, encoder+OLED later)         <- Engine API only
      |
   engine/  (voices, mixer, FX, parameter table, presets)    <- no hardware, no UI
@@ -190,7 +190,7 @@ All pins live in `board/rp2350/pins.h` (R7.5). Every pin is on the edge headers 
 
 PCM5102A module strapping: SCK to GND (internal PLL), FMT to GND (I2S), XSMT to 3V3 (unmute), FLT to GND, DEMP to GND. Power from VBUS (5 V) or 3V3, depending on the module's regulator.
 
-MIDI input circuit (standard MIDI 1.0 receiver with an H11L1, which runs from 3 V and has a Schmitt-trigger open-collector output): DIN pin 4 through 220 Ω to H11L1 pin 1 (anode), DIN pin 5 to pin 2 (cathode), a 1N4148 across pins 1 and 2 (cathode to pin 1), pin 6 (Vcc) to 3V3 with 100 nF to GND, pin 5 to GND, pin 4 (output) to GP1 with a 1 kΩ pull-up to 3V3. The output is low while MIDI current flows, which is the UART polarity, so no inversion is needed. A 6N138 also works if powered from 5 V with its output pulled up to 3V3.
+MIDI input circuit (standard MIDI 1.0 receiver with an H11L1, which runs from 3 V and has a Schmitt-trigger open-collector output): 3.5 mm TRS jack, Type A (CA-033): ring (DIN pin 4) through 220 Ω to H11L1 pin 1 (anode), tip (DIN pin 5) to pin 2 (cathode), sleeve unconnected, a 1N4148 across pins 1 and 2 (cathode to pin 1), pin 6 (Vcc) to 3V3 with 100 nF to GND, pin 5 to GND, pin 4 (output) to GP1 with a 1 kΩ pull-up to 3V3. The output is low while MIDI current flows, which is the UART polarity, so no inversion is needed. A 6N138 also works if powered from 5 V with its output pulled up to 3V3. A Type B cable (tip and ring swapped) does no harm but delivers no signal.
 
 ## 7. Presets (R8)
 
