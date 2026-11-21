@@ -39,7 +39,7 @@ void midi_uart_init(void)
 	uart_set_hw_flow(LXR_MIDI_UART, false, false);
 	uart_set_fifo_enabled(LXR_MIDI_UART, true);
 	gpio_set_function(LXR_PIN_MIDI_RX, GPIO_FUNC_UART);
-	gpio_pull_up(LXR_PIN_MIDI_RX); /* line idles high; the 6N138 output also has an external pull-up */
+	gpio_pull_up(LXR_PIN_MIDI_RX); /* line idles high; the H11L1 output also needs the external 1 kOhm pull-up */
 
 	dmaChannel = dma_claim_unused_channel(true);
 	dma_channel_config c = dma_channel_get_default_config((uint)dmaChannel);

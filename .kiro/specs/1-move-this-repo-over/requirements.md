@@ -54,7 +54,7 @@ The repository at `/home/chris/Projects/lxr-desktop-app` is the LXR V2 desktop d
 **User story:** As the player, I want to trigger and edit sounds from MIDI.
 
 #### Acceptance criteria
-1. The Module SHALL accept MIDI only as 5-pin DIN serial MIDI: 31250 baud, 8N1, on a UART RX pin, through an opto-isolated input circuit (6N138 or equivalent, per the MIDI 1.0 electrical spec).
+1. The Module SHALL accept MIDI only as 5-pin DIN serial MIDI: 31250 baud, 8N1, on a UART RX pin, through an opto-isolated input circuit (H11L1, or an equivalent such as a 6N138, per the MIDI 1.0 electrical spec).
 2. The Module SHALL NOT include USB MIDI. The USB port SHALL be used for power, for flashing (BOOTSEL mass storage and picotool reset-to-BOOTSEL) and for the serial console (USB CDC, Requirement 7.2).
 3. WHEN a Note On for a mapped note arrives on a Voice's MIDI channel, THEN the Voice SHALL trigger with the note velocity applied as in the current firmware.
 4. WHEN a Control Change or NRPN that the current firmware accepts for sound parameters arrives, THEN the matching Engine parameter SHALL change with the same value scaling as today.

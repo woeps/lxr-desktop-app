@@ -180,7 +180,7 @@ All pins live in `board/rp2350/pins.h` (R7.5). Every pin is on the edge headers 
 
 | Function | GPIO | Pico pin | Notes |
 |---|---|---|---|
-| MIDI IN (UART0 RX) | GP1 | 2 | From 6N138 output, 1 kΩ pull-up to 3V3 |
+| MIDI IN (UART0 RX) | GP1 | 2 | From H11L1 output (pin 4), 1 kΩ pull-up to 3V3 |
 | I2S DIN | GP9 | 12 | To PCM5102A DIN |
 | I2S BCK | GP10 | 14 | To PCM5102A BCK (side-set base) |
 | I2S LRCK | GP11 | 15 | To PCM5102A LCK (BCK + 1, required by the PIO program) |
@@ -190,7 +190,7 @@ All pins live in `board/rp2350/pins.h` (R7.5). Every pin is on the edge headers 
 
 PCM5102A module strapping: SCK to GND (internal PLL), FMT to GND (I2S), XSMT to 3V3 (unmute), FLT to GND, DEMP to GND. Power from VBUS (5 V) or 3V3, depending on the module's regulator.
 
-MIDI input circuit (standard MIDI 1.0 receiver): DIN pin 4 through 220 Ω to the 6N138 anode, DIN pin 5 to its cathode, a 1N4148 across the LED, 6N138 output pulled up with 1 kΩ to 3V3 into GP1, 6N138 Vcc on 3V3.
+MIDI input circuit (standard MIDI 1.0 receiver with an H11L1, which runs from 3 V and has a Schmitt-trigger open-collector output): DIN pin 4 through 220 Ω to H11L1 pin 1 (anode), DIN pin 5 to pin 2 (cathode), a 1N4148 across pins 1 and 2 (cathode to pin 1), pin 6 (Vcc) to 3V3 with 100 nF to GND, pin 5 to GND, pin 4 (output) to GP1 with a 1 kΩ pull-up to 3V3. The output is low while MIDI current flows, which is the UART polarity, so no inversion is needed. A 6N138 also works if powered from 5 V with its output pulled up to 3V3.
 
 ## 7. Presets (R8)
 
