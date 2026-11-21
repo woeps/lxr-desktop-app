@@ -10,7 +10,6 @@ cmake_minimum_required(VERSION 3.21)
 #   cmake --build build/host
 #   ctest --test-dir build/host
 #
-# Targets are added by tasks 5 to 8 of .kiro/specs/1-move-this-repo-over/tasks.md.
 
 project(lxr_host LANGUAGES C)
 

@@ -1,6 +1,7 @@
 # Acceptance record: LXR sound module on RP2350 (task 14.4)
 
-Every acceptance criterion of `.kiro/specs/1-move-this-repo-over/requirements.md`, checked on
+Every acceptance criterion of the port's requirements (the spec in `.kiro/specs/1-move-this-repo-over/`,
+removed after implementation; it is in the git history up to commit `aa63a62`), checked on
 2026-11-21 against branch `rp2350`. Hardware: Waveshare RP2350-Zero at 250 MHz / 1.10 V, PCM5102A,
 H11L1 MIDI input on a 3.5 mm TRS jack (Type A).
 

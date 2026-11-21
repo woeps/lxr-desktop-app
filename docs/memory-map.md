@@ -1,6 +1,8 @@
 # RP2350 memory map and platform checks
 
-Results of task 1 (feasibility spike) of `.kiro/specs/1-move-this-repo-over/`. Updated again by tasks 9.4, 9.5 and 9.7 with real link and timing numbers.
+Measurements made while porting the engine to the RP2350, in the order they were taken. Task and section
+numbers refer to the port's spec (`.kiro/specs/1-move-this-repo-over/`, removed after implementation; it is in the
+git history up to commit `aa63a62`).
 
 ## 1. Toolchain
 
