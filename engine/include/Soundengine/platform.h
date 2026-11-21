@@ -109,6 +109,20 @@ static inline uint64_t __SMLALD(uint32_t a, uint32_t b, uint64_t acc)
 
 #endif /* __ARM_FEATURE_SIMD32 */
 
+/* float -> uint32_t with the ARM VCVT semantics: negative and NaN give 0, values of
+ * 2^32 and above give 0xFFFFFFFF. A plain cast of such values is undefined in C, and
+ * x86 wraps where ARM saturates. The LXR DSP code relies on the ARM behaviour (the
+ * original hardware is a Cortex-M7), so it uses this for every float -> unsigned cast
+ * whose value can leave the range; the host build then sounds like the hardware. */
+static inline uint32_t lxr_f2u32(float x)
+{
+	if(!(x > 0.0f))
+		return 0u;
+	if(x >= 4294967296.0f)
+		return 0xFFFFFFFFu;
+	return (uint32_t)x;
+}
+
 /* Flush denormal floats to zero on the calling core (audio core). The Arm FPU
  * does this through FPSCR.FZ; on the host the build uses SSE flags instead. */
 static inline void lxr_enable_flush_to_zero(void)
