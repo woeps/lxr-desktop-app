@@ -30,6 +30,13 @@ void midiParser_reset(void);
 /** Call on a UART framing error or overrun: drops the partial message, waits for
  *  the next status byte, and counts the error in the engine statistics. */
 void midiParser_reportError(void);
+
+/** UART data register error flags (PL011 layout: bits 8..11 = FE, PE, BE, OE). */
+#define MIDI_RX_ERROR_FLAGS 0x0F00u
+
+/** Handles one UART data register value: a byte with an error flag triggers
+ *  midiParser_reportError() and is discarded, otherwise the byte is parsed. */
+void midiParser_processRxWord(uint16_t uartDr);
 #if 0
 void midiDebugSend(uint8_t b1, uint8_t b2);
 #endif

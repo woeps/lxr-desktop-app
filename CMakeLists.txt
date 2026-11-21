@@ -39,6 +39,7 @@ add_executable(lxr
     board/rp2350/main.c
     board/rp2350/audio_i2s.c
     board/rp2350/console_usb.c
+    board/rp2350/midi_uart.c
 )
 pico_generate_pio_header(lxr ${CMAKE_CURRENT_LIST_DIR}/board/rp2350/i2s.pio)
 target_include_directories(lxr PRIVATE board/rp2350)
@@ -81,6 +82,7 @@ target_link_libraries(lxr_engine PUBLIC lxr_engine_flags)
 # Silent float-to-double promotion is an error in the engine (R5.1): the M33 FPU is single precision.
 target_compile_options(lxr_engine PRIVATE -O3 -fno-thread-jumps -Werror=double-promotion)
 target_link_libraries(lxr PRIVATE lxr_engine)
+pico_add_map_output(lxr)
 
 add_custom_command(TARGET lxr_engine POST_BUILD
     COMMAND ${CMAKE_COMMAND} -DNM=${CMAKE_NM} -DLIB=$<TARGET_FILE:lxr_engine>

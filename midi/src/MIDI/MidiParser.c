@@ -429,6 +429,14 @@ void midiParser_reportError(void)
 	lxr_stats_count_midi_error();
 }
 //-----------------------------------------------------------
+void midiParser_processRxWord(uint16_t uartDr)
+{
+	if(uartDr & MIDI_RX_ERROR_FLAGS)
+		midiParser_reportError();
+	else
+		midiParser_parseUartData((unsigned char)(uartDr & 0xff));
+}
+//-----------------------------------------------------------
 // This will build up the midi message and hand it off to
 // parseMidiMessage when it's complete
 void midiParser_parseUartData(unsigned char data)

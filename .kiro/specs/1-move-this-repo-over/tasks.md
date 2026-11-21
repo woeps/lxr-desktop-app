@@ -66,9 +66,9 @@ Paths are relative to `/home/chris/Projects/lxr-desktop-app`.
   - [x] 9.8 Move the console from UART1 to the USB port (USB CDC via `stdio_usb`) and make the Waveshare RP2350-Zero the default board (`-DPICO_BOARD=pico2` still builds for the Pico 2). Both boards build.
 
 - [ ] 10. MIDI input (R4.1, R4.2, R4.6, R4.7)
-  - [ ] 10.1 Implement `board/rp2350/midi_uart.c`: UART0 RX on GP1 at 31250 baud 8N1, DMA channel in ring mode into a 512-byte ring, error flag polling.
-  - [ ] 10.2 Feed the ring into `midi/midi_parser.c` from the core-0 main loop.
-  - [ ] 10.3 Confirm from the `.map` file that TinyUSB contains only the CDC class (no MIDI class) and that the USB port carries only the console and the reset interface.
+  - [x] 10.1 Implement `board/rp2350/midi_uart.c`: UART0 RX on GP1 at 31250 baud 8N1, DMA channel in ring mode into a 512-byte ring, error flag polling. Done: `board/rp2350/midi_uart.c`, DMA in endless mode with 16-bit transfers, so each ring entry keeps the UART error flags (FE/PE/BE/OE) of its byte.
+  - [x] 10.2 Feed the ring into `midi/midi_parser.c` from the core-0 main loop. Done: `midi_uart_poll()` in the main loop, via `midiParser_processRxWord()` (host-tested: error flags trigger resync).
+  - [x] 10.3 Confirm from the `.map` file that TinyUSB contains only the CDC class (no MIDI class) and that the USB port carries only the console and the reset interface. Done: linked TinyUSB classes are CDC and the vendor reset interface (`vendord_*`, used by picotool); no `midid_*`/`tud_midi_*` symbols, `CFG_TUD_MIDI` not set.
   - [ ] 10.4 **Hardware:** build the 6N138 input circuit (design 6.4). Verify note triggers and a CC sweep from a MIDI controller or interface.
   - [ ] 10.5 **Hardware:** measure note-to-audio latency with a scope or logic analyser on the MIDI line and the I2S data line. It must be at most 2 Blocks (2.9 ms).
   - [ ] 10.6 **Hardware:** send a continuous 31250-baud byte stream with a deliberately corrupted byte every second and confirm `midi_errors` counts them and playing resumes on the next valid message.

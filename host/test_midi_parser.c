@@ -190,8 +190,26 @@ static void test_rx_filter(void)
 	CHECK(ncalls == 0, "filtered CC passed");
 }
 
+static void test_rx_word_error_flags(void)
+{
+	reset();
+	midiParser_processRxWord(0x90);
+	midiParser_processRxWord(60);
+	midiParser_processRxWord(0x0100 | 100);   /* framing error on the velocity byte */
+	CHECK(ncalls == 0 && midiErrors == 1, "framing error: %d calls, %u errors", ncalls, midiErrors);
+	midiParser_processRxWord(0x0800 | 0x91);  /* overrun */
+	CHECK(midiErrors == 2, "overrun not counted");
+	midiParser_processRxWord(70);             /* data byte without a valid status is dropped */
+	CHECK(ncalls == 0, "data after error used");
+	midiParser_processRxWord(0x91);
+	midiParser_processRxWord(62);
+	midiParser_processRxWord(90);
+	CHECK(ncalls == 1 && calls[0].a == 1 && calls[0].b == 62 && calls[0].c == 90, "no resync after error flags");
+}
+
 int main(void)
 {
+	test_rx_word_error_flags();
 	test_note_on_routes_by_channel();
 	test_note_off_and_zero_velocity_ignored();
 	test_running_status();

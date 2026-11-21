@@ -21,6 +21,7 @@
 #include "clocks.h"
 #include "audio_i2s.h"
 #include "console_usb.h"
+#include "midi_uart.h"
 #include "lxr/engine.h"
 #include "ui_iface.h"
 #include "console/console.h"
@@ -84,6 +85,8 @@ int main(void)
 #endif
 	ui_init_all();
 
+	midi_uart_init();
+
 	multicore_launch_core1(audioCoreMain);
 
 #if LXR_BOOT_DEMO
@@ -98,6 +101,7 @@ int main(void)
 	bool led = false;
 	for(;;)
 	{
+		midi_uart_poll();
 		ui_poll_all();
 
 		if(time_reached(nextBlink))
