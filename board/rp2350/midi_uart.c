@@ -25,10 +25,10 @@
 #include "hardware/regs/dma.h"
 
 #define RING_ENTRIES   512u                  /* power of two */
-#define RING_BYTES     (RING_ENTRIES * 2u)   /* 16-bit entries */
-#define RING_SIZE_BITS 10u                   /* log2(RING_BYTES) */
+#define RING_BYTES     (RING_ENTRIES * 4u)   /* 32-bit entries: native width of the UART data register */
+#define RING_SIZE_BITS 11u                   /* log2(RING_BYTES) */
 
-static uint16_t ring[RING_ENTRIES] __attribute__((aligned(RING_BYTES)));
+static uint32_t ring[RING_ENTRIES] __attribute__((aligned(RING_BYTES)));
 static int dmaChannel;
 static uint32_t tail;   /* next entry to read, 0..RING_ENTRIES-1 */
 static volatile uint32_t lineEdges;
@@ -56,13 +56,14 @@ void midi_uart_init(void)
 
 	dmaChannel = dma_claim_unused_channel(true);
 	dma_channel_config c = dma_channel_get_default_config((uint)dmaChannel);
-	channel_config_set_transfer_data_size(&c, DMA_SIZE_16);   /* data byte + FE/PE/BE/OE flags */
+	channel_config_set_transfer_data_size(&c, DMA_SIZE_32);   /* full DR: data byte + FE/PE/BE/OE flags */
 	channel_config_set_read_increment(&c, false);
 	channel_config_set_write_increment(&c, true);
 	channel_config_set_ring(&c, true, RING_SIZE_BITS);        /* wrap the write address */
 	channel_config_set_dreq(&c, uart_get_dreq(LXR_MIDI_UART, false));
+	/* ENDLESS mode with a non-zero count field: the count does not decrement in this mode */
 	dma_channel_configure((uint)dmaChannel, &c, ring, &uart_get_hw(LXR_MIDI_UART)->dr,
-	                      DMA_CH0_TRANS_COUNT_MODE_VALUE_ENDLESS << DMA_CH0_TRANS_COUNT_MODE_LSB, true);
+	                      (DMA_CH0_TRANS_COUNT_MODE_VALUE_ENDLESS << DMA_CH0_TRANS_COUNT_MODE_LSB) | 1u, true);
 	tail = 0;
 	midiParser_reset();
 
@@ -78,7 +79,14 @@ void midi_uart_poll(void)
 	/* bounded work per call keeps the main loop responsive */
 	for(uint32_t n = 0; tail != head && n < 64u; n++)
 	{
-		midiParser_processRxWord(ring[tail]);
+		midiParser_processRxWord((uint16_t)(ring[tail] & 0xFFFFu));
 		tail = (tail + 1u) & (RING_ENTRIES - 1u);
 	}
+}
+
+void midi_uart_debug(uint32_t out[3])
+{
+	out[0] = dma_channel_hw_addr((uint)dmaChannel)->ctrl_trig;
+	out[1] = dma_channel_hw_addr((uint)dmaChannel)->transfer_count;
+	out[2] = uart_get_hw(LXR_MIDI_UART)->fr;
 }

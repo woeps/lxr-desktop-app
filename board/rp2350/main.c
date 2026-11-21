@@ -114,6 +114,9 @@ int main(void)
 			if(led)
 				lxr_stats_report_board(clock_get_hz(clk_sys) / 1000u, readTemperature());
 			lxr_stats_report_midi_line(gpio_get(LXR_PIN_MIDI_RX), midi_uart_line_edges());
+			uint32_t midiRegs[3];
+			midi_uart_debug(midiRegs);
+			lxr_stats_report_midi_debug(midiRegs);
 		}
 	}
 }

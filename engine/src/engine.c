@@ -254,3 +254,9 @@ void lxr_stats_report_midi_line(int level, uint32_t falling_edges)
 	stats.midi_line = (int8_t)(level ? 1 : 0);
 	stats.midi_line_edges = falling_edges;
 }
+
+void lxr_stats_report_midi_debug(const uint32_t regs[3])
+{
+	for(int i = 0; i < 3; i++)
+		stats.midi_debug[i] = regs[i];
+}

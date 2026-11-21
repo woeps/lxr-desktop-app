@@ -75,6 +75,7 @@ typedef struct {
 	uint32_t midi_bytes;      /* MIDI bytes received (including ones with errors) */
 	int8_t midi_line;         /* MIDI input line level reported by the board: 1 high (idle), 0 low, -1 unknown */
 	uint32_t midi_line_edges; /* falling edges seen on the MIDI input pin (board report), independent of the UART */
+	uint32_t midi_debug[3];   /* board-specific raw registers for the `midi` check (RP2350: DMA CTRL, DMA count, UART FR) */
 	uint32_t queue_drops;     /* commands lost because the queue was full */
 	uint32_t sys_clock_khz;   /* reported by the board, 0 if unknown */
 	int16_t temp_c_x10;       /* die temperature in 0.1 degC reported by the board, INT16_MIN if unknown */
@@ -96,6 +97,9 @@ int lxr_get_midi_log(uint8_t out[16]);
 
 /** Board report of the MIDI input line: level (1 = idle high, 0 = low) and falling-edge count. Control core. */
 void lxr_stats_report_midi_line(int level, uint32_t falling_edges);
+
+/** Board report of raw MIDI input registers, shown by the console's `midi` check. Control core. */
+void lxr_stats_report_midi_debug(const uint32_t regs[3]);
 
 /** Counts one audio underrun. Audio core. */
 void lxr_stats_report_underrun(void);
