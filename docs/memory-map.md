@@ -120,3 +120,11 @@ Findings (task 9.4 / 9.5):
 ## 8. USB console and RP2350-Zero (task 9.8)
 
 Board `waveshare_rp2350_zero` (4 MB flash, same RP2350A as the Pico 2), console on USB CDC (`stdio_usb`, TinyUSB CDC only): text + data 191,856 B, bss 80,640 B. The USB stack adds about 15 KB of code and 5 KB of RAM. Main SRAM in use is about 267 KB of 512 KB.
+
+## 10. Board against host (task 14.1)
+
+2026-11-21, RP2350-Zero at 250 MHz, engine built with `-ffp-contract=off`: `host/scripts/pico_render.py`
+rendered voices (6202 Blocks), cc_sweep (5857) and dense_retrigger (7235) on the module, and all three
+match the host's golden WAVs bit for bit. Before the change the only differences were the M33's automatic
+FMA contraction (up to 5 LSB peak, 0.23 LSB RMS), and before that undefined float-to-unsigned casts in
+the FM oscillators (fixed in commit cce676c).
