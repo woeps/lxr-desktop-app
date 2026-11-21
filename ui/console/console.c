@@ -115,7 +115,7 @@ static void cmdHelp(void)
 	       "  status [reset]           CPU, temperature and error counters (reset restarts worst/avg)\r\n"
 	       "  bench [fx] [seconds]     full-load test: all voices every 46 ms, drum 1 into fx (default del 10)\r\n"
 	       "  bench stop               end a running bench\r\n"
-	       "  midi                     MIDI input check: bytes received, errors, line level, last bytes\r\n"
+	       "  midi [reset]             MIDI input check: bytes, errors, line level, last bytes, note latency\r\n"
 	       "  preset list              the 16 preset slots\r\n"
 	       "  preset load <0-15>       load a slot (it also becomes the boot slot)\r\n"
 	       "  preset save <0-15> [name] save the current sound and MIDI settings (name: 8 characters)\r\n");
@@ -239,14 +239,28 @@ static void cmdStatus(const char *arg)
 
 /* ---- midi: input check ---- */
 
-static void cmdMidi(void)
+static void cmdMidi(const char *arg)
 {
+	if(arg && strcasecmp(arg, "reset") == 0)
+	{
+		lxr_stats_reset_latency();
+		putStr("midi latency statistics restart with the next note\r\n");
+		return;
+	}
 	lxr_stats_t s;
 	lxr_get_stats(&s);
 	out("midi bytes %lu  errors %lu  line %s  edges %lu\r\n", (unsigned long)s.midi_bytes, (unsigned long)s.midi_errors,
 	    s.midi_line < 0 ? "unknown" : (s.midi_line ? "high (idle, ok)" : "LOW (check pull-up / wiring)"),
 	    (unsigned long)s.midi_line_edges);
 	out("regs %08lX %08lX %08lX\r\n", (unsigned long)s.midi_debug[0], (unsigned long)s.midi_debug[1], (unsigned long)s.midi_debug[2]);
+	if(s.latency_count)
+		out("notes %lu  latency (last input edge to): buffer min %lu avg %lu max %lu us, output min %lu avg %lu max %lu us (%lu notes)\r\n",
+		    (unsigned long)s.midi_notes,
+		    (unsigned long)s.latency_buffer_min_us, (unsigned long)s.latency_buffer_avg_us, (unsigned long)s.latency_buffer_max_us,
+		    (unsigned long)s.latency_output_min_us, (unsigned long)s.latency_output_avg_us, (unsigned long)s.latency_output_max_us,
+		    (unsigned long)s.latency_count);
+	else
+		out("notes %lu  latency: no measurement yet\r\n", (unsigned long)s.midi_notes);
 	uint8_t log[16];
 	const int n = lxr_get_midi_log(log);
 	if(n == 0)
@@ -523,7 +537,7 @@ static void execute(char *line)
 	else if(strcasecmp(cmd, "watch") == 0) cmdWatch(argv[1]);
 	else if(strcasecmp(cmd, "status") == 0) cmdStatus(argv[1]);
 	else if(strcasecmp(cmd, "bench") == 0) cmdBench(argv[1], argv[2]);
-	else if(strcasecmp(cmd, "midi") == 0) cmdMidi();
+	else if(strcasecmp(cmd, "midi") == 0) cmdMidi(argv[1]);
 	else if(strcasecmp(cmd, "preset") == 0) cmdPreset(argv[1], argv[2], argv[3]);
 	else if(runExtraCommand(argc, argv) == 0) { }
 	else out("error: unknown command '%s', type help\r\n", cmd);

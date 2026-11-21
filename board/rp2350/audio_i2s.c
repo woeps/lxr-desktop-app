@@ -36,6 +36,21 @@ static uint sm;
 /* bit i set: buffer i has been played and must be rendered again */
 static volatile uint32_t freeMask;
 
+/* note latency (R4.6): MIDI edge time of a note rendered into buffer i, and the time from that
+ * edge until the Block was in the buffer. Reported when buffer i starts to play. */
+static volatile uint32_t pendingNoteEdge;
+static volatile bool pendingNote;
+static uint32_t noteEdgeUs[2], noteBufferUs[2];
+static volatile bool noteValid[2];
+/* the TX FIFO (joined, 8 frames) still holds the end of the previous buffer when its DMA completes */
+#define FIFO_DELAY_US ((uint32_t)(8u * 1000000u / LXR_SAMPLE_RATE))
+
+void audio_i2s_mark_note(uint32_t edge_us)
+{
+	pendingNoteEdge = edge_us;
+	pendingNote = true;
+}
+
 static void __not_in_flash_func(dmaIrq)(void)
 {
 	for(int i = 0; i < 2; i++)
@@ -48,6 +63,14 @@ static void __not_in_flash_func(dmaIrq)(void)
 			if(freeMask & (1u << i))
 				lxr_stats_report_underrun();   /* not rendered in time: it plays the old Block again */
 			freeMask |= 1u << i;
+
+			/* buffer i finished; the chained channel now feeds buffer 1-i */
+			const int next = 1 - i;
+			if(noteValid[next])
+			{
+				noteValid[next] = false;
+				lxr_stats_report_note_latency(noteBufferUs[next], time_us_32() + FIFO_DELAY_US - noteEdgeUs[next]);
+			}
 		}
 	}
 }
@@ -115,6 +138,14 @@ void __not_in_flash_func(audio_i2s_run)(void (*before_block)(void))
 		if(before_block)
 			before_block();   /* MIDI input: notes land in the Block rendered right now */
 		renderInto(i);
+
+		if(pendingNote)
+		{
+			pendingNote = false;
+			noteEdgeUs[i] = pendingNoteEdge;
+			noteBufferUs[i] = time_us_32() - pendingNoteEdge;
+			noteValid[i] = true;
+		}
 
 		const uint32_t irqState = save_and_disable_interrupts();
 		freeMask &= ~(1u << i);

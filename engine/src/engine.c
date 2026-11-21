@@ -274,6 +274,7 @@ void lxr_midi_trigger_note(uint8_t voice, uint8_t note, uint8_t velocity)
 {
 	if(voice >= LXR_NUM_VOICE_SLOTS || velocity == 0 || engine_isVoiceMuted(voice))
 		return;
+	stats.midi_notes++;
 	voiceControl_noteOn(voice, (uint8_t)(note & 0x7f), (uint8_t)(velocity & 0x7f));
 }
 
@@ -382,6 +383,11 @@ void lxr_stats_count_midi_error(void)
 	stats.midi_errors++;
 }
 
+uint32_t lxr_midi_note_count(void)
+{
+	return stats.midi_notes;
+}
+
 static uint8_t midiLog[16];
 
 void lxr_stats_count_midi_byte(uint8_t byte)
@@ -415,4 +421,33 @@ void lxr_stats_report_flash_write(uint32_t us)
 	stats.flash_write_us = us;
 	if(us > stats.flash_write_max_us)
 		stats.flash_write_max_us = us;
+}
+
+static uint64_t latencyBufferSum, latencyOutputSum;
+static volatile uint8_t latencyResetRequest;
+
+void lxr_stats_reset_latency(void)
+{
+	latencyResetRequest = 1;
+}
+
+void lxr_stats_report_note_latency(uint32_t to_buffer_us, uint32_t to_output_us)
+{
+	if(latencyResetRequest || stats.latency_count == 0)
+	{
+		stats.latency_count = 0;
+		latencyBufferSum = latencyOutputSum = 0;
+		stats.latency_buffer_min_us = stats.latency_output_min_us = UINT32_MAX;
+		stats.latency_buffer_max_us = stats.latency_output_max_us = 0;
+		latencyResetRequest = 0;
+	}
+	if(to_buffer_us < stats.latency_buffer_min_us) stats.latency_buffer_min_us = to_buffer_us;
+	if(to_buffer_us > stats.latency_buffer_max_us) stats.latency_buffer_max_us = to_buffer_us;
+	if(to_output_us < stats.latency_output_min_us) stats.latency_output_min_us = to_output_us;
+	if(to_output_us > stats.latency_output_max_us) stats.latency_output_max_us = to_output_us;
+	latencyBufferSum += to_buffer_us;
+	latencyOutputSum += to_output_us;
+	stats.latency_count++;
+	stats.latency_buffer_avg_us = (uint32_t)(latencyBufferSum / stats.latency_count);
+	stats.latency_output_avg_us = (uint32_t)(latencyOutputSum / stats.latency_count);
 }

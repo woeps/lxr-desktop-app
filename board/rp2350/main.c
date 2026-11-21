@@ -38,11 +38,20 @@
 #define LXR_BOOT_DEMO 0
 #endif
 
+/** Audio core, before each Block: parse MIDI; if it started a note, mark the Block for the latency measurement. */
+static void beforeBlock(void)
+{
+	const uint32_t notesBefore = lxr_midi_note_count();
+	midi_uart_poll();
+	if(lxr_midi_note_count() != notesBefore)
+		audio_i2s_mark_note(midi_uart_last_edge_us());
+}
+
 static void audioCoreMain(void)
 {
 	audio_i2s_init(clock_get_hz(clk_sys));
 	audio_i2s_start();
-	audio_i2s_run(midi_uart_poll);   /* MIDI is parsed on this core, between Blocks */
+	audio_i2s_run(beforeBlock);   /* MIDI is parsed on this core, between Blocks */
 }
 
 /** Die temperature in 0.1 degC from the on-chip sensor (RP2350 datasheet: 27 degC at 0.706 V, -1.721 mV/degC). */

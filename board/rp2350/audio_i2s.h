@@ -24,4 +24,8 @@ void audio_i2s_start(void);
  *  then renders a Block into the buffer. */
 void audio_i2s_run(void (*before_block)(void)) __attribute__((noreturn));
 
+/** Audio core, from before_block: the Block about to be rendered starts a note whose MIDI
+ *  message had its last input edge at edge_us. Its latency is reported to the engine statistics. */
+void audio_i2s_mark_note(uint32_t edge_us);
+
 #endif /* LXR_AUDIO_I2S_H_ */

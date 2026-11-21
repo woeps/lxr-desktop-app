@@ -21,6 +21,7 @@
 
 #include "hardware/uart.h"
 #include "hardware/gpio.h"
+#include "hardware/timer.h"
 #include "hardware/dma.h"
 #include "hardware/regs/dma.h"
 
@@ -32,12 +33,21 @@ static uint32_t ring[RING_ENTRIES] __attribute__((aligned(RING_BYTES)));
 static int dmaChannel;
 static uint32_t tail;   /* next entry to read, 0..RING_ENTRIES-1 */
 static volatile uint32_t lineEdges;
+static volatile uint32_t lastEdgeUs;
 
 static void onRxEdge(uint gpio, uint32_t events)
 {
 	(void)gpio;
 	if(events & GPIO_IRQ_EDGE_FALL)
+	{
 		lineEdges++;
+		lastEdgeUs = time_us_32();
+	}
+}
+
+uint32_t midi_uart_last_edge_us(void)
+{
+	return lastEdgeUs;
 }
 
 uint32_t midi_uart_line_edges(void)

@@ -103,6 +103,13 @@ typedef struct {
 	uint32_t underruns;       /* Blocks played again because they were not rendered in time, since the last reset */
 	uint32_t midi_errors;     /* framing errors, overruns, resyncs */
 	uint32_t midi_bytes;      /* MIDI bytes received (including ones with errors) */
+	uint32_t midi_notes;      /* voices triggered by MIDI */
+	/* note latency (R4.6), measured by the board from the last edge on the MIDI input
+	 * before a note to (a) the note's Block being in the output buffer, (b) that Block
+	 * starting to play on the audio output. Since boot or `midi reset`. */
+	uint32_t latency_count;
+	uint32_t latency_buffer_min_us, latency_buffer_max_us, latency_buffer_avg_us;
+	uint32_t latency_output_min_us, latency_output_max_us, latency_output_avg_us;
 	int8_t midi_line;         /* MIDI input line level reported by the board: 1 high (idle), 0 low, -1 unknown */
 	uint32_t midi_line_edges; /* falling edges seen on the MIDI input pin (board report), independent of the UART */
 	uint32_t midi_debug[3];   /* board-specific raw registers for the `midi` check (RP2350: DMA CTRL, DMA count, UART FR) */
@@ -136,6 +143,15 @@ void lxr_stats_report_midi_debug(const uint32_t regs[3]);
 
 /** Board report: duration of the last flash sector write (erase + program) in microseconds. */
 void lxr_stats_report_flash_write(uint32_t us);
+
+/** Board report of one note latency measurement (R4.6), in microseconds. Audio core. */
+void lxr_stats_report_note_latency(uint32_t to_buffer_us, uint32_t to_output_us);
+
+/** Restarts the note latency statistics on the next measurement. Control core. */
+void lxr_stats_reset_latency(void);
+
+/** Number of voices triggered by MIDI since boot (cheap, for the board's latency measurement). */
+uint32_t lxr_midi_note_count(void);
 
 /** Counts one audio underrun. Audio core. */
 void lxr_stats_report_underrun(void);

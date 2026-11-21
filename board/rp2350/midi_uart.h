@@ -20,6 +20,9 @@ void midi_uart_init(void);
 /** Falling edges seen on the MIDI RX pin since boot (wiring check, independent of the UART). */
 uint32_t midi_uart_line_edges(void);
 
+/** time_us_32() of the most recent falling edge on the MIDI RX pin (latency measurement). */
+uint32_t midi_uart_last_edge_us(void);
+
 /** Raw register snapshot for the console's `midi` check: DMA CTRL, DMA TRANS_COUNT, UART FR. */
 void midi_uart_debug(uint32_t out[3]);
 
