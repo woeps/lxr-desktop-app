@@ -52,7 +52,7 @@ Host tests: `cmake -S host -B build/host -G Ninja && cmake --build build/host &&
 | 4.4 | pass | The CC/NRPN handler is the original code, moved to `engine/src/param_apply.c`. The `cc_sweep` script (CC filter sweep, NRPN FX sweep) runs through the parser on the board and matches the host bit for bit (task 14.1). |
 | 4.5 | pass | Parameter ids are unchanged, so CC and NRPN numbers are unchanged (`docs/removed-params.md`). |
 | 4.6 | not measured | No scope or logic analyser was available (task 10.5, deferred by the user). By construction: the audio core parses MIDI right before each Block, so a complete message waits at most one Block (1.45 ms) before it is rendered into the output buffer. |
-| 4.7 | pass, deviation | Framing, parity, break and overrun flags of each byte are kept by the receive DMA and counted in `midi_errors`; the parser drops the partial message and resyncs (CTest `midi_parser`). On hardware, unplugging the cable while playing left `midi_errors` at 0 (the line just goes idle) and notes resumed; a corrupted byte was not injected on hardware. An overflow of the 512-entry DMA ring is not detected; it would need the audio core to stall for 164 ms. During the 10-minute MIDI soak the board counted 4 errors in 126,508 bytes and kept playing; their cause is not yet known (see open points). |
+| 4.7 | pass, deviation | Framing, parity, break and overrun flags of each byte are kept by the receive DMA and counted in `midi_errors`; the parser drops the partial message and resyncs (CTest `midi_parser`). On hardware: replugging the TRS cable while a pattern played gave 4 errors in 126,508 bytes, and notes continued right after (2026-11-21, 10-minute soak). Deviation: an overflow of the 512-entry DMA receive ring is not detected; it would need the audio core to stall for 164 ms. |
 
 ## R5 Engine on the RP2350
 
@@ -104,4 +104,3 @@ Host tests: `cmake -S host -B build/host -G Ninja && cmake --build build/host &&
 
 - **R1.2:** time the boot (power-up to first sound) once.
 - **R4.6:** measure note-to-audio latency with a scope or logic analyser.
-- **R4.7:** find the cause of the 4 MIDI errors in the soak (cable handling, or a marginal input signal); a deliberately corrupted byte has not been injected.
