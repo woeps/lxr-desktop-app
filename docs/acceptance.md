@@ -51,7 +51,7 @@ Host tests: `cmake -S host -B build/host -G Ninja && cmake --build build/host &&
 | 4.3 | pass | Notes trigger the voice of their channel with their velocity, using the original trigger code (hardware, CTest `midi_parser`). |
 | 4.4 | pass | The CC/NRPN handler is the original code, moved to `engine/src/param_apply.c`. The `cc_sweep` script (CC filter sweep, NRPN FX sweep) runs through the parser on the board and matches the host bit for bit (task 14.1). |
 | 4.5 | pass | Parameter ids are unchanged, so CC and NRPN numbers are unchanged (`docs/removed-params.md`). |
-| 4.6 | not measured | No scope or logic analyser was available (task 10.5, deferred by the user). By construction: the audio core parses MIDI right before each Block, so a complete message waits at most one Block (1.45 ms) before it is rendered into the output buffer. |
+| 4.6 | pass | Measured on the board with the `midi` command (2026-11-21, 74 single notes): from the last edge on the MIDI input to the note's Block being in the output buffer **min 738, avg 1437, max 2215 us** (limit 2 Blocks = 2902 us). To the Block starting to play on I2S (including the 181 us PIO FIFO): min 1769, avg 2469, max 3249 us; the PCM5102A's filter delay (about 0.5 ms) comes on top. Both figures include up to 320 us of the last byte itself, because the last edge comes before its stop bit. Timed with the RP2350's own microsecond timer; no external cross-check. |
 | 4.7 | pass, deviation | Framing, parity, break and overrun flags of each byte are kept by the receive DMA and counted in `midi_errors`; the parser drops the partial message and resyncs (CTest `midi_parser`). On hardware: replugging the TRS cable while a pattern played gave 4 errors in 126,508 bytes, and notes continued right after (2026-11-21, 10-minute soak). Deviation: an overflow of the 512-entry DMA receive ring is not detected; it would need the audio core to stall for 164 ms. |
 
 ## R5 Engine on the RP2350
@@ -102,4 +102,4 @@ Host tests: `cmake -S host -B build/host -G Ninja && cmake --build build/host &&
 
 ## Open points
 
-- **R4.6:** measure note-to-audio latency with a scope or logic analyser.
+None. All criteria are met, met with the stated deviations, or not applicable (R5.4).
