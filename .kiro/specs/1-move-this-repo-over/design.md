@@ -239,7 +239,7 @@ The original M7 at 216 MHz was dual-issue and used ITCM. The M33 at 150 MHz is s
 - `lxr_console`: the console on stdin/stdout, driving the same engine.
 - CTest unit tests for the parser (running status, clock bytes ignored, partial message on error), the console (each command and error case), the preset serializer (round trip, bad CRC) and the parameter-table coverage check.
 
-Golden WAVs come from the host build after a listening check, and are committed. The Pico build renders the same script from a compiled-in copy through a console command (`render <seconds>`) and prints a checksum of the PCM, and a host tool compares a dump against the golden file. Single-precision results can differ in the last bit between the host and the M33, so the tolerance is **peak absolute difference of at most 4 LSB (16-bit) and RMS difference below 1 LSB**.
+Golden WAVs come from the host build after a listening check, and are committed. The Pico build renders the same script from a compiled-in copy through a console command (`render <seconds>`) and prints a checksum of the PCM, and a host tool compares a dump against the golden file. The comparison is **bit-exact**. Both builds compile the engine with `-ffp-contract=off`, so no compiler fuses `a*b + c` on its own and the board and the host round every float operation the same way (the remaining explicit `fmaf()` calls are correctly rounded on both). The first plan allowed 4 LSB peak and 1 LSB RMS; the hardware run showed that the only remaining difference was the M33's automatic FMA contraction (host built with FMA reproduced the board's 3 to 5 LSB peaks exactly), so the tolerance was removed instead.
 
 ## 11. Risks
 

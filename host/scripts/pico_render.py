@@ -8,8 +8,8 @@
 It sends `render <script>` over the USB console, reopens the port after the
 module restarts into render mode, reads the PCM the module sends
 back, writes it as a WAV file and compares it sample by sample with
-host/golden/<script>.wav. Pass: peak difference at most 4 LSB and RMS difference
-below 1 LSB (design section 10). The module restarts after each render.
+host/golden/<script>.wav. Pass: bit-exact (design section 10; both builds use
+-ffp-contract=off, so the board and the host round every float operation alike). The module restarts after each render.
 No extra Python packages are needed.
 """
 import argparse
@@ -121,7 +121,7 @@ def load_wav(path):
         return w.readframes(w.getnframes())
 
 
-def compare(golden, pico, max_peak=4, max_rms=1.0):
+def compare(golden, pico, max_peak=0, max_rms=0.0):
     if len(golden) != len(pico):
         return False, f"length differs: golden {len(golden) // 4} frames, module {len(pico) // 4} frames"
     a = struct.unpack(f"<{len(golden) // 2}h", golden)
@@ -133,7 +133,7 @@ def compare(golden, pico, max_peak=4, max_rms=1.0):
         if d > peak:
             peak, at = d, i
     rms = math.sqrt(sq / len(a))
-    ok = peak <= max_peak and rms < max_rms
+    ok = peak <= max_peak and rms <= max_rms
     return ok, f"peak diff {peak} LSB at frame {at // 2}, rms diff {rms:.4f} LSB (limits {max_peak} / {max_rms})"
 
 

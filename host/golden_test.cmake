@@ -19,7 +19,7 @@ if(NOT EXISTS "${GOLDEN}")
     message(FATAL_ERROR "no golden file ${GOLDEN}. Listen to ${OUT} and copy it there if it is right.")
 endif()
 
-execute_process(COMMAND "${WAVCMP}" "${GOLDEN}" "${OUT}" RESULT_VARIABLE _rc)
+execute_process(COMMAND "${WAVCMP}" "${GOLDEN}" "${OUT}" 0 0 RESULT_VARIABLE _rc)
 if(NOT _rc EQUAL 0)
     message(FATAL_ERROR "output differs from ${GOLDEN}")
 endif()

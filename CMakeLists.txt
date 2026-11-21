@@ -32,7 +32,7 @@ pico_sdk_init()
 # Flags every engine source needs: __fp16 (FX buffer) and single-precision math.
 add_library(lxr_engine_flags INTERFACE)
 target_compile_options(lxr_engine_flags INTERFACE
-    $<$<COMPILE_LANGUAGE:C>:-mfp16-format=ieee -fsingle-precision-constant>
+    $<$<COMPILE_LANGUAGE:C>:-mfp16-format=ieee -fsingle-precision-constant -ffp-contract=off>
 )
 
 add_executable(lxr

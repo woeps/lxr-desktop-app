@@ -32,6 +32,9 @@ target_include_directories(lxr_host_flags INTERFACE
 )
 target_compile_options(lxr_host_flags INTERFACE
     -Wall -Wextra -Wdouble-promotion -fsingle-precision-constant
+    # no fused multiply-add on either side: the Pico and the host then round every
+    # float operation the same way and the board-against-host render matches exactly
+    -ffp-contract=off
 )
 
 # --- parameter table (task 4) ---------------------------------------------------

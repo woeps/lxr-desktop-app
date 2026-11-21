@@ -4,9 +4,8 @@
  *   wavcmp <a.wav> <b.wav> [max_peak_lsb] [max_rms_lsb]
  *
  * Passes (exit 0) when both files have the same format and length, the peak
- * absolute difference is at most max_peak_lsb (default 4) and the RMS
- * difference is below max_rms_lsb (default 1.0). These are the tolerances of
- * design section 10.
+ * absolute difference is at most max_peak_lsb (default 0) and the RMS
+ * difference is at most max_rms_lsb (default 0): bit-exact, design section 10.
  *
  * Copyright (C) 2026 Erica Synths
  * SPDX-License-Identifier: GPL-3.0-only
@@ -80,8 +79,8 @@ int main(int argc, char **argv)
 		fprintf(stderr, "usage: %s <a.wav> <b.wav> [max_peak_lsb] [max_rms_lsb]\n", argv[0]);
 		return 2;
 	}
-	const long maxPeak = argc > 3 ? atol(argv[3]) : 4;
-	const double maxRms = argc > 4 ? atof(argv[4]) : 1.0;
+	const long maxPeak = argc > 3 ? atol(argv[3]) : 0;
+	const double maxRms = argc > 4 ? atof(argv[4]) : 0.0;
 
 	Wav a, b;
 	if(load(argv[1], &a) || load(argv[2], &b)) return 2;
@@ -108,7 +107,7 @@ int main(int argc, char **argv)
 	}
 	const double rms = a.count ? sqrt(sumSq / (double)a.count) : 0;
 	const double rmsA = a.count ? sqrt(sumSqA / (double)a.count) : 0;
-	const int ok = peak <= maxPeak && rms < maxRms;
+	const int ok = peak <= maxPeak && rms <= maxRms;
 	printf("%s: peak diff %ld LSB at frame %zu, rms diff %.4f LSB (signal rms %.1f LSB, limits %ld / %.2f)\n",
 	       ok ? "PASS" : "FAIL", peak, peakAt / (a.channels ? a.channels : 1), rms, rmsA, maxPeak, maxRms);
 	return ok ? 0 : 1;
