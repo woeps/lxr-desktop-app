@@ -16,7 +16,7 @@ Host tests: `cmake -S host -B build/host -G Ninja && cmake --build build/host &&
 | # | Status | Evidence |
 |---|---|---|
 | 1.1 | pass | `cmake --preset release` builds `lxr.uf2`/`lxr.elf` for `waveshare_rp2350_zero`; `-DPICO_BOARD=pico2` builds for the Pico 2. The link map contains no STM32 object (`grep -c stm32 build/release/lxr.elf.map` = 0). |
-| 1.2 | not measured | Boot was not timed. The boot path has one fixed wait (10 ms for the core regulator) and no wait for USB; the boot demo started playing right after power-up on hardware (task 9.3). |
+| 1.2 | pass | Power-up to ready-to-play under 0.3 s, measured by hand on the RP2350-Zero (2026-11-21). The boot path has one fixed wait (10 ms for the core regulator) and does not wait for USB. |
 | 1.3 | pass | Runs on a stock RP2350-Zero with only the PCM5102A and the MIDI input circuit (tasks 9.3, 10.4). The Pico 2 build compiles but was not run on a Pico 2. |
 | 1.4 | pass | No STM32 file in the tree (`git ls-files` check for `Drivers/`, `Middlewares/`, `FATFS/`, `USB_DEVICE_MIDI/`, linker script, startup, HAL-MSP, image tools: none). Git history keeps them (commit `a43cd4f` and earlier). |
 | 1.5 | pass | Every source carries `SPDX-License-Identifier: GPL-3.0-only` except `cmake/pico_sdk_import.cmake`, which is the SDK's own BSD-3-Clause file and is listed in `NOTICE.md`. Carried-over files keep their original headers. |
@@ -102,5 +102,4 @@ Host tests: `cmake -S host -B build/host -G Ninja && cmake --build build/host &&
 
 ## Open points
 
-- **R1.2:** time the boot (power-up to first sound) once.
 - **R4.6:** measure note-to-audio latency with a scope or logic analyser.
