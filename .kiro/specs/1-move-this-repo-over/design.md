@@ -44,6 +44,8 @@ host/                        test_render.c, test_console.c, golden/*.wav, script
 docs/memory-map.md           committed linker map summary (R5.2)
 ```
 
+The user-sample SD-card memory (`Samples.c` user samples, FatFs) is removed (R5.6): the module has no SD card, and the user did not ask to keep it. The built-in waveforms stay.
+
 Removed from the tree (R1.4, R2.1): `Drivers/`, `Middlewares/`, `FATFS/`, `USB_DEVICE_MIDI/`, `STM32F765VGTX_FLASH.ld`, `Core/Startup`, `Core/Src/{stm32f7xx_*.c,system_stm32f7xx.c,syscalls.c,sysmem.c}`, `Core/Src/Soundengine/{Sequencer,USB,cs4344_cs5343.c,AudioCodecManager.c,TriggerOut.c}`, the whole menu/LCD/button/LED/encoder/pot/front-panel UI, `flash_if.c`, `cmake/stm32f765.cmake`, `cmake/arm-none-eabi.cmake`, the bootloader image tooling, and the README sections on the SD-card updater. Licence headers and `NOTICE.md` stay (R1.5); the `NOTICE.md` bootloader paragraph is trimmed to match.
 
 ## 3. Engine API (R6)

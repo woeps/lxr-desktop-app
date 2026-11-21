@@ -134,3 +134,24 @@ avg_block_us 645, underruns 0, 40.0 C (before: 689 / 673). The Cortex-M33 FPU ta
 1 each for VMUL and VADD, which fits the small gain; other changes since the earlier run (FM cast helper,
 wavetable index wrap, MIDI parsing on the audio core) also contribute, so the gain is not attributed to one change.
 The audio core uses 45% of the 1451 us Block period in the worst measured case.
+
+## 11. Current link (2026-11-21, task 14.4)
+
+Release build, board `waveshare_rp2350_zero`, 250 MHz, `copy_to_ram`:
+
+| Section | Bytes |
+|---|---|
+| `.text` | 86,564 |
+| `.data` (tables, compiled-in render scripts, initialised data) | 195,520 |
+| `.bss` (FX buffer, voice state, queues, rings) | 91,304 |
+| `.heap` | 2,048 |
+| Core 0 / core 1 stacks (SCRATCH_X/Y, outside main SRAM) | 2,048 each |
+
+Main SRAM in use: `0x20000000` to `0x2005B4A8`, **373,928 B (365 KiB) of 512 KiB, 147 KiB free** (R5.2). The image in
+flash ends at `0x45018` (276 KB); the preset region starts at `0x3EF000`.
+
+The growth since section 8 (267 KB) is mostly the render scripts for the `render` command: the
+largest single object is `ev_dense_retrigger` (66 KB), ahead of the FX buffer (64 KB). The no-console
+build (`-DLXR_ENABLE_CONSOLE=OFF`) leaves them out: 176,532 B text+data, 87,776 B bss. If RAM gets
+tight later, these tables are the first thing to move to flash (they are only read by the render mode,
+which does not run audio).

@@ -67,6 +67,13 @@ static uint64_t blockTimeSum;      /* audio core */
 static uint32_t blockTimeCount;    /* audio core */
 static volatile uint8_t statsResetRequest;
 
+/* one-second windows for the rolling statistics (R3.5) and the output level (R6.2) */
+#define STATS_WINDOW_BLOCKS (44100u / LXR_BLOCK_FRAMES)           /* 689 Blocks = 1.0 s */
+#define BLOCK_PERIOD_US ((uint32_t)(LXR_BLOCK_FRAMES * 1000000u / 44100u))   /* 1451 us */
+static uint32_t windowWorstUs, windowTimeBlocks;   /* lxr_stats_report_block (audio core) */
+static uint16_t windowPeak;
+static uint32_t windowPeakBlocks;                  /* lxr_engine_render (audio core) */
+
 /* whole-sound load (lxr_sound_set): request from the control core, cursor on the audio core */
 _Static_assert(LXR_SOUND_PARAM_COUNT == END_OF_SOUND_PARAMETERS, "LXR_SOUND_PARAM_COUNT must match Parameters.h");
 #define SOUND_RELOAD_PER_BLOCK 32u
@@ -172,6 +179,21 @@ void lxr_engine_render(int16_t *stereo, uint32_t frames)
 	}
 
 	soundengine_renderBlock(stereo);
+
+	/* output level: peak over one-second windows */
+	for(uint32_t i = 0; i < LXR_BLOCK_FRAMES * 2u; i++)
+	{
+		const int32_t s = stereo[i];
+		const uint16_t a = (uint16_t)(s < 0 ? (s == -32768 ? 32767 : -s) : s);
+		if(a > windowPeak)
+			windowPeak = a;
+	}
+	if(++windowPeakBlocks >= STATS_WINDOW_BLOCKS)
+	{
+		stats.out_peak = windowPeak;
+		windowPeak = 0;
+		windowPeakBlocks = 0;
+	}
 }
 
 void lxr_stats_report_block(uint32_t block_us)
@@ -189,6 +211,19 @@ void lxr_stats_report_block(uint32_t block_us)
 	blockTimeSum += block_us;
 	blockTimeCount++;
 	stats.avg_block_us = (uint32_t)(blockTimeSum / blockTimeCount);
+	{
+		const uint32_t pct = (stats.avg_block_us * 100u + BLOCK_PERIOD_US / 2u) / BLOCK_PERIOD_US;
+		stats.cpu_percent = (uint8_t)(pct > 100u ? 100u : pct);
+	}
+
+	if(block_us > windowWorstUs)
+		windowWorstUs = block_us;
+	if(++windowTimeBlocks >= STATS_WINDOW_BLOCKS)
+	{
+		stats.recent_worst_block_us = windowWorstUs;
+		windowWorstUs = 0;
+		windowTimeBlocks = 0;
+	}
 }
 
 void lxr_stats_report_underrun(void)

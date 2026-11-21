@@ -97,6 +97,9 @@ typedef struct {
 	uint32_t blocks;          /* Blocks rendered since boot */
 	uint32_t worst_block_us;  /* longest Block render time since the last reset */
 	uint32_t avg_block_us;    /* mean Block render time since the last reset */
+	uint32_t recent_worst_block_us; /* longest Block render time in the last full second (rolling, R3.5) */
+	uint8_t cpu_percent;      /* audio core load: avg_block_us as a share of the Block period */
+	uint16_t out_peak;        /* output level: largest |sample| (0..32767) in the last full second, both channels */
 	uint32_t underruns;       /* Blocks played again because they were not rendered in time, since the last reset */
 	uint32_t midi_errors;     /* framing errors, overruns, resyncs */
 	uint32_t midi_bytes;      /* MIDI bytes received (including ones with errors) */

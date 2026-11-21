@@ -227,6 +227,8 @@ static void cmdStatus(const char *arg)
 	out("blocks %lu  worst_block_us %lu  avg_block_us %lu  underruns %lu  midi_errors %lu  queue_drops %lu  console_drops %lu\r\n",
 	    (unsigned long)s.blocks, (unsigned long)s.worst_block_us, (unsigned long)s.avg_block_us,
 	    (unsigned long)s.underruns, (unsigned long)s.midi_errors, (unsigned long)s.queue_drops, (unsigned long)txDropped);
+	out("cpu %u%%  last second: worst_block_us %lu  output peak %u (%s)\r\n", s.cpu_percent,
+	    (unsigned long)s.recent_worst_block_us, s.out_peak, s.out_peak >= 32767 ? "clipping" : s.out_peak ? "ok" : "silent");
 	if(s.sys_clock_khz)
 		out("clock %lu kHz", (unsigned long)s.sys_clock_khz);
 	if(s.temp_c_x10 != INT16_MIN)

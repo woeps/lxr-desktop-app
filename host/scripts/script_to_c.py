@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# Copyright (C) 2026 Erica Synths
+# SPDX-License-Identifier: GPL-3.0-only
 """Converts host render scripts (host/scripts/*.txt) into a C table for the
 board's `render` console command (task 14.1). Same syntax and timing as
 host/lxr_render.c, so the Pico plays exactly the events the host plays.

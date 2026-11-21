@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# Copyright (C) 2026 Erica Synths
+# SPDX-License-Identifier: GPL-3.0-only
 """Turns an old LXR kit file (.SND) into a preset sector image (task 11.3).
 
     host/scripts/import_kit.py KICKS.SND -o kicks.bin [--slot 3] [--name "Kicks"]

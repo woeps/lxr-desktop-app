@@ -161,6 +161,26 @@ int main(void)
 	lxr_get_stats(&st);
 	CHECK(st.sys_clock_khz == 200000 && st.temp_c_x10 == 412, "board facts");
 
+	/* rolling window, CPU share and output level (R3.5, R6.2) */
+	{
+		lxr_engine_init(44100);
+		for(int i = 0; i < 689; i++) lxr_stats_report_block(i == 100 ? 900u : 290u);
+		lxr_get_stats(&st);
+		CHECK(st.recent_worst_block_us == 900, "window worst %u", st.recent_worst_block_us);
+		CHECK(st.cpu_percent == 20, "cpu %u%% for 290 us of a 1451 us Block", st.cpu_percent);
+		for(int i = 0; i < 689; i++) lxr_stats_report_block(300u);
+		lxr_get_stats(&st);
+		CHECK(st.recent_worst_block_us == 300, "window did not roll (%u)", st.recent_worst_block_us);
+
+		peakOfBlocks(2 * 689);   /* two windows: the first may still hold Blocks from before lxr_engine_init */
+		lxr_get_stats(&st);
+		CHECK(st.out_peak == 0, "silent output peak %u", st.out_peak);
+		lxr_trigger_note(3, 60, 127);
+		const int pk = peakOfBlocks(689);
+		lxr_get_stats(&st);
+		CHECK(st.out_peak == pk && pk > 1000, "output peak %u, rendered peak %d", st.out_peak, pk);
+	}
+
 	/* modulation targets: the stored index is translated to the target parameter */
 	{
 		CHECK(lxr_mod_target_count() == 229 && lxr_mod_target_param(0) == 0, "mod target list");

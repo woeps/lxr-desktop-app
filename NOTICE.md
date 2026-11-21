@@ -64,7 +64,8 @@ These components are included in source form and are distributed under their own
 |---|---|---|
 
 The firmware is built against the Raspberry Pi Pico SDK (BSD-3-Clause) and Arm CMSIS headers
-(Apache-2.0). Neither is copied into this repository; they are fetched or installed at build time.
+(Apache-2.0), which are installed separately. The only SDK file copied into this repository is
+`cmake/pico_sdk_import.cmake` (Raspberry Pi Ltd, BSD-3-Clause, as stated in the SDK's LICENSE.TXT).
 Earlier versions of this repository included STMicroelectronics HAL, USB and CMSIS device code and
 ChaN FatFs for the STM32F765 desktop unit. They are removed from this tree and remain in the git history
 under their original licences.

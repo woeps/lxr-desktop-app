@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# Copyright (C) 2026 Erica Synths
+# SPDX-License-Identifier: GPL-3.0-only
 """Renders a test script on the module and compares it with the host's golden WAV
 (task 14.1, requirement R5.5).
 
