@@ -66,6 +66,17 @@ int lxr_param_get(uint16_t id, uint8_t *value);
 /** Registers the change callback (one). Pass NULL to remove it. */
 void lxr_set_param_callback(lxr_param_cb cb, void *user);
 
+/** Number of sound parameter bytes in a preset: ids 0 .. LXR_SOUND_PARAM_COUNT-1. */
+#define LXR_SOUND_PARAM_COUNT 247
+
+/** Copies the current sound (ids 0 .. LXR_SOUND_PARAM_COUNT-1). Ids that are not public parameters read as stored. */
+void lxr_sound_get(uint8_t values[LXR_SOUND_PARAM_COUNT]);
+
+/** Loads a whole sound. Public parameters are clamped to their range, other ids are ignored.
+ *  The callback fires for each value that changed. The audio core applies the sound over the next
+ *  few Blocks (32 parameters per Block); it never waits for queue space. */
+void lxr_sound_set(const uint8_t values[LXR_SOUND_PARAM_COUNT]);
+
 typedef struct {
 	uint32_t blocks;          /* Blocks rendered since boot */
 	uint32_t worst_block_us;  /* longest Block render time since the last reset */

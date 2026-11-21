@@ -100,3 +100,20 @@ foreach(script voices cc_sweep dense_retrigger)
             -DOUT=${CMAKE_CURRENT_BINARY_DIR}/${script}.wav
             -P ${CMAKE_CURRENT_LIST_DIR}/golden_test.cmake)
 endforeach()
+
+# --- presets (task 11) ---------------------------------------------------------------
+add_executable(test_preset test_preset.c)
+target_link_libraries(test_preset PRIVATE lxr_engine_host)
+add_test(NAME preset COMMAND test_preset)
+
+add_executable(lxr_preset_info lxr_preset_info.c)
+target_link_libraries(lxr_preset_info PRIVATE lxr_engine_host)
+
+find_package(Python3 COMPONENTS Interpreter)
+if(Python3_FOUND)
+    add_test(NAME import_kit
+        COMMAND ${CMAKE_COMMAND} -DPYTHON=${Python3_EXECUTABLE}
+            -DIMPORT=${CMAKE_CURRENT_LIST_DIR}/scripts/import_kit.py
+            -DINFO=$<TARGET_FILE:lxr_preset_info> -DWORK=${CMAKE_CURRENT_BINARY_DIR}/import_kit
+            -P ${CMAKE_CURRENT_LIST_DIR}/import_kit_test.cmake)
+endif()

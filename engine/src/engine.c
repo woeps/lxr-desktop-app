@@ -67,6 +67,12 @@ static uint64_t blockTimeSum;      /* audio core */
 static uint32_t blockTimeCount;    /* audio core */
 static volatile uint8_t statsResetRequest;
 
+/* whole-sound load (lxr_sound_set): request from the control core, cursor on the audio core */
+_Static_assert(LXR_SOUND_PARAM_COUNT == END_OF_SOUND_PARAMETERS, "LXR_SOUND_PARAM_COUNT must match Parameters.h");
+#define SOUND_RELOAD_PER_BLOCK 32u
+static uint8_t soundReloadRequest;
+static uint16_t soundReloadCursor = LXR_SOUND_PARAM_COUNT;
+
 /* ---- audio core ---- */
 
 /** Applies one stored parameter to the voices and FX. */
@@ -151,6 +157,20 @@ void lxr_engine_render(int16_t *stereo, uint32_t frames)
 	}
 
 	stats.blocks++;
+
+	/* a whole-sound load from lxr_sound_set, spread over several Blocks */
+	if(__atomic_exchange_n(&soundReloadRequest, 0, __ATOMIC_ACQUIRE))
+		soundReloadCursor = 0;
+	if(soundReloadCursor < LXR_SOUND_PARAM_COUNT)
+	{
+		const uint16_t end = (uint16_t)(soundReloadCursor + SOUND_RELOAD_PER_BLOCK);
+		for(; soundReloadCursor < end && soundReloadCursor < LXR_SOUND_PARAM_COUNT; soundReloadCursor++)
+		{
+			if(lxr_param_find_id(soundReloadCursor))
+				applyParameter(soundReloadCursor, activeParameters[soundReloadCursor]);
+		}
+	}
+
 	soundengine_renderBlock(stereo);
 }
 
@@ -238,6 +258,31 @@ void lxr_set_param_callback(lxr_param_cb cb, void *user)
 {
 	paramCallbackUser = user;
 	paramCallback = cb;
+}
+
+void lxr_sound_get(uint8_t values[LXR_SOUND_PARAM_COUNT])
+{
+	memcpy(values, activeParameters, LXR_SOUND_PARAM_COUNT);
+}
+
+void lxr_sound_set(const uint8_t values[LXR_SOUND_PARAM_COUNT])
+{
+	for(uint16_t id = 0; id < LXR_SOUND_PARAM_COUNT; id++)
+	{
+		const lxr_param_info_t *info = lxr_param_find_id(id);
+		if(!info)
+			continue;
+		uint8_t v = values[id];
+		if(v < info->min) v = info->min;
+		if(v > info->max) v = info->max;
+		if(activeParameters[id] == v)
+			continue;
+		activeParameters[id] = v;
+		if(paramCallback)
+			paramCallback(id, v, paramCallbackUser);
+	}
+	/* release: the audio core sees all values above before it starts applying them */
+	__atomic_store_n(&soundReloadRequest, 1, __ATOMIC_RELEASE);
 }
 
 void lxr_get_stats(lxr_stats_t *out)

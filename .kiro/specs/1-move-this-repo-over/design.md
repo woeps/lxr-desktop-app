@@ -196,7 +196,7 @@ MIDI input circuit (standard MIDI 1.0 receiver with an H11L1, which runs from 3 
 
 ### 7.1 Format
 
-One preset is one 4 KB flash sector containing: magic `LXRP`, a version byte, an 8-character name, the `END_OF_SOUND_PARAMETERS` parameter bytes in ID order, and a CRC32. A 17th sector holds globals (MIDI channel and note map, last-used slot). The region is the last 17 sectors (68 KB) of the 4 MB flash. Presets store the 0 to 127 parameter bytes, which is also what MIDI delivers, so loading goes through the same `lxr_param_set` path.
+One preset is one 4 KB flash sector containing: magic `LXRP`, a version byte, the payload length, an 8-character name, the `END_OF_SOUND_PARAMETERS` (247) parameter bytes in ID order, and a CRC-32 (zlib polynomial). The exact layout is in `engine/include/lxr/preset.h`. A 17th sector holds globals (MIDI channel and note map, last-used slot). The region is the last 17 sectors (68 KB) of the 4 MB flash. Presets store the 0 to 127 parameter bytes, which is also what MIDI delivers, so loading goes through the same `lxr_param_set` path.
 
 ### 7.2 Boot
 

@@ -22,7 +22,7 @@ Paths are relative to `/home/chris/Projects/lxr-desktop-app`.
   - [x] 3.1 Delete `Sequencer/`, `TriggerOut.c`, `USB/`, `cs4344_cs5343.c`, `AudioCodecManager.c`, FatFs use and all LCD/menu/button/LED/encoder/pot/front-panel sources not already removed.
   - [x] 3.2 Remove sequencer, clock and menu calls from `MidiParser.c`, `MidiVoiceControl.c`, `CortexParser.c` and `Soundengine.c`. Clock and transport bytes are consumed and dropped. Replace `seq_setMute` with a per-voice engine mute flag.
   - [x] 3.3 Document the sequencer-only parameters and keep the remaining `ParamEnums` values unchanged. The IDs stay in the enum (CC IDs must not move) and task 4's table leaves them out. Recorded in `docs/removed-params.md`.
-  - [x] 3.4 Remove per-step velocity and parameter-lock modulation paths driven by the sequencer while keeping MIDI-velocity modulation (R2.6).
+  - [x] 3.4 Remove per-step velocity and parameter-lock modulation paths driven by the sequencer while keeping MIDI-velocity modulation (R2.6). Correction found in task 11: deleting `CortexParser.c` had also removed the translation of the stored mod-target index (vel_dest_x, target_lfox) into a parameter id, so velocity and LFO modulation targets did nothing. Restored in commit 03818cd with a host test.
   - [x] 3.5 Add `ALL` to the `check_engine_deps` target in `CMakeLists.txt`. Remove the leftover STM32 pieces still in `Core/` (`main.h`, `delay.c/h`, the `Core/Inc/IO`, `menu` and legacy UI files) and the HD44780 row in `NOTICE.md`. Verify: `check_engine_deps` passes, and a `grep` for `seq_`, `menu_`, `lcd_`, `usb_` in `engine/` and `midi/` finds nothing.
 
 - [x] 4. Parameter metadata table (R6.5)
@@ -70,14 +70,14 @@ Paths are relative to `/home/chris/Projects/lxr-desktop-app`.
   - [x] 10.2 Feed the ring into `midi/midi_parser.c` from the core-0 main loop. Done: `midi_uart_poll()` in the main loop, via `midiParser_processRxWord()` (host-tested: error flags trigger resync).
   - [x] 10.3 Confirm from the `.map` file that TinyUSB contains only the CDC class (no MIDI class) and that the USB port carries only the console and the reset interface. Done: linked TinyUSB classes are CDC and the vendor reset interface (`vendord_*`, used by picotool); no `midid_*`/`tud_midi_*` symbols, `CFG_TUD_MIDI` not set.
   - [x] 10.4 **Hardware:** build the H11L1 input circuit (design 6.4). Verify note triggers and a CC sweep from a MIDI controller or interface. Done 2026-11-21 with an H11L1 and a 3.5 mm TRS Type A jack: notes on channel 2 play drum 2. First attempt received no bytes although the line toggled; fixed by reading the UART data register with 32-bit DMA transfers and giving the endless DMA a non-zero count field (commit 35db050). The console `midi` command (byte count, last bytes, line level, edge count, DMA/UART registers) was added for this check.
-  - [ ] 10.5 **Hardware:** measure note-to-audio latency with a scope or logic analyser on the MIDI line and the I2S data line. It must be at most 2 Blocks (2.9 ms).
+  - [ ] 10.5 **Hardware:** measure note-to-audio latency with a scope or logic analyser on the MIDI line and the I2S data line. It must be at most 2 Blocks (2.9 ms). **Deferred by the user (no analyser at hand): measured in task 14.2 instead.**
   - [ ] 10.6 **Hardware:** send a continuous 31250-baud byte stream with a deliberately corrupted byte every second and confirm `midi_errors` counts them and playing resumes on the next valid message.
 
-- [ ] 11. Preset serialization and factory defaults (R8.1, R8.3, R8.4, R2.4)
-  - [ ] 11.1 Implement `engine/preset.c`: pack and unpack the 4 KB sector image (magic, version, name, parameter bytes, CRC32) and the globals sector. No I/O.
-  - [ ] 11.2 Convert the existing factory kit data (`initKit.c`) into the factory-default parameter bytes.
-  - [ ] 11.3 Optional import tool `host/scripts/import_kit.py` that turns an old LXR kit file into a preset image and skips pattern data.
-  - [ ] 11.4 Host unit tests: round trip, flipped bit fails the CRC, blank (0xFF) sector loads factory defaults, 16 slots independent.
+- [x] 11. Preset serialization and factory defaults (R8.1, R8.3, R8.4, R2.4)
+  - [x] 11.1 Implement `engine/preset.c`: pack and unpack the 4 KB sector image (magic, version, name, parameter bytes, CRC32) and the globals sector. No I/O. Done: `engine/include/lxr/preset.h`, `engine/src/preset.c` (16-byte header, 247 parameter bytes, CRC-32 compatible with zlib; globals as id/value pairs plus the last-used slot). Loading goes through the new `lxr_sound_set()`, which the audio core applies 32 parameters per Block, so a preset load cannot overflow the 256-entry command queue.
+  - [x] 11.2 Convert the existing factory kit data (`initKit.c`) into the factory-default parameter bytes. Done: `lxr_preset_factory()` returns the initKit bytes clamped to the parameter ranges; a host test checks that they equal the parameter table defaults.
+  - [x] 11.3 Optional import tool `host/scripts/import_kit.py` that turns an old LXR kit file into a preset image and skips pattern data. Done: `host/scripts/import_kit.py` (.SND only; pattern/all/project files are refused; short files from older firmware are padded with 0 like the old loader did) prints the `picotool load ... -o <slot address>` command. `host/lxr_preset_info` checks an image and lists changes against the factory sound. End-to-end CTest `import_kit`.
+  - [x] 11.4 Host unit tests: round trip, flipped bit fails the CRC, blank (0xFF) sector loads factory defaults, 16 slots independent. Done: `host/test_preset.c` (CRC check value, round trip, every single-bit flip detected, blank and zero sectors, factory equals initKit, 16 slots, slot offsets, sound load with a full queue, globals round trip).
 
 - [ ] 12. Preset flash storage (R8)
   - [ ] 12.1 Implement `board/rp2350/preset_flash.c` for the last 17 sectors of flash using the SDK flash erase and program routines with interrupts disabled on core 0 only. Hook it to `lxr_preset_load/save` and the boot load of the last-used slot.
@@ -93,7 +93,7 @@ Paths are relative to `/home/chris/Projects/lxr-desktop-app`.
 
 - [ ] 14. Host-versus-Pico comparison and final acceptance
   - [ ] 14.1 Add the console `render <seconds>` command on the Pico that plays the compiled-in script and dumps PCM over the USB serial port. Add a host script that captures it and runs `host/wavcmp` against the golden WAV (R5.5).
-  - [ ] 14.2 Run a 10-minute soak on hardware with all six voices retriggered at the maximum rate from a MIDI source. Confirm zero underruns and zero MIDI errors (R3.2).
+  - [ ] 14.2 Run a 10-minute soak on hardware with all six voices retriggered at the maximum rate from a MIDI source. Confirm zero underruns and zero MIDI errors (R3.2). Also measure the note-to-audio latency deferred from task 10.5 (at most 2 Blocks, 2.9 ms).
   - [ ] 14.3 Build with no UI registered and with the console registered, and confirm both boot and play from MIDI (R6.3).
   - [ ] 14.4 Walk through every acceptance criterion in `requirements.md` and record the result (pass, or the exact evidence) in `docs/acceptance.md`.
   - [ ] 14.5 Update `README.md` with the final pin table, the MIDI input circuit, PCM5102A wiring, the chosen clock and voltage, and the console command list.

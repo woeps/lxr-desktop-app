@@ -1,6 +1,6 @@
 # Parameters removed or ignored with the sequencer (task 3.3)
 
-Parameter IDs below `END_OF_SOUND_PARAMETERS` (228) are the CC/NRPN IDs and **keep their values** (requirements R2.5 and R4.5). IDs from `END_OF_SOUND_PARAMETERS` upward were never CC IDs. They were slots in the old front panel's edit buffer (`activeParameters`).
+Parameter IDs below `END_OF_SOUND_PARAMETERS` (247) are the CC/NRPN IDs and **keep their values** (requirements R2.5 and R4.5). IDs from `END_OF_SOUND_PARAMETERS` upward were never CC IDs. They were slots in the old front panel's edit buffer (`activeParameters`).
 
 ## Sound-range IDs that stay in the enum but have no effect
 
