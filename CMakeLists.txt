@@ -41,12 +41,14 @@ add_executable(lxr
     board/rp2350/console_usb.c
     board/rp2350/midi_uart.c
     board/rp2350/preset_flash.c
+    board/rp2350/offline_render.c
+    ${CMAKE_CURRENT_BINARY_DIR}/render_scripts.c
 )
 pico_generate_pio_header(lxr ${CMAKE_CURRENT_LIST_DIR}/board/rp2350/i2s.pio)
 target_include_directories(lxr PRIVATE board/rp2350)
 target_link_libraries(lxr PRIVATE
     pico_stdlib pico_multicore
-    hardware_pio hardware_dma hardware_irq hardware_uart hardware_clocks hardware_vreg hardware_adc hardware_flash
+    hardware_pio hardware_dma hardware_irq hardware_uart hardware_clocks hardware_vreg hardware_adc hardware_flash hardware_watchdog
     lxr_engine_flags)
 
 # System clock and core voltage (design section 9, task 9.5). The RP2350 is rated for
@@ -61,6 +63,27 @@ if(NOT LXR_VREG_VOLTAGE MATCHES "^VREG_VOLTAGE_1_(10|15|20)$")
     message(FATAL_ERROR "LXR_VREG_VOLTAGE must be VREG_VOLTAGE_1_10, _1_15 or _1_20 (limit 1.20 V)")
 endif()
 target_compile_definitions(lxr PRIVATE LXR_SYS_CLOCK_KHZ=${LXR_SYS_CLOCK_KHZ} LXR_VREG_VOLTAGE=${LXR_VREG_VOLTAGE})
+
+# The host render scripts, compiled in for the console's `render` command (task 14.1).
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
+set(LXR_RENDER_SCRIPTS
+    ${CMAKE_CURRENT_LIST_DIR}/host/scripts/voices.txt
+    ${CMAKE_CURRENT_LIST_DIR}/host/scripts/cc_sweep.txt
+    ${CMAKE_CURRENT_LIST_DIR}/host/scripts/dense_retrigger.txt)
+add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/render_scripts.c
+    COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/host/scripts/script_to_c.py
+            ${CMAKE_CURRENT_BINARY_DIR}/render_scripts.c ${LXR_RENDER_SCRIPTS}
+    DEPENDS ${LXR_RENDER_SCRIPTS} ${CMAKE_CURRENT_LIST_DIR}/host/scripts/script_to_c.py
+    COMMENT "Embedding the render scripts"
+    VERBATIM)
+
+# Without the console the module has no UI at all and plays from MIDI only (R6.3, task 14.3).
+option(LXR_ENABLE_CONSOLE "Serial console on the USB port" ON)
+if(LXR_ENABLE_CONSOLE)
+    target_compile_definitions(lxr PRIVATE LXR_ENABLE_CONSOLE=1)
+else()
+    target_compile_definitions(lxr PRIVATE LXR_ENABLE_CONSOLE=0)
+endif()
 
 option(LXR_BOOT_DEMO "Play every voice once after boot (hardware check)" OFF)
 if(LXR_BOOT_DEMO)

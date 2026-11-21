@@ -101,6 +101,8 @@ static void printValue(const lxr_param_info_t *p, uint8_t v)
 
 static int watchOn;
 
+static void printExtraHelp(void);
+
 static void cmdHelp(void)
 {
 	putStr("commands:\r\n"
@@ -117,6 +119,7 @@ static void cmdHelp(void)
 	       "  preset list              the 16 preset slots\r\n"
 	       "  preset load <0-15>       load a slot (it also becomes the boot slot)\r\n"
 	       "  preset save <0-15> [name] save the current sound and MIDI settings (name: 8 characters)\r\n");
+	printExtraHelp();
 }
 
 static void cmdParams(const char *filter)
@@ -335,6 +338,59 @@ static void cmdPreset(const char *sub, const char *arg, const char *name)
 	putStr("error: usage: preset list | preset load <0-15> | preset save <0-15> [name]\r\n");
 }
 
+/* ---- commands added by other layers ---- */
+
+#define EXTRA_COMMANDS 4
+static struct { const char *name, *help; console_command_fn fn; } extra[EXTRA_COMMANDS];
+static int extraCount;
+
+int console_add_command(const char *name, const char *help, console_command_fn fn)
+{
+	if(!name || !fn || extraCount >= EXTRA_COMMANDS)
+		return -1;
+	extra[extraCount].name = name;
+	extra[extraCount].help = help;
+	extra[extraCount].fn = fn;
+	extraCount++;
+	return 0;
+}
+
+static void printExtraHelp(void)
+{
+	for(int i = 0; i < extraCount; i++)
+		out("  %-24s %s\r\n", extra[i].name, extra[i].help ? extra[i].help : "");
+}
+
+static int runExtraCommand(int argc, char **argv)
+{
+	for(int i = 0; i < extraCount; i++)
+	{
+		if(strcasecmp(argv[0], extra[i].name) == 0)
+		{
+			extra[i].fn(argc, argv);
+			return 0;
+		}
+	}
+	return -1;
+}
+
+void console_print(const char *text)
+{
+	putStr(text);
+}
+
+int console_flush(uint32_t timeout_ms, uint32_t (*now_ms)(void))
+{
+	const uint32_t start = now_ms ? now_ms() : 0;
+	while(txTail != txHead)
+	{
+		drainOutput();
+		if(!now_ms || now_ms() - start > timeout_ms)
+			break;
+	}
+	return txTail == txHead ? 0 : -1;
+}
+
 /* ---- bench: full-load measurement (task 9.4) ----
  * Routes drum 1 into the FX bus with the chosen effect, retriggers all seven
  * voice slots every 32 Blocks (46 ms, 32nd notes at about 160 bpm) and reports
@@ -467,6 +523,7 @@ static void execute(char *line)
 	else if(strcasecmp(cmd, "bench") == 0) cmdBench(argv[1], argv[2]);
 	else if(strcasecmp(cmd, "midi") == 0) cmdMidi();
 	else if(strcasecmp(cmd, "preset") == 0) cmdPreset(argv[1], argv[2], argv[3]);
+	else if(runExtraCommand(argc, argv) == 0) { }
 	else out("error: unknown command '%s', type help\r\n", cmd);
 }
 

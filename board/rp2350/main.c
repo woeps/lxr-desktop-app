@@ -23,6 +23,7 @@
 #include "console_usb.h"
 #include "midi_uart.h"
 #include "preset_flash.h"
+#include "offline_render.h"
 #include "lxr/preset.h"
 #include "lxr/engine.h"
 #include "ui_iface.h"
@@ -77,6 +78,16 @@ int main(void)
 
 	lxr_engine_init(LXR_SAMPLE_RATE);
 
+#if LXR_ENABLE_CONSOLE
+	/* a `render` request from before the restart: fresh engine, no preset, no audio output */
+	const int renderScript = offline_render_requested();
+	if(renderScript >= 0)
+	{
+		console_usb_init();
+		offline_render_run(renderScript);
+	}
+#endif
+
 	/* saved MIDI settings and the last used preset, or the factory sound (R8.3) */
 	if(preset_flash_init() == 0)
 		lxr_preset_boot();
@@ -88,6 +99,7 @@ int main(void)
 #if LXR_ENABLE_CONSOLE
 	console_usb_init();
 	ui_register(&console_ui);
+	offline_render_init();
 #endif
 	ui_init_all();
 

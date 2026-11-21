@@ -117,3 +117,21 @@ if(Python3_FOUND)
             -DINFO=$<TARGET_FILE:lxr_preset_info> -DWORK=${CMAKE_CURRENT_BINARY_DIR}/import_kit
             -P ${CMAKE_CURRENT_LIST_DIR}/import_kit_test.cmake)
 endif()
+
+# --- compiled-in render scripts for the Pico's `render` command (task 14.1) ------------
+if(Python3_FOUND)
+    set(LXR_RENDER_SCRIPTS ${CMAKE_CURRENT_LIST_DIR}/scripts/voices.txt
+        ${CMAKE_CURRENT_LIST_DIR}/scripts/cc_sweep.txt ${CMAKE_CURRENT_LIST_DIR}/scripts/dense_retrigger.txt)
+    add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/render_scripts.c
+        COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/scripts/script_to_c.py
+                ${CMAKE_CURRENT_BINARY_DIR}/render_scripts.c ${LXR_RENDER_SCRIPTS}
+        DEPENDS ${LXR_RENDER_SCRIPTS} ${CMAKE_CURRENT_LIST_DIR}/scripts/script_to_c.py VERBATIM)
+    add_executable(test_render_scripts test_render_scripts.c ${CMAKE_CURRENT_BINARY_DIR}/render_scripts.c)
+    target_include_directories(test_render_scripts PRIVATE ${LXR_ROOT}/board/rp2350)
+    target_link_libraries(test_render_scripts PRIVATE lxr_engine_host)
+    # one process per script: lxr_engine_init does not reset all engine state (FX buffers,
+    # oscillator phases), so like lxr_render and the Pico's render mode each run starts fresh
+    foreach(script voices cc_sweep dense_retrigger)
+        add_test(NAME render_scripts_${script} COMMAND test_render_scripts ${CMAKE_CURRENT_LIST_DIR}/golden ${script})
+    endforeach()
+endif()

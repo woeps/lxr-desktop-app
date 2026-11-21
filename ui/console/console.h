@@ -40,4 +40,16 @@ uint32_t console_dropped_chars(void);
 /** The console as a UI layer. */
 extern const ui_t console_ui;
 
+/** A command provided by another layer (for example the board). argv[0] is the command name. */
+typedef void (*console_command_fn)(int argc, char **argv);
+
+/** Adds a command (at most 4). help is one line for `help`, without a line break. Returns 0 or -1. */
+int console_add_command(const char *name, const char *help, console_command_fn fn);
+
+/** Queues text for the console output (same queue as the built-in commands). */
+void console_print(const char *text);
+
+/** Sends all queued output, waiting up to timeout_ms for the transmitter. Returns 0 if the queue is empty. */
+int console_flush(uint32_t timeout_ms, uint32_t (*now_ms)(void));
+
 #endif /* CONSOLE_H_ */
