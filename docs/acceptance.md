@@ -37,7 +37,7 @@ Host tests: `cmake -S host -B build/host -G Ninja && cmake --build build/host &&
 | # | Status | Evidence |
 |---|---|---|
 | 3.1 | pass | 44.1 kHz, 16-bit stereo. |
-| 3.2 | partial | `bench cmp 600` (all seven slots every 46 ms, compressor, 10 minutes): 0 underruns, 41.5 C (task 9.5). Dense MIDI pattern at 250 bpm from a sequencer: 0 underruns, worst Block 630 us, but it ran about 7 minutes (289,114 Blocks), not 10. The 10-minute run was synthetic and before MIDI moved to the audio core. |
+| 3.2 | pass | MIDI soak with a dense pattern from a sequencer, 2026-11-21: 713,495 Blocks since boot (17.3 minutes, of which 10 minutes of the pattern), 0 underruns, worst Block 630 us, average 590 us, 40.3 C. Run on the image before commit `63e4735` (which only adds a per-Block peak scan for the output level). Also `bench cmp 600` (all seven slots every 46 ms with the compressor, 10 minutes): 0 underruns, 41.5 C (task 9.5). |
 | 3.3 | pass | One Block per DMA buffer completion (`board/rp2350/audio_i2s.c`). |
 | 3.4 | pass | PIO I2S to a PCM5102A, SCK tied low; pins GP9/10/11 in the design's pin table and `board/rp2350/pins.h`. No audible clock jitter at 250 MHz (task 9.6). |
 | 3.5 | pass | `lxr_get_stats()`: `recent_worst_block_us` (rolling one-second window), `worst_block_us` and `avg_block_us` since the last reset, `cpu_percent`; shown by `status`. |
@@ -52,7 +52,7 @@ Host tests: `cmake -S host -B build/host -G Ninja && cmake --build build/host &&
 | 4.4 | pass | The CC/NRPN handler is the original code, moved to `engine/src/param_apply.c`. The `cc_sweep` script (CC filter sweep, NRPN FX sweep) runs through the parser on the board and matches the host bit for bit (task 14.1). |
 | 4.5 | pass | Parameter ids are unchanged, so CC and NRPN numbers are unchanged (`docs/removed-params.md`). |
 | 4.6 | not measured | No scope or logic analyser was available (task 10.5, deferred by the user). By construction: the audio core parses MIDI right before each Block, so a complete message waits at most one Block (1.45 ms) before it is rendered into the output buffer. |
-| 4.7 | pass, deviation | Framing, parity, break and overrun flags of each byte are kept by the receive DMA and counted in `midi_errors`; the parser drops the partial message and resyncs (CTest `midi_parser`). On hardware, unplugging the cable while playing left `midi_errors` at 0 (the line just goes idle) and notes resumed; a corrupted byte was not injected on hardware. An overflow of the 512-entry DMA ring is not detected; it would need the audio core to stall for 164 ms. |
+| 4.7 | pass, deviation | Framing, parity, break and overrun flags of each byte are kept by the receive DMA and counted in `midi_errors`; the parser drops the partial message and resyncs (CTest `midi_parser`). On hardware, unplugging the cable while playing left `midi_errors` at 0 (the line just goes idle) and notes resumed; a corrupted byte was not injected on hardware. An overflow of the 512-entry DMA ring is not detected; it would need the audio core to stall for 164 ms. During the 10-minute MIDI soak the board counted 4 errors in 126,508 bytes and kept playing; their cause is not yet known (see open points). |
 
 ## R5 Engine on the RP2350
 
@@ -103,6 +103,5 @@ Host tests: `cmake -S host -B build/host -G Ninja && cmake --build build/host &&
 ## Open points
 
 - **R1.2:** time the boot (power-up to first sound) once.
-- **R3.2:** run a full 10-minute MIDI soak with the current firmware (the 7-minute run had no underruns).
 - **R4.6:** measure note-to-audio latency with a scope or logic analyser.
-- **R4.7:** inject a corrupted byte on hardware to see `midi_errors` count it.
+- **R4.7:** find the cause of the 4 MIDI errors in the soak (cable handling, or a marginal input signal); a deliberately corrupted byte has not been injected.
