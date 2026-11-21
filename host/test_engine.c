@@ -190,7 +190,39 @@ int main(void)
 		peakOfBlocks(300);
 		lxr_trigger_note(0, 60, 127);
 		const double hard = energyOfBlocks(30);
-		CHECK(hard > soft * 4.0, "velocity modulation has no effect (energy soft %.0f, hard %.0f)", soft, hard);
+		CHECK(hard > soft * 4, "velocity modulation has no effect (energy soft %.0f, hard %.0f)", soft, hard);
+	}
+
+	/* MIDI path (audio core): applied at once, reported to the control core via dispatch */
+	{
+		lxr_engine_init(44100);
+		lxr_set_param_callback(onChange, NULL);
+		cbCount = 0;
+		CHECK(lxr_midi_param_set(PAR_VOL1, 55) == 0, "midi param set");
+		CHECK(voiceArray[0].vol > 0.42f && voiceArray[0].vol < 0.45f, "midi param not applied immediately (vol %f)", (double)voiceArray[0].vol);
+		uint8_t mv = 0;
+		lxr_param_get(PAR_VOL1, &mv);
+		CHECK(mv == 55, "shadow value %u", mv);
+		CHECK(cbCount == 0, "callback ran on the audio core");
+		lxr_dispatch_param_events();
+		CHECK(cbCount == 1 && cbId == PAR_VOL1 && cbValue == 55, "dispatch: %u calls id %u value %u", cbCount, cbId, cbValue);
+		CHECK(lxr_midi_param_set(PAR_MIX_MOD_1, 9) == -1, "midi out-of-range accepted");
+
+		/* a note sounds in the very next Block, without a queue round trip */
+		lxr_midi_trigger_note(3, 60, 120);
+		lxr_engine_render(block, LXR_BLOCK_FRAMES);
+		int pk = 0;
+		for(int i = 0; i < LXR_BLOCK_FRAMES * 2; i++) if(abs(block[i]) > pk) pk = abs(block[i]);
+		CHECK(pk > 100, "midi note not in the next Block (peak %d)", pk);
+
+		/* an uncollected event ring drops notifications, never the change itself */
+		for(int i = 0; i < 100; i++) lxr_midi_param_set(PAR_PAN1, (uint8_t)i);
+		lxr_get_stats(&st);
+		CHECK(st.event_drops == 100 - 64, "event drops %u", st.event_drops);
+		lxr_param_get(PAR_PAN1, &mv);
+		CHECK(mv == 99, "pan1 %u after a full event ring", mv);
+		lxr_dispatch_param_events();
+		lxr_set_param_callback(NULL, NULL);
 	}
 
 	/* UI layers: both are notified, init and poll are called */

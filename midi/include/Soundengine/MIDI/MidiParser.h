@@ -21,6 +21,7 @@
 
 
 
+/* The parser runs on the audio core between two Blocks (lxr_midi_* in lxr/engine.h). */
 void midiParser_parseUartData(unsigned char data);
 void midiParser_parseMidiMessage(volatile MidiMsg msg);
 

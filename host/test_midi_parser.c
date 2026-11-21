@@ -24,12 +24,12 @@ static Call calls[64];
 static int ncalls;
 static uint32_t midiErrors;
 
-void lxr_trigger_note(uint8_t voice, uint8_t note, uint8_t velocity)
+void lxr_midi_trigger_note(uint8_t voice, uint8_t note, uint8_t velocity)
 {
 	if(ncalls < 64) calls[ncalls++] = (Call){ 'T', voice, note, velocity };
 }
 
-int lxr_param_set(uint16_t id, uint8_t value)
+int lxr_midi_param_set(uint16_t id, uint8_t value)
 {
 	if(ncalls < 64) calls[ncalls++] = (Call){ 'P', id, value, 0 };
 	return 0;

@@ -1,8 +1,8 @@
 /*
  * main.c: board entry point for the Pico 2.
  *
- * Core 0 (control): MIDI input, UI layers (console on USB), flash saves, USB stack.
- * Core 1 (audio):   I2S output, renders one Block per DMA buffer.
+ * Core 0 (control): UI layers (console on USB), flash saves, USB stack.
+ * Core 1 (audio):   MIDI input (parsed before each Block), I2S output, renders one Block per DMA buffer.
  *
  * Copyright (C) 2026 Erica Synths
  * SPDX-License-Identifier: GPL-3.0-only
@@ -41,7 +41,7 @@ static void audioCoreMain(void)
 {
 	audio_i2s_init(clock_get_hz(clk_sys));
 	audio_i2s_start();
-	audio_i2s_run();
+	audio_i2s_run(midi_uart_poll);   /* MIDI is parsed on this core, between Blocks */
 }
 
 /** Die temperature in 0.1 degC from the on-chip sensor (RP2350 datasheet: 27 degC at 0.706 V, -1.721 mV/degC). */
@@ -107,7 +107,6 @@ int main(void)
 	bool led = false;
 	for(;;)
 	{
-		midi_uart_poll();
 		ui_poll_all();
 
 		if(time_reached(nextBlink))

@@ -103,7 +103,7 @@ void audio_i2s_start(void)
 	pio_sm_set_enabled(pio, sm, true);
 }
 
-void __not_in_flash_func(audio_i2s_run)(void)
+void __not_in_flash_func(audio_i2s_run)(void (*before_block)(void))
 {
 	for(;;)
 	{
@@ -112,6 +112,8 @@ void __not_in_flash_func(audio_i2s_run)(void)
 			__wfi();
 
 		const int i = (mask & 1u) ? 0 : 1;
+		if(before_block)
+			before_block();   /* MIDI input: notes land in the Block rendered right now */
 		renderInto(i);
 
 		const uint32_t irqState = save_and_disable_interrupts();

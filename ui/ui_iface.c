@@ -45,6 +45,8 @@ void ui_init_all(void)
 
 void ui_poll_all(void)
 {
+	/* parameter changes made by MIDI on the audio core reach the UIs here */
+	lxr_dispatch_param_events();
 	for(int i = 0; i < layerCount; i++)
 	{
 		if(layers[i]->poll)

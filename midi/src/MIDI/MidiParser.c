@@ -79,7 +79,7 @@ static void midiParser_setParam(uint16_t id, uint8_t value)
 		return;
 	if(value > info->max)
 		value = info->max;
-	lxr_param_set(id, value);
+	lxr_midi_param_set(id, value);
 }
 //-----------------------------------------------------------
 /** Handles a control change. CCs 98/99 and 6 build the NRPN number and value, all others map to a parameter. */
@@ -120,7 +120,7 @@ static void midiParser_noteOn(uint8_t voice, uint8_t note, uint8_t vel)
 			return; // note does not match. Do nothing
 	}
 
-	lxr_trigger_note(voice, note, vel);
+	lxr_midi_trigger_note(voice, note, vel);
 }
 //------------------------------------------------------
 //static void midiParser_noteOff(uint8_t voice, uint8_t note, uint8_t vel)

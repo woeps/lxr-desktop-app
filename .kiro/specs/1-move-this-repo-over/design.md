@@ -88,9 +88,14 @@ void     lxr_get_stats(lxr_stats_t *out);             /* R3.5, R4.7 */
 
 ### 3.1 Threading model
 
-Two cores. **Core 1** runs only the audio loop: it waits for a free half of the I2S DMA ping-pong buffer, calls `lxr_engine_render`, and records the Block time. **Core 0** runs the MIDI parser, the console and flash saves.
+Two cores. **Core 1** runs the audio loop: it waits for a free half of the I2S DMA ping-pong buffer, drains the MIDI receive ring and parses it, then calls `lxr_engine_render` and records the Block time. **Core 0** runs the console (USB), other UI layers and flash saves.
 
-Core 0 never writes engine state directly. `lxr_trigger` and `lxr_param_set` push a 4-byte command `{type, id/voice, value}` into a lock-free single-producer/single-consumer ring (256 entries, power of two) that core 1 drains at the start of each Block. The shadow copy of parameter values read by `lxr_param_get` is written by core 0 in the same call, so UI reads never touch core 1 state. The parameter callback runs in the calling context (core 0) after the command is queued. Every parameter change originates on core 0 (MIDI, console, preset load), so no callback is made from core 1.
+MIDI moved to core 1 after the first hardware test of task 12.3: a flash erase stops core 0 for about 40 ms, which delayed every note that arrived meanwhile (heard as a short pause). On core 1 a note reaches the next Block whatever core 0 is doing.
+
+- **MIDI (core 1):** the parser calls `lxr_midi_trigger_note` and `lxr_midi_param_set`, which act at once (between two Blocks, so the render never sees a half-applied change). Each parameter change is also put into a 64-entry single-producer/single-consumer event ring towards core 0.
+- **Console and other UIs (core 0):** `lxr_trigger` and `lxr_param_set` push a command `{type, id/voice, value}` into a lock-free single-producer/single-consumer ring (256 entries) that core 1 drains at the start of each Block. A whole-sound load (`lxr_sound_set`, presets) sets a flag instead, and core 1 applies 32 parameters per Block.
+- **Shadow values:** `activeParameters[]` holds the current value of every parameter. Both paths write it (byte stores, last writer wins), and `lxr_param_get` reads it without touching core 1 state.
+- **Callback:** the parameter callback always runs on core 0. Console changes call it directly; MIDI changes reach it when `ui_poll_all()` calls `lxr_dispatch_param_events()`. If core 0 falls behind, MIDI notifications are dropped and counted (`event_drops`); the change itself is never lost.
 
 ### 3.2 Parameter mapping
 
@@ -214,7 +219,7 @@ Saves happen only on an explicit `preset save`. A sector erase is rated for 100,
 
 ## 8. MIDI input (R4)
 
-UART0 runs at 31250 baud, 8N1, RX only. A DMA channel in ring mode fills a 512-byte ring from the RX FIFO. Core 0's main loop drains the ring into the running-status parser, which calls `lxr_trigger` and `lxr_param_set`. Framing and overrun errors are read from UART status on each loop pass and counted in `midi_errors` (R4.7). On an error the parser drops the partial message and waits for the next status byte. USB is not initialised and TinyUSB is not linked (R4.2). `pico_stdio_usb` is disabled in CMake.
+UART0 runs at 31250 baud, 8N1, RX only. A DMA channel in endless mode copies every UART data register value (byte and error flags, 32-bit reads) into a 512-entry ring. Core 1 drains the ring before each Block into the running-status parser, which calls `lxr_midi_trigger_note` and `lxr_midi_param_set`. A byte with a framing, parity, break or overrun flag is counted in `midi_errors` (R4.7); the parser drops the partial message and waits for the next status byte. USB is not used for MIDI (R4.2); the USB port carries the console only.
 
 ## 9. Real-time budget (R3.2, R5.3)
 

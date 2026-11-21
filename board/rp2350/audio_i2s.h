@@ -20,7 +20,8 @@ void audio_i2s_init(uint32_t sys_clock_hz);
 /** Renders both buffers once and starts the output. */
 void audio_i2s_start(void);
 
-/** Runs forever on the audio core: waits for a free buffer, renders a Block into it. */
-void audio_i2s_run(void) __attribute__((noreturn));
+/** Runs forever on the audio core: waits for a free buffer, calls before_block (may be NULL),
+ *  then renders a Block into the buffer. */
+void audio_i2s_run(void (*before_block)(void)) __attribute__((noreturn));
 
 #endif /* LXR_AUDIO_I2S_H_ */

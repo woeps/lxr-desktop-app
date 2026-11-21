@@ -3,9 +3,9 @@
  *
  * A DMA channel in endless mode copies every received UART data register
  * value (data byte plus the error flags in bits 8..11) into a 512-entry ring,
- * without CPU work. The control core drains the ring from its main loop, so
- * bytes are not lost while core 0 has interrupts off (flash erase, up to about
- * 100 ms; the ring holds 164 ms at 31250 baud).
+ * without CPU work. The audio core drains the ring before every Block
+ * (midi_uart_poll is its before-block hook), so notes reach the next Block and
+ * nothing on core 0 (flash erase, USB) can delay them. The ring holds 164 ms.
  *
  * Copyright (C) 2026 Erica Synths
  * SPDX-License-Identifier: GPL-3.0-only

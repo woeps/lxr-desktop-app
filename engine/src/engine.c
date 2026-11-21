@@ -224,6 +224,58 @@ void lxr_trigger(lxr_voice_t voice, uint8_t velocity)
 	lxr_trigger_note((uint8_t)voice, OSC_DEFAULT_NOTE, velocity);
 }
 
+/* ---- audio core: MIDI input ---- */
+
+/* Parameter changes made on the audio core, reported to the control core.
+ * Single producer (audio core), single consumer (control core). */
+typedef struct { uint16_t id; uint8_t value; } ParamEvent;
+#define EVENT_SIZE 64u                /* power of two */
+#define EVENT_MASK (EVENT_SIZE - 1u)
+static ParamEvent events[EVENT_SIZE];
+static volatile uint32_t eventHead;   /* audio core */
+static volatile uint32_t eventTail;   /* control core */
+
+void lxr_midi_trigger_note(uint8_t voice, uint8_t note, uint8_t velocity)
+{
+	if(voice >= LXR_NUM_VOICE_SLOTS || velocity == 0 || engine_isVoiceMuted(voice))
+		return;
+	voiceControl_noteOn(voice, (uint8_t)(note & 0x7f), (uint8_t)(velocity & 0x7f));
+}
+
+int lxr_midi_param_set(uint16_t id, uint8_t value)
+{
+	const lxr_param_info_t *info = lxr_param_find_id(id);
+	if(!info || value < info->min || value > info->max)
+		return -1;
+	activeParameters[id] = value;
+	if(id < END_OF_SOUND_PARAMETERS)
+		applyParameter(id, value);
+
+	const uint32_t head = eventHead;
+	if(head - __atomic_load_n(&eventTail, __ATOMIC_ACQUIRE) >= EVENT_SIZE)
+	{
+		stats.event_drops++;
+		return 0;   /* the change is applied, only the UI notification is lost */
+	}
+	events[head & EVENT_MASK] = (ParamEvent){ id, value };
+	__atomic_store_n(&eventHead, head + 1u, __ATOMIC_RELEASE);
+	return 0;
+}
+
+void lxr_dispatch_param_events(void)
+{
+	uint32_t tail = eventTail;
+	const uint32_t head = __atomic_load_n(&eventHead, __ATOMIC_ACQUIRE);
+	while(tail != head)
+	{
+		const ParamEvent e = events[tail & EVENT_MASK];
+		tail++;
+		__atomic_store_n(&eventTail, tail, __ATOMIC_RELEASE);
+		if(paramCallback)
+			paramCallback(e.id, e.value, paramCallbackUser);
+	}
+}
+
 int lxr_param_set(uint16_t id, uint8_t value)
 {
 	const lxr_param_info_t *info = lxr_param_find_id(id);

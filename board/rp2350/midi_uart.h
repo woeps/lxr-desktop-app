@@ -23,7 +23,7 @@ uint32_t midi_uart_line_edges(void);
 /** Raw register snapshot for the console's `midi` check: DMA CTRL, DMA TRANS_COUNT, UART FR. */
 void midi_uart_debug(uint32_t out[3]);
 
-/** Feeds received bytes to the MIDI parser. Call often from the control core's main loop. */
+/** Feeds received bytes to the MIDI parser. Audio core, before each Block. */
 void midi_uart_poll(void);
 
 #endif /* LXR_MIDI_UART_H_ */

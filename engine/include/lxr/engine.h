@@ -3,9 +3,10 @@
  * read or change the sound engine.
  *
  * Threading: two cores. The audio core calls lxr_engine_init once and then
- * lxr_engine_render for every Block. The control core (MIDI parser, console,
- * flash saves) calls every other function. Changes travel from the control core
- * to the audio core through a lock-free queue, so no function here blocks.
+ * lxr_engine_render for every Block; between Blocks it also runs the MIDI
+ * parser (lxr_midi_* below). The control core (console, flash saves, other UIs)
+ * calls every other function. Changes travel from the control core to the
+ * audio core through a lock-free queue, so no function here blocks.
  *
  * Copyright (C) 2026 Erica Synths
  * SPDX-License-Identifier: GPL-3.0-only
@@ -49,6 +50,21 @@ void lxr_engine_render(int16_t *stereo, uint32_t frames);
 /** Records the time one Block took. Audio core. */
 void lxr_stats_report_block(uint32_t block_us);
 
+/* ---- audio core: MIDI input ------------------------------------------------- *
+ * The MIDI parser runs on the audio core, between two lxr_engine_render calls,
+ * so nothing on the control core (flash writes, USB) can delay a note. These
+ * act immediately; the change is reported to the control core, where
+ * lxr_dispatch_param_events() hands it to the parameter callback. */
+
+/** Triggers a voice slot now. velocity 0 is ignored. Audio core, outside lxr_engine_render. */
+void lxr_midi_trigger_note(uint8_t voice, uint8_t note, uint8_t velocity);
+
+/** Sets a parameter now (same checks as lxr_param_set). Audio core, outside lxr_engine_render. */
+int lxr_midi_param_set(uint16_t id, uint8_t value);
+
+/** Control core: delivers parameter changes made by MIDI to the callback. ui_poll_all() calls it. */
+void lxr_dispatch_param_events(void);
+
 /* ---- control core ---------------------------------------------------------- */
 
 /** Triggers a voice slot with its default note. velocity 1..127. */
@@ -90,6 +106,7 @@ typedef struct {
 	uint32_t flash_write_us;  /* duration of the last preset/globals flash write, 0 if none yet */
 	uint32_t flash_write_max_us; /* longest flash write since boot */
 	uint32_t queue_drops;     /* commands lost because the queue was full */
+	uint32_t event_drops;     /* MIDI change notifications lost because the control core did not collect them */
 	uint32_t sys_clock_khz;   /* reported by the board, 0 if unknown */
 	int16_t temp_c_x10;       /* die temperature in 0.1 degC reported by the board, INT16_MIN if unknown */
 } lxr_stats_t;
