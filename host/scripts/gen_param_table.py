@@ -155,6 +155,22 @@ def voice_of(short):
     return int(m.group(1)) - 1 if m else -1
 
 
+def parse_mod_targets():
+    """Parameter names of the modTargets table (old Cc2Text.c), in index order.
+
+    PAR_VEL_DEST_x and PAR_TARGET_LFOx store an index into this table, not a
+    parameter number. The old front panel translated it before sending.
+    """
+    src = git_show("Core/Src/menu/Cc2Text.c").replace("\r", "")
+    a = src.index("const ModTarg modTargets[]")
+    b = src.index("\n};", a)
+    body = re.sub(r"//[^\n]*", "", src[a:b])
+    return [p for _, p in re.findall(r"\{\s*(\w+)\s*,\s*(\w+)\s*\}", body)]
+
+
+MOD_TARGET_PREFIXES = ("PAR_VEL_DEST_", "PAR_TARGET_LFO")
+
+
 def c_ident(s):
     return re.sub(r"[^A-Za-z0-9_]", "_", s)
 
@@ -169,6 +185,8 @@ def main():
     arrays = parse_name_arrays()
     menumap = parse_menu_map()
     kit = init_kit()
+    mod_targets = parse_mod_targets()
+    ids = dict(vals)
 
     # last declared name wins per value (aliases such as PAR_OSC_WAVE_DRUM1 = PAR_MOD_WHEEL)
     by_id = {}
@@ -217,6 +235,11 @@ def main():
             default = 0
         default = max(lo, min(hi, default))
         short = name[len("PAR_"):].lower()
+        if name.startswith(MOD_TARGET_PREFIXES):
+            # index into modTargets (old menu table): an enum over the target parameter names
+            kind, lo, hi, ename = "LXR_KIND_ENUM", 0, len(mod_targets) - 1, "enum_modTargets"
+            enum_arrays["modTargets"] = [t[len("PAR_"):].lower() if t != "PAR_NONE" else "none" for t in mod_targets]
+            default = max(lo, min(hi, default))
         voice = voice_of(short) if v < end_sound else -1
         rows.append((v, short, voice, kind, lo, hi, default, ename))
 
@@ -275,6 +298,22 @@ const lxr_param_info_t *lxr_param_find(const char *name)
 		if(strcmp(paramTable[i].name, name) == 0) return &paramTable[i];
 	}
 	return NULL;
+}
+""")
+    # modTargets index -> parameter id (PAR_VEL_DEST_x / PAR_TARGET_LFOx values)
+    p("/* Index (stored in vel_dest_x / target_lfox) -> parameter id. From the old menu table modTargets. */\n")
+    p("static const uint8_t modTargetParam[] = {\n")
+    for i in range(0, len(mod_targets), 8):
+        p("\t" + ", ".join(str(ids[t]) for t in mod_targets[i:i + 8]) + ",\n")
+    p("};\n\n")
+    p("""uint16_t lxr_mod_target_count(void)
+{
+	return (uint16_t)(sizeof(modTargetParam) / sizeof(modTargetParam[0]));
+}
+
+uint16_t lxr_mod_target_param(uint16_t index)
+{
+	return index < lxr_mod_target_count() ? modTargetParam[index] : 0;
 }
 """)
 

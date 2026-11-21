@@ -42,4 +42,11 @@ const lxr_param_info_t *lxr_param_find_id(uint16_t id);
 /** Row by name, or NULL. */
 const lxr_param_info_t *lxr_param_find(const char *name);
 
+/** Modulation targets: vel_dest_x and target_lfox store an index (0 .. count-1) into
+ *  this list, not a parameter id. Index 0 is "none". */
+uint16_t lxr_mod_target_count(void);
+
+/** Parameter id that modulation target `index` modulates (0 = none, also for an invalid index). */
+uint16_t lxr_mod_target_param(uint16_t index);
+
 #endif /* LXR_PARAM_INFO_H_ */

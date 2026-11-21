@@ -72,6 +72,23 @@ static volatile uint8_t statsResetRequest;
 /** Applies one stored parameter to the voices and FX. */
 static void applyParameter(uint16_t id, uint8_t value)
 {
+	/* Modulation targets are stored as an index into the mod target list; the
+	 * modulation node needs the parameter id (the old front panel translated this). */
+	if(id >= PAR_VEL_DEST_1 && id <= PAR_VEL_DEST_6)
+	{
+		modNode_setDestination(&velocityModulators[id - PAR_VEL_DEST_1], lxr_mod_target_param(value));
+		return;
+	}
+	if(id >= PAR_TARGET_LFO1 && id <= PAR_TARGET_LFO6)
+	{
+		static ModulationNode *const lfoTargets[6] = {
+			&voiceArray[0].lfo.modTarget, &voiceArray[1].lfo.modTarget, &voiceArray[2].lfo.modTarget,
+			&snareVoice.lfo.modTarget, &cymbalVoice.lfo.modTarget, &hatVoice.lfo.modTarget,
+		};
+		modNode_setDestination(lfoTargets[id - PAR_TARGET_LFO1], lxr_mod_target_param(value));
+		return;
+	}
+
 	MidiMsg msg;
 	msg.data2 = value;
 	if(id < 128)

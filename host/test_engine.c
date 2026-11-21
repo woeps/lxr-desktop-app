@@ -14,6 +14,8 @@
 #include "lxr/engine.h"
 #include "Parameters.h"
 #include "ui_iface.h"
+#include "Soundengine/DSPAudio/modulationNode.h"
+#include "Soundengine/DSPAudio/DrumVoice.h"
 
 static int failures = 0;
 
@@ -36,6 +38,19 @@ static int peakOfBlocks(int n)
 		}
 	}
 	return peak;
+}
+
+/** Renders n Blocks and returns the summed squared samples. */
+static double energyOfBlocks(int n)
+{
+	double e = 0;
+	for(int b = 0; b < n; b++)
+	{
+		lxr_engine_render(block, LXR_BLOCK_FRAMES);
+		for(int i = 0; i < LXR_BLOCK_FRAMES * 2; i++)
+			e += (double)block[i] * (double)block[i];
+	}
+	return e;
 }
 
 static uint16_t cbCount;
@@ -145,6 +160,38 @@ int main(void)
 	lxr_stats_report_board(200000, 412);
 	lxr_get_stats(&st);
 	CHECK(st.sys_clock_khz == 200000 && st.temp_c_x10 == 412, "board facts");
+
+	/* modulation targets: the stored index is translated to the target parameter */
+	{
+		CHECK(lxr_mod_target_count() == 229 && lxr_mod_target_param(0) == 0, "mod target list");
+		uint16_t idx = 0;
+		for(uint16_t i = 0; i < lxr_mod_target_count(); i++)
+			if(lxr_mod_target_param(i) == PAR_FILTER_FREQ_1) { idx = i; break; }
+		CHECK(idx != 0, "filter_freq_1 is not a mod target");
+
+		lxr_engine_init(44100);
+		lxr_param_set(PAR_VEL_DEST_1, (uint8_t)idx);
+		lxr_param_set(PAR_TARGET_LFO2, (uint8_t)idx);
+		peakOfBlocks(2);
+		CHECK(velocityModulators[0].destination == PAR_FILTER_FREQ_1, "vel_dest_1 -> destination %u", velocityModulators[0].destination);
+		CHECK(voiceArray[1].lfo.modTarget.destination == PAR_FILTER_FREQ_1, "target_lfo2 -> destination %u", voiceArray[1].lfo.modTarget.destination);
+
+		/* audible: with velocity on the voice volume, a hard hit is louder than a soft one */
+		uint16_t volIdx = 0;
+		for(uint16_t i = 0; i < lxr_mod_target_count(); i++)
+			if(lxr_mod_target_param(i) == PAR_VOL1) { volIdx = i; break; }
+		CHECK(volIdx != 0, "vol1 is not a mod target");
+		lxr_param_set(PAR_VEL_DEST_1, (uint8_t)volIdx);
+		lxr_param_set(PAR_VOL1, 64);
+		lxr_param_set(PAR_VELO_MOD_AMT_1, 127);
+		peakOfBlocks(2);
+		lxr_trigger_note(0, 60, 10);
+		const double soft = energyOfBlocks(30);
+		peakOfBlocks(300);
+		lxr_trigger_note(0, 60, 127);
+		const double hard = energyOfBlocks(30);
+		CHECK(hard > soft * 4.0, "velocity modulation has no effect (energy soft %.0f, hard %.0f)", soft, hard);
+	}
 
 	/* UI layers: both are notified, init and poll are called */
 	static const ui_t uiA = { "a", uiAInitFn, NULL, uiAChanged };
