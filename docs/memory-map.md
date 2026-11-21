@@ -128,3 +128,9 @@ rendered voices (6202 Blocks), cc_sweep (5857) and dense_retrigger (7235) on the
 match the host's golden WAVs bit for bit. Before the change the only differences were the M33's automatic
 FMA contraction (up to 5 LSB peak, 0.23 LSB RMS), and before that undefined float-to-unsigned casts in
 the FM oscillators (fixed in commit cce676c).
+
+Cost of `-ffp-contract=off`: none measurable. `bench cmp 10` at 250 MHz, 2026-11-21: worst_block_us 660,
+avg_block_us 645, underruns 0, 40.0 C (before: 689 / 673). The Cortex-M33 FPU takes 3 cycles for VFMA and
+1 each for VMUL and VADD, which fits the small gain; other changes since the earlier run (FM cast helper,
+wavetable index wrap, MIDI parsing on the audio core) also contribute, so the gain is not attributed to one change.
+The audio core uses 45% of the 1451 us Block period in the worst measured case.
