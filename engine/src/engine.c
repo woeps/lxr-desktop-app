@@ -249,7 +249,8 @@ int lxr_get_midi_log(uint8_t out[16])
 	return (int)n;
 }
 
-void lxr_stats_report_midi_line(int level)
+void lxr_stats_report_midi_line(int level, uint32_t falling_edges)
 {
 	stats.midi_line = (int8_t)(level ? 1 : 0);
+	stats.midi_line_edges = falling_edges;
 }

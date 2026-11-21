@@ -234,8 +234,9 @@ static void cmdMidi(void)
 {
 	lxr_stats_t s;
 	lxr_get_stats(&s);
-	out("midi bytes %lu  errors %lu  line %s\r\n", (unsigned long)s.midi_bytes, (unsigned long)s.midi_errors,
-	    s.midi_line < 0 ? "unknown" : (s.midi_line ? "high (idle, ok)" : "LOW (check pull-up / wiring)"));
+	out("midi bytes %lu  errors %lu  line %s  edges %lu\r\n", (unsigned long)s.midi_bytes, (unsigned long)s.midi_errors,
+	    s.midi_line < 0 ? "unknown" : (s.midi_line ? "high (idle, ok)" : "LOW (check pull-up / wiring)"),
+	    (unsigned long)s.midi_line_edges);
 	uint8_t log[16];
 	const int n = lxr_get_midi_log(log);
 	if(n == 0)

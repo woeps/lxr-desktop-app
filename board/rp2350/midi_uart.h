@@ -12,8 +12,13 @@
 #ifndef LXR_MIDI_UART_H_
 #define LXR_MIDI_UART_H_
 
+#include <stdint.h>
+
 /** Sets up UART0 at 31250 baud and starts the receive DMA. Control core. */
 void midi_uart_init(void);
+
+/** Falling edges seen on the MIDI RX pin since boot (wiring check, independent of the UART). */
+uint32_t midi_uart_line_edges(void);
 
 /** Feeds received bytes to the MIDI parser. Call often from the control core's main loop. */
 void midi_uart_poll(void);

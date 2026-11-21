@@ -31,6 +31,19 @@
 static uint16_t ring[RING_ENTRIES] __attribute__((aligned(RING_BYTES)));
 static int dmaChannel;
 static uint32_t tail;   /* next entry to read, 0..RING_ENTRIES-1 */
+static volatile uint32_t lineEdges;
+
+static void onRxEdge(uint gpio, uint32_t events)
+{
+	(void)gpio;
+	if(events & GPIO_IRQ_EDGE_FALL)
+		lineEdges++;
+}
+
+uint32_t midi_uart_line_edges(void)
+{
+	return lineEdges;
+}
 
 void midi_uart_init(void)
 {
@@ -52,6 +65,9 @@ void midi_uart_init(void)
 	                      DMA_CH0_TRANS_COUNT_MODE_VALUE_ENDLESS << DMA_CH0_TRANS_COUNT_MODE_LSB, true);
 	tail = 0;
 	midiParser_reset();
+
+	/* edge counter on the same pin: shows whether the optocoupler switches at all */
+	gpio_set_irq_enabled_with_callback(LXR_PIN_MIDI_RX, GPIO_IRQ_EDGE_FALL, true, onRxEdge);
 }
 
 void midi_uart_poll(void)
