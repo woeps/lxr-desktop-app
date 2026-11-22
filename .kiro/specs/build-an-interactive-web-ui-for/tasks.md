@@ -58,7 +58,7 @@ is checked off. Host tests run with `ctest --test-dir build/host`; web tests wit
   `slotKey`, randomise with injectable random source) with `sound.test.ts`.
 - [x] 4.2 `model/history.ts` with `history.test.ts` (one step per drag, 200-step cap, undo and
   redo change sets).
-- [ ] 4.3 `model/stations.ts` with `stations.test.ts` (each id in exactly one place, hidden
+- [x] 4.3 `model/stations.ts` with `stations.test.ts` (each id in exactly one place, hidden
   parameters, visible counts 35/34/35/35, row order).
 - [ ] 4.4 `model/links.ts` (bindings from all twelve modulators, own and incoming badges, contested
   detection, target labels "voice › station › label") with `links.test.ts`.
