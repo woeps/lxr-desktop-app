@@ -49,12 +49,14 @@ export function ConnectionPill() {
         ref={pill}
         class={styles.pill}
         data-connection-pill
+        title={text()}
+        aria-label={text()}
         aria-haspopup="dialog"
         aria-expanded={shell.connectionOpen() ? "true" : "false"}
         onClick={() => (shell.connectionOpen() ? shell.closeConnection() : shell.openConnection())}
       >
         <span class={styles.dot} data-on={sel() ? "true" : "false"} aria-hidden="true" />
-        {text()}
+        <span class={styles.label}>{text()}</span>
       </button>
       <Popover open={shell.connectionOpen()} onClose={() => shell.closeConnection()} anchor={() => pill}
         placement="top" role="dialog" label="MIDI connection">

@@ -359,6 +359,8 @@ describe("dock and connection pill", () => {
     expect(app.settings.state.dockCollapsed).toBe(true);
     expect(JSON.parse(localStorage.getItem("lxr.settings.v1")!).dockCollapsed).toBe(true);
     expect(pill().textContent!.trim()).toBe("Fake out");
+    expect(pill().getAttribute("aria-label")).toBe("Fake out");
+    expect(pill().title).toBe("Fake out");
     expect(host.querySelector("[aria-label='Trigger Snare']")).toBeNull();
     document.dispatchEvent(new KeyboardEvent("keydown", { key: "1", bubbles: true })); flush();
     expect(sent.length).toBeGreaterThan(0);
