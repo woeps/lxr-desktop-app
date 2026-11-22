@@ -66,7 +66,7 @@ Task 12 needs Chris at the browser.
 - [x] 6.1 Add `NameSave` and `RenameDialog` (design 3.4): field, count, invalid state, restore on
   blur and Escape, dot, Save states, confirmation, Enter and Ctrl/Cmd+S, rename. Done when
   `name.test.tsx` covers R2.1 to R2.12 and passes.
-- [ ] 6.2 Add `AppBar` with Revert and Send split buttons, Copy and Paste, and the four panel
+- [x] 6.2 Add `AppBar` with Revert and Send split buttons, Copy and Paste, and the four panel
   icons; remove `Toolbar.tsx` and its roll controls; wire `App.tsx`. Done when `shell.test.tsx`
   asserts the order of R1.1, the absence of the items in R1.2, Initialise as one undo step, and the
   wrapping rule, and the existing `app.test.tsx` flows pass.

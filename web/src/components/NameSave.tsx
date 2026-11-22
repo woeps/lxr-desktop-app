@@ -1,4 +1,4 @@
-import { createEffect, createSignal, onCleanup, Show } from "solid-js";
+import { createEffect, createSignal, onCleanup, Show, untrack } from "solid-js";
 import { useApp } from "../state/app";
 import { isDirty } from "../state/dirty";
 import { cleanName, NAME_MAX, type LibrarySound } from "../state/library";
@@ -18,13 +18,13 @@ export function NameSave() {
   const app = useApp();
   const status = useStatus();
   const { session, library } = app;
-  const [text, setText] = createSignal(session.state.current.name);
+  const [text, setText] = createSignal(untrack(() => session.state.current.name));
   const [focused, setFocused] = createSignal(false);
   const [replacing, setReplacing] = createSignal<LibrarySound | null>(null);
   const [renaming, setRenaming] = createSignal(false);
 
   // A load or a rename changes the name from outside: show it unless the field already says so.
-  createEffect(() => session.state.current.name, (n) => { if (cleanName(text()) !== n) setText(n); });
+  createEffect(() => session.state.current.name, (n) => { if (cleanName(untrack(text)) !== n) setText(n); });
 
   const clean = () => cleanName(text());
   const loaded = () => { const id = session.state.libraryId; return id ? library.get(id) : undefined; };

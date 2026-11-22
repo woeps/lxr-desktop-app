@@ -1,4 +1,4 @@
-import { createSignal, onSettled } from "solid-js";
+import { createSignal, onSettled, untrack } from "solid-js";
 import { useApp } from "../state/app";
 import { cleanName, nameError, type LibrarySound } from "../state/library";
 import { useStatus } from "../state/status";
@@ -11,7 +11,7 @@ import styles from "./AppBar.module.css";
 export function RenameDialog(props: { entry: LibrarySound; onClose: () => void }) {
   const { session, library } = useApp();
   const status = useStatus();
-  const [text, setText] = createSignal(props.entry.name);
+  const [text, setText] = createSignal(untrack(() => props.entry.name));
   let input: HTMLInputElement | undefined;
   onSettled(() => { input?.focus(); input?.select(); });
 

@@ -3,6 +3,11 @@ import { render } from "@solidjs/web";
 import { createSignal, flush } from "solid-js";
 import { Popover } from "./Popover";
 import { SplitButton } from "./SplitButton";
+import { readFileSync } from "node:fs";
+import { App } from "../App";
+import { PARAMS } from "../generated/params";
+import { createApp, type App as AppState } from "../state/app";
+import { NOTICE_NOT_SEEN, NOTICE_ONE_WAY } from "./notices";
 
 let host: HTMLElement;
 let dispose: () => void;
@@ -142,5 +147,104 @@ describe("Popover", () => {
     key(d.querySelector("input")!, "Escape");
     expect(host.querySelector("[role=dialog]")).toBeNull();
     expect(document.activeElement).toBe(host.querySelector("#a"));
+  });
+});
+
+describe("AppBar", () => {
+  let app: AppState;
+  function mountApp() {
+    localStorage.clear();
+    const clock = { now: () => 0, setTimeout: () => 1, clearTimeout: () => {} };
+    app = createApp({ storage: localStorage, env: { isSecureContext: true, requestMIDIAccess: undefined }, clock, rng: () => 0.5,
+      motionEnv: { now: () => 0, raf: () => 1, caf: () => {}, matchMedia: () => ({ matches: false }) } });
+    mount(() => <App app={app} />);
+  }
+  const bar = () => host.querySelector<HTMLElement>("[role=toolbar]")!;
+  const byLabel = (l: string) => host.querySelector<HTMLButtonElement>(`button[aria-label="${l}"]`)!;
+  const text = (t: string) => [...bar().querySelectorAll<HTMLButtonElement>("button")].find((b) => b.textContent!.trim() === t)!;
+  const two = () => PARAMS.filter((p) => p.kind === "num" && p.max - p.min >= 4).slice(0, 2);
+  const bump = () => two().forEach((p) => {
+    const v = app.session.state.current.values[p.id]!;
+    app.session.applyChanges([[p.id, v, v + 1]]);
+  });
+
+  it("holds the items in the order of R1.1", () => {
+    mountApp();
+    const order = [...bar().querySelectorAll<HTMLElement>("button, input")].map((e) => e.getAttribute("aria-label") ?? e.textContent!.trim());
+    expect(order).toEqual(["Sound name", "Save", "Save options", "Undo", "Redo", "A/B", "Revert", "Revert options",
+      "Copy", "Paste", "Send all", "Send options", "Library", "Import presets", "Settings", "Info"]);
+  });
+
+  it("does not hold the items of R1.2", () => {
+    mountApp();
+    const t = bar().textContent!;
+    expect(t).not.toContain(NOTICE_ONE_WAY);
+    expect(t).not.toContain(NOTICE_NOT_SEEN);
+    expect(t).not.toContain("Not sending");
+    expect(bar().querySelector("progress, input[type=checkbox], input[type=range]")).toBeNull();
+    for (const b of bar().querySelectorAll("button")) {
+      expect(b.textContent!.trim()).not.toMatch(/^(Connect|Test|Roll|Close|Cancel|Audition)/);
+    }
+    expect(t).not.toContain("Audition after send"); // only inside the open Send menu
+  });
+
+  it("icon buttons have an accessible name and a tooltip; the old labels are gone", () => {
+    mountApp();
+    for (const n of ["Library", "Import presets", "Settings", "Info"]) {
+      expect(byLabel(n).title).toBe(n);
+    }
+    expect(host.querySelector("[aria-label='Grimoire'], [aria-label='Preset importer']")).toBeNull();
+    expect([...bar().querySelectorAll("button")].some((b) => /Grimoire|Preset importer/.test(b.textContent!))).toBe(false);
+  });
+
+  it("the panel icons toggle the shell state and open the existing panels", () => {
+    mountApp();
+    click(byLabel("Library"));
+    expect(byLabel("Library").getAttribute("aria-pressed")).toBe("true");
+    expect(host.querySelector("aside[aria-label='Grimoire']")).not.toBeNull();
+    click(byLabel("Import presets"));
+    expect(host.querySelector("aside[aria-label='Grimoire']")).toBeNull();
+    expect(host.querySelector("aside[aria-label='Preset importer']")).not.toBeNull();
+    click(byLabel("Import presets"));
+    expect(host.querySelector("aside")).toBeNull();
+  });
+
+  it("Revert restores the loaded sound; its menu Initialise is one undo step without confirmation", () => {
+    mountApp();
+    bump();
+    click(text("Revert"));
+    const [p, q] = two();
+    expect(app.session.state.current.values[p!.id]).toBe(app.session.state.baseline.values[p!.id]);
+    bump();
+    const edited = Uint8Array.from(app.session.state.current.values);
+    click(byLabel("Revert options"));
+    const item = host.querySelector<HTMLElement>("[role=menuitem]")!;
+    expect(item.textContent).toBe("Initialise");
+    app.session.applyChanges([[q!.id, edited[q!.id]!, edited[q!.id]! + 1]]);
+    const edited2 = Uint8Array.from(app.session.state.current.values);
+    click(item);
+    expect(host.querySelector("[role=alertdialog], [role=dialog]")).toBeNull();
+    const init = app.session.state.current.values;
+    expect(init[p!.id]).toBe(p!.def);
+    expect(init[q!.id]).toBe(q!.def);
+    click(text("Undo"));
+    expect(app.session.state.current.values).toEqual(edited2); // one step brought everything back
+  });
+
+  it("the Send menu has Seal, which opens the store dialog, and Audition after send", () => {
+    mountApp();
+    click(byLabel("Send options"));
+    const items = [...host.querySelectorAll<HTMLElement>("[role=menuitem]")].map((i) => i.textContent!.trim());
+    expect(items).toEqual(["Seal into boot slot", "Audition after send"]);
+    click(host.querySelectorAll<HTMLElement>("[role=menuitem]")[0]!);
+    expect(host.querySelector("[role=dialog][aria-label='Seal into boot slot']")).not.toBeNull();
+    click(byLabel("Send options"));
+    const before = app.settings.state.auditionAfterSend;
+    click(host.querySelectorAll<HTMLElement>("[role=menuitem]")[1]!);
+    expect(app.settings.state.auditionAfterSend).toBe(!before);
+  });
+
+  it("wraps to two lines below 1100 px without hiding anything (flex-wrap)", () => {
+    expect(readFileSync("src/components/AppBar.module.css", "utf8")).toMatch(/\.bar\s*\{[^}]*flex-wrap:\s*wrap/);
   });
 });

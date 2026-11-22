@@ -48,8 +48,8 @@ describe("page shell", () => {
   beforeEach(() => mount());
 
   it("renders every control with an accessible name", () => {
-    for (const n of ["Connect", "MIDI output", "Test", "Undo", "Redo", "A/B", "Revert", "Initialise", "Send all",
-      "Seal into boot slot", "Save to library", "Roll amount", "Roll", "Velocity", "Pitch", "Play all", "Panic"]) {
+    for (const n of ["Connect", "MIDI output", "Test", "Undo", "Redo", "A/B", "Revert", "Send all",
+      "Sound name", "Save", "Library", "Import presets", "Settings", "Info", "Velocity", "Pitch", "Play all", "Panic"]) {
       expect(btn(n), n).toBeTruthy();
     }
     for (const n of ["Drum 1", "Drum 2", "Drum 3", "Snare", "Cymbal", "Hi-hat", "Cauldron"]) {
@@ -136,35 +136,6 @@ describe("page shell", () => {
     }
   });
 
-  it("Roll <voice> changes only the current voice", () => {
-    const before = Uint8Array.from(app.session.state.current.values);
-    const slider = btn("Roll amount") as HTMLInputElement;
-    slider.value = "100";
-    slider.dispatchEvent(new Event("input", { bubbles: true }));
-    flush();
-    click(btn("Roll Drum 1"));
-    const changed = PARAMS.filter((p) => app.session.state.current.values[p.id] !== before[p.id]);
-    expect(changed.length).toBeGreaterThan(0);
-    expect(changed.every((p) => p.voice === 0)).toBe(true);
-  });
-
-  it("Roll uses the amount", () => {
-    const slider = btn("Roll amount") as HTMLInputElement;
-    const before = Uint8Array.from(app.session.state.current.values);
-    slider.value = "0";
-    slider.dispatchEvent(new Event("input", { bubbles: true }));
-    flush();
-    click(btn("Roll"));
-    expect(app.session.state.current.values).toEqual(before); // amount 0 changes nothing
-    slider.value = "100";
-    slider.dispatchEvent(new Event("input", { bubbles: true }));
-    flush();
-    click(btn("Roll"));
-    const changed = PARAMS.filter((p) => app.session.state.current.values[p.id] !== before[p.id]);
-    expect(changed.length).toBeGreaterThan(5);
-    expect(changed.every((p) => p.voice === 0)).toBe(true);
-  });
-
   it("Copy then Paste moves a drum voice onto another", () => {
     const p1 = PARAMS.find((p) => p.voice === 0 && p.slotKey && p.kind === "num" && !p.mix)!;
     const p2 = PARAMS.find((p) => p.voice === 1 && p.slotKey === p1.slotKey)!;
@@ -227,7 +198,7 @@ describe("with a MIDI output", () => {
 
 describe("preset importer drawer", () => {
   beforeEach(() => mount());
-  const toggle = () => click([...host.querySelectorAll("button")].find((b) => b.textContent === "Preset importer")!);
+  const toggle = () => click([...host.querySelectorAll("button")].find((b) => b.getAttribute("aria-label") === "Import presets")!);
   const drawer = () => host.querySelector("aside[aria-label='Preset importer']");
 
   it("opens and closes from the toolbar and keeps its list while closed", async () => {

@@ -50,6 +50,7 @@ const fakeEnv = () => {
 const tick = async () => { await Promise.resolve(); await Promise.resolve(); flush(); };
 const button = (name: string) => [...host.querySelectorAll<HTMLButtonElement>("button")].find((b) => b.textContent!.trim().startsWith(name))!;
 const click = (el: Element) => { (el as HTMLElement).click(); flush(); };
+const seal = () => { click(host.querySelector("[aria-label='Send options']")!); click(host.querySelector("[role=menuitem]")!); };
 const tab = (name: string) => host.querySelector<HTMLElement>(`[role=tab][aria-label="${name}"]`)!;
 const connect = async () => { click(button("Connect")); await tick(); advance(0); out.length = 0; };
 
@@ -77,7 +78,7 @@ describe("the page end to end, with a fake MIDI access", () => {
   it("seals into the boot slot: the full transfer, then the store command", async () => {
     mount(fakeEnv());
     await connect();
-    click(button("Seal into boot slot"));
+    seal();
     expect(host.querySelector("[role=dialog]")).toBeTruthy();
     click(button("Confirm store"));
     advance(3000);

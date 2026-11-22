@@ -62,7 +62,8 @@ function type(el: HTMLInputElement, v: string) {
   flush();
 }
 const names = () => [...host.querySelectorAll("li[data-sound]")].map((li) => li.getAttribute("data-sound"));
-const openGrimoire = () => click(button("Grimoire"));
+const byLabel = (l: string) => host.querySelector<HTMLElement>(`button[aria-label="${l}"]`)!;
+const openGrimoire = () => click(byLabel("Library"));
 
 const WIDE = PARAMS.find((p) => p.max - p.min >= 20)!;
 function sound(name: string, v0 = 0) {
@@ -301,7 +302,7 @@ describe("ImportDialog", () => {
 describe("MidiSetupDialog", () => {
   it("states that the settings are not sent and saves the changes", async () => {
     await mount(false);
-    click(button("MIDI setup"));
+    click(byLabel("Settings"));
     expect(host.querySelector("[role=dialog]")!.textContent).toContain("not sent to it");
     type(input("Channel Drum 1"), "9");
     type(input("Global channel"), "4");
@@ -316,7 +317,7 @@ describe("MidiSetupDialog", () => {
   it("Cancel leaves the settings alone", async () => {
     await mount(false);
     const before = app.settings.state.channels[0];
-    click(button("MIDI setup"));
+    click(byLabel("Settings"));
     type(input("Channel Drum 1"), "9");
     click(button("Cancel"));
     expect(app.settings.state.channels[0]).toBe(before);

@@ -53,6 +53,7 @@ async function mount() {
 }
 const button = (name: string) => [...host.querySelectorAll<HTMLButtonElement>("button")].find((b) => b.textContent!.trim().startsWith(name))!;
 const click = (el: Element) => { (el as HTMLElement).click(); flush(); };
+const seal = () => { click(host.querySelector("[aria-label='Send options']")!); click(host.querySelector("[role=menuitem]")!); };
 const storeCount = () => out.filter((m) => m.length === 15).length;
 
 beforeEach(() => localStorage.clear());
@@ -63,7 +64,7 @@ describe("StoreDialog", () => {
   it("opens from the toolbar and sends the full sound, then the store command, when not in sync", async () => {
     await mount();
     expect(app.session.state.moduleInSync).toBe(false);
-    click(button("Seal into boot slot"));
+    seal();
     expect(host.querySelector("[role=dialog]")).toBeTruthy();
     expect(host.querySelector("[data-testid=store-full-first]")).toBeTruthy();
     click(button("Confirm store"));
@@ -83,7 +84,7 @@ describe("StoreDialog", () => {
     advance(2000);
     expect(app.session.state.moduleInSync).toBe(true);
     out.length = 0;
-    click(button("Seal into boot slot"));
+    seal();
     expect(host.querySelector("[data-testid=store-full-first]")).toBeNull();
     click(button("Confirm store"));
     advance(10);
@@ -102,7 +103,7 @@ describe("StoreDialog", () => {
 
   it("is disabled while a transfer is running and does not store after a cancel", async () => {
     await mount();
-    click(button("Seal into boot slot"));
+    seal();
     click(button("Send all"));
     expect(button("Confirm store").disabled).toBe(true);
     app.cancelTransfer();
@@ -114,7 +115,7 @@ describe("StoreDialog", () => {
 
   it("Close removes the dialog", async () => {
     await mount();
-    click(button("Seal into boot slot"));
+    seal();
     click(button("Close"));
     expect(host.querySelector("[role=dialog]")).toBeNull();
   });
