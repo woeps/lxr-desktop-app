@@ -35,6 +35,9 @@ int lxr_midi_param_set(uint16_t id, uint8_t value)
 	return 0;
 }
 
+static int storeRequests;
+void lxr_midi_request_store(void) { storeRequests++; }
+
 void lxr_stats_count_midi_error(void) { midiErrors++; }
 static uint32_t midiBytes;
 void lxr_stats_count_midi_byte(uint8_t byte) { (void)byte; midiBytes++; }
@@ -55,6 +58,7 @@ static void feed(const uint8_t *bytes, size_t n)
 static void reset(void)
 {
 	ncalls = 0;
+	storeRequests = 0;
 	midiErrors = 0;
 	memset(activeParameters, 0, sizeof activeParameters);
 	/* each voice on its own channel (1..7 stored as 1..7), notes "any" */
@@ -138,6 +142,59 @@ static void test_nrpn(void)
 	ncalls = 0;
 	FEED(0xB0, 99, (uint8_t)((PAR_MIDI_CHAN_1 - 128) >> 7), 98, (uint8_t)((PAR_MIDI_CHAN_1 - 128) & 0x7f), 6, 5);
 	CHECK(ncalls == 0, "NRPN changed a MIDI setting");
+}
+
+/* Store command: NRPN 16128 (CC 99 = 126, CC 98 = 0), CC 6 = 0x53, then NRPN null. */
+static void test_store_command(void)
+{
+	/* the full sequence on drum 1's channel: one request, no parameter */
+	reset();
+	FEED(0xB0, 99, 126, 98, 0, 6, 0x53, 99, 127, 98, 127);
+	CHECK(storeRequests == 1 && ncalls == 0, "store sequence: %d requests, %d calls", storeRequests, ncalls);
+
+	/* a wrong key does nothing */
+	reset();
+	FEED(0xB0, 99, 126, 98, 0, 6, 0x52);
+	CHECK(storeRequests == 0 && ncalls == 0, "wrong key: %d requests, %d calls", storeRequests, ncalls);
+
+	/* neighbouring NRPNs 16127 and 16129 do nothing */
+	reset();
+	FEED(0xB0, 99, 125, 98, 127, 6, 0x53);
+	FEED(0xB0, 99, 126, 98, 1, 6, 0x53);
+	CHECK(storeRequests == 0 && ncalls == 0, "neighbours: %d requests, %d calls", storeRequests, ncalls);
+
+	/* a stray CC 6 after the command cannot repeat it, and sets nothing */
+	reset();
+	FEED(0xB0, 99, 126, 98, 0, 6, 0x53, 6, 0x53, 6, 42);
+	CHECK(storeRequests == 1 && ncalls == 0, "stray CC 6: %d requests, %d calls", storeRequests, ncalls);
+
+	/* a stray CC 6 after a wrong key sets nothing either */
+	reset();
+	FEED(0xB0, 99, 126, 98, 0, 6, 0x00, 6, 0x53);
+	CHECK(storeRequests == 0 && ncalls == 0, "after wrong key: %d requests, %d calls", storeRequests, ncalls);
+
+	/* the command works again after a new selection */
+	reset();
+	FEED(0xB0, 99, 126, 98, 0, 6, 0x53, 99, 126, 98, 0, 6, 0x53);
+	CHECK(storeRequests == 2, "two commands: %d requests", storeRequests);
+
+	/* channel rules: any voice channel, the global channel, not an unlistened channel */
+	reset();
+	FEED(0xB3, 99, 126, 98, 0, 6, 0x53);
+	CHECK(storeRequests == 1, "voice channel 4: %d requests", storeRequests);
+	reset();
+	activeParameters[PAR_MIDI_CHAN_GLOBAL] = 10;
+	FEED(0xB9, 99, 126, 98, 0, 6, 0x53);
+	CHECK(storeRequests == 1, "global channel: %d requests", storeRequests);
+	reset();
+	FEED(0xBE, 99, 126, 98, 0, 6, 0x53);
+	CHECK(storeRequests == 0 && ncalls == 0, "unlistened channel: %d requests", storeRequests);
+
+	/* normal NRPNs still work after a store */
+	reset();
+	FEED(0xB0, 99, 126, 98, 0, 6, 0x53, 99, 0, 98, (uint8_t)(PAR_FX_DRY_WET - 128), 6, 42);
+	CHECK(storeRequests == 1 && ncalls == 1 && calls[0].a == PAR_FX_DRY_WET && calls[0].b == 42,
+	      "NRPN after store: %d requests, %d calls", storeRequests, ncalls);
 }
 
 static void test_realtime_bytes_ignored_inside_message(void)
@@ -238,6 +295,7 @@ int main(void)
 	test_cc_maps_to_parameter();
 	test_cc_out_of_range_clamped();
 	test_nrpn();
+	test_store_command();
 	test_realtime_bytes_ignored_inside_message();
 	test_system_messages_ignored();
 	test_error_drops_partial_message();

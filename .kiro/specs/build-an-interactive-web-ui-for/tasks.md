@@ -12,7 +12,7 @@ is checked off. Host tests run with `ctest --test-dir build/host`; web tests wit
   `engine/src/engine.c` (design 3.1, 3.2). Done when the engine builds for host and RP2350 and a
   host test shows that two requests before one take give one take, and a request after a take
   gives a second take.
-- [ ] 1.2 Handle the store command in `midi/src/MIDI/MidiParser.c` (design 3.3); keep the file's
+- [x] 1.2 Handle the store command in `midi/src/MIDI/MidiParser.c` (design 3.3); keep the file's
   CRLF line endings. Extend `host/test_midi_parser.c` with the cases of design 3.6 (sequence,
   wrong key, neighbouring NRPNs, stray CC 6 afterwards, channel rules, existing cases unchanged).
   Done when `midi_parser` passes.

@@ -88,6 +88,13 @@ static void midiParser_ccHandler(MidiMsg msg)
 	switch(msg.data1)
 	{
 		case NRPN_DATA_ENTRY_COARSE:
+			if(midiParser_activeNrpnNumber == LXR_NRPN_STORE_BOOT)
+			{
+				if(msg.data2 == LXR_STORE_BOOT_KEY)
+					lxr_midi_request_store();
+				midiParser_activeNrpnNumber = LXR_NRPN_NULL;	/* a stray CC 6 later cannot repeat it */
+				break;
+			}
 			midiParser_setParam((uint16_t)(128 + midiParser_activeNrpnNumber), msg.data2);
 			break;
 
