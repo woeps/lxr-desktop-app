@@ -1,8 +1,8 @@
 import { createSignal, For, onSettled, Show } from "solid-js";
-import { diff } from "../model/sound";
 import { download } from "../files/download";
 import { exportJson } from "../files/json";
 import { useApp } from "../state/app";
+import { isDirty } from "../state/dirty";
 import { nameError, NAME_MAX, toSound, type LibrarySound, type LibraryResult, type SortKey } from "../state/library";
 import { ConfirmDialog } from "./ConfirmDialog";
 
@@ -28,9 +28,7 @@ export function Grimoire(props: { onClose: () => void; onImport: () => void }) {
 
   onSettled(() => { void library.requestPersistence().then(setPersisted); });
 
-  /** Unsaved edits: the sound differs from the one last loaded or saved (R6.5). */
-  const dirty = () => session.state.current.name !== session.state.baseline.name
-    || diff(session.state.current, session.state.baseline).length > 0;
+  const dirty = () => isDirty(session);
   const rows = () => library.list({ sort: sort(), filter: filter() });
   const report = (r: LibraryResult<unknown>) => setError(r.ok ? null : r.error);
 
