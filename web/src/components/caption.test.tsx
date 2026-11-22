@@ -49,23 +49,31 @@ describe("hotFor", () => {
   it("names the path from a station row to Return", () => {
     const h = hotFor(PARAMS.find((p) => p.voice === 0 && p.station === "ordeal")!, values());
     expect(h.from).toBe(4);
-    expect(h.caption).toContain("The Ordeal → The Forge → The Road Back → Return");
+    expect(h.caption).toContain("Amp envelope → Drive → Mixer → To the speakers");
     expect(h.fall).toBe(false);
   });
   it("lights the fall and the path from the Hero for fall rows", () => {
     const h = hotFor(def("modamnt1"), values());
     expect(h).toMatchObject({ from: 1, fall: true });
-    expect(h.caption).toContain("The Hero → The Threshold");
+    expect(h.caption).toContain("Oscillator → Click + the fall");
   });
-  it("follows a binding from the Mentor row to the bound station", () => {
+  it("follows a binding from the LFO row to the bound station", () => {
     const v = values();
     const target = PARAMS.find((p) => p.voice === 0 && p.station === "forge")!;
     v[def("target_lfo1").id] = def("target_lfo1").min + targetIndex(target.id);
     const h = hotFor(def("target_lfo1"), v);
     expect(h).toMatchObject({ from: 5, thread: "mentor" });
-    expect(h.caption).toContain("The Forge → The Road Back → Return");
+    expect(h.caption).toContain("Drive → Mixer → To the speakers");
   });
-  it("lights nothing for an unbound Oracle", () => {
+  it("names the path with the voice's own headings: Noise on the snare, Click on the hi-hat", () => {
+    const snare = hotFor(PARAMS.find((p) => p.voice === 3 && p.station === "hero")!, values());
+    expect(snare.caption).toContain("Oscillator → Click + the fall");
+    const call = hotFor(PARAMS.find((p) => p.voice === 3 && p.station === "call")!, values());
+    expect(call.caption).toContain("Noise → Oscillator → Click + the fall");
+    const hat = hotFor(PARAMS.find((p) => p.voice === 5 && p.station === "hero")!, values());
+    expect(hat.caption).toContain("Oscillator → Click → Filter");
+  });
+  it("lights nothing for an unbound Velocity link", () => {
     const h = hotFor(def("vel_dest_1"), (() => { const v = values(); v[def("vel_dest_1").id] = def("vel_dest_1").min; return v; })());
     expect(h).toMatchObject({ from: null, thread: null });
     expect(h.caption).toContain("nothing");
@@ -83,7 +91,7 @@ describe("caption and downstream highlighting", () => {
     const r = PARAMS.find((p) => p.voice === 0 && p.station === "ordeal")!;
     point(r.name);
     expect(hotBridges()).toEqual([4, 5, 6]);
-    expect(caption().textContent).toContain("The Ordeal → The Forge");
+    expect(caption().textContent).toContain("Amp envelope → Drive");
     host.querySelector("[data-journey]")!.dispatchEvent(new MouseEvent("mouseleave"));
     flush();
     expect(hotBridges()).toEqual([]);
@@ -95,7 +103,7 @@ describe("caption and downstream highlighting", () => {
     bind("target_lfo1", r.name);
     row(r.name).dispatchEvent(new FocusEvent("focusin", { bubbles: true }));
     flush();
-    expect(caption().textContent).toContain("Moved by M1");
+    expect(caption().textContent).toContain("Moved by LFO1");
   });
   it("lights the fall arc for a fall row", async () => {
     await mount();
@@ -110,6 +118,6 @@ describe("caption and downstream highlighting", () => {
     point("target_lfo1");
     expect(host.querySelector("[data-thread=mentor][data-hot]")).not.toBeNull();
     expect(hotBridges()).toEqual([5, 6]);
-    expect(caption().textContent).toContain("Mentor moves");
+    expect(caption().textContent).toContain("LFO moves");
   });
 });

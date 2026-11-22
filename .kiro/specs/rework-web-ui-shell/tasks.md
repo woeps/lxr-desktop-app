@@ -45,7 +45,7 @@ Task 12 needs Chris at the browser.
   `cards.tsx` and `CauldronPage.tsx`. Done when `journey.test.tsx` and `cauldron.test.tsx` assert the
   table of R8.1 and R8.2 for drum, snare, cymbal and hi-hat, the aria labels and the missing
   subtitle element, and pass.
-- [ ] 4.2 Use the table in `model/links.ts` (`stationName`, `targetLabel`, badges `LFO<n>` and
+- [x] 4.2 Use the table in `model/links.ts` (`stationName`, `targetLabel`, badges `LFO<n>` and
   `VEL<n>`, incoming list) and `model/caption.ts` ("LFO", "Velocity", station path). Done when
   `links.test.ts`, `caption.test.tsx` and `threads.test.tsx` pass with the new strings, including a
   snare "Noise" and a hi-hat "Click" case.

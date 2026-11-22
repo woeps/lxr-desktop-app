@@ -60,8 +60,8 @@ describe("links", () => {
       withTargets({ target_lfo2: idx("filter_freq_1"), vel_dest_1: idx("filter_freq_1") }).values,
     );
     expect(badgesFor(all, f1, 0)).toEqual([
-      { text: "O1", kind: "oracle", voice: 0, own: true },
-      { text: "M2", kind: "mentor", voice: 1, own: false },
+      { text: "VEL1", kind: "oracle", voice: 0, own: true },
+      { text: "LFO2", kind: "mentor", voice: 1, own: false },
     ]);
     expect(badgesFor(all, id("filter_freq_2"), 1)).toEqual([]);
     expect(incoming(all, 0).map((b) => `${b.kind}${b.voice}`)).toEqual(["mentor1"]);
@@ -85,9 +85,13 @@ describe("links", () => {
 
   it("labels targets as voice › station › label", () => {
     const p = paramById(id("filter_freq_1"))!;
-    expect(targetLabel(p.id)).toBe("Drum 1 › Road of Trials › cutoff");
+    expect(targetLabel(p.id)).toBe("Drum 1 › Filter › cutoff");
     expect(targetLabel(p.id).endsWith(` › ${p.label}`)).toBe(true);
-    expect(targetLabel(id("fx_p1")).startsWith("Cauldron › The Brew › ")).toBe(true);
+    expect(targetLabel(id("fx_p1")).startsWith("Cauldron › Effect › ")).toBe(true);
+    const noise = PARAMS.find((q) => q.voice === 3 && q.station === "call")!;
+    expect(targetLabel(noise.id)).toBe(`Snare › Noise › ${noise.label}`);
+    const click = PARAMS.find((q) => q.voice === 5 && q.station === "threshold")!;
+    expect(targetLabel(click.id)).toBe(`Hi-hat › Click › ${click.label}`);
     expect(targetLabel(id("filter_freq_6")).startsWith("Hi-hat › ")).toBe(true);
   });
 });

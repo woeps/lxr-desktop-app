@@ -43,7 +43,7 @@ describe("threads, badges and pick-to-bind", () => {
     bind("vel_dest_2", target.name); // Oracle of voice 2 acts on voice 1's row
     bind("target_lfo1", target.name);
     const texts = [...row(target.name).querySelectorAll("[data-badge]")].map((b) => b.textContent);
-    expect(texts).toEqual(["M1", "O2"]);
+    expect(texts).toEqual(["LFO1", "VEL2"]);
   });
   it("marks contested rows and threads", async () => {
     await mount();
@@ -61,7 +61,7 @@ describe("threads, badges and pick-to-bind", () => {
     expect(host.querySelector("[data-part=incoming]")).toBeNull();
     const target = PARAMS.find((p) => p.voice === 0 && p.station === "trials")!;
     bind("target_lfo2", target.name);
-    expect(host.querySelector("[data-part=incoming] li")!.textContent).toContain("M2");
+    expect(host.querySelector("[data-part=incoming] li")!.textContent).toContain("LFO2 (Drum 2) → Drum 1 › Filter › ");
   });
   it("Enter on a pickable row binds the Mentor and leaves pick mode", async () => {
     await mount();

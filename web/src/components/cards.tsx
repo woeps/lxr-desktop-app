@@ -1,7 +1,7 @@
 import { For, Show } from "solid-js";
 import type { ParamDef } from "../generated/params";
 import { headingOf } from "../model/headings";
-import { bindings, incoming, targetLabel, VOICE_NAMES, type Voice } from "../model/links";
+import { badgeText, bindings, incoming, targetLabel, VOICE_NAMES, type Voice } from "../model/links";
 import { useSession } from "../state/session";
 import { Station } from "./Station";
 
@@ -22,7 +22,7 @@ export function BindingsCard(props: { rows: readonly ParamDef[] }) {
           <p>Incoming from other voices, set on their pages</p>
           <ul>
             <For each={list()}>
-              {(b) => <li data-kind={b.kind}>{`${b.kind === "mentor" ? "M" : "O"}${b.voice + 1} (${VOICE_NAMES[b.voice]}) → ${targetLabel(b.target)}`}</li>}
+              {(b) => <li data-kind={b.kind}>{`${badgeText(b)} (${VOICE_NAMES[b.voice]}) → ${targetLabel(b.target)}`}</li>}
             </For>
           </ul>
         </div>
