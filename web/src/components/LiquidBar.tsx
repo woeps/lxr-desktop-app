@@ -2,6 +2,7 @@ import { useSession } from "../state/session";
 import type { ParamDef } from "../generated/params";
 import { isLocked, resetValue, setValue, valueOf } from "./param";
 import { clamp } from "../model/sound";
+import { bindStyle } from "../visual/css";
 import styles from "./LiquidBar.module.css";
 
 export const FALLBACK_WIDTH = 200; // px, when the track has no layout (tests)
@@ -71,6 +72,8 @@ export function LiquidBar(props: { def: ParamDef }) {
     if (start !== shown) session.history.push([[props.def.id, start, shown]]);
   }
 
+  let fill!: HTMLDivElement;
+  bindStyle(() => fill, () => ({ width: `${pct()}%` }));
   return (
     <div
       ref={track}
@@ -89,7 +92,7 @@ export function LiquidBar(props: { def: ParamDef }) {
       onPointerCancel={endDrag}
       onDblClick={() => resetValue(session, props.def)}
     >
-      <div class={styles.fill} style={{ width: `${pct()}%` }} />
+      <div class={styles.fill} ref={fill} />
     </div>
   );
 }

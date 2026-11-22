@@ -3,6 +3,7 @@ import { AppContext } from "../state/app";
 import { MOD_TARGETS, PARAMS, type ParamDef } from "../generated/params";
 import { badgesFor, bindings, contestedIds, targetIndex } from "../model/links";
 import { useSession } from "../state/session";
+import { bindStyle } from "../visual/css";
 import { iconInput, renderIcon } from "../visual/icons";
 import { Chips } from "./Chips";
 import { LiquidBar } from "./LiquidBar";
@@ -59,14 +60,18 @@ export function ParamRow(props: { def: ParamDef }) {
     (svg) => iconBox.replaceChildren(svg),
   );
 
+  let row!: HTMLElement;
+  bindStyle(() => row, () => ({ opacity: dimmed() ? "0.4" : undefined }));
   return (
     <div class={styles.row} title={tip()} data-param={props.def.name}
       data-dimmed={dimmed() ? "true" : undefined}
       data-flash={flash() < 0 ? undefined : String(flash())}
       data-contested={contested() ? "true" : undefined} data-pickable={pickable() ? "true" : undefined}
       tabindex={pickable() ? 0 : undefined}
-      ref={(el: HTMLElement) => { el.addEventListener("click", intercept, true); el.addEventListener("keydown", onKey, true); }}
-      style={dimmed() ? { opacity: "0.4" } : undefined}>
+      ref={(el: HTMLElement) => {
+        el.addEventListener("click", intercept, true); el.addEventListener("keydown", onKey, true);
+        row = el;
+      }}>
       <span class={styles.dot} data-modified={modified() ? "true" : "false"} />
       <span ref={iconBox} class={styles.icon} />
       <span class={styles.label}>{props.def.label}</span>

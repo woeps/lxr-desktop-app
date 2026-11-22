@@ -1,4 +1,5 @@
-import { createEffect, createMemo, createSignal, onCleanup, untrack } from "solid-js";
+import { createEffect, createMemo, createSignal, getOwner, onCleanup, runWithOwner, untrack } from "solid-js";
+import { applyStyle } from "../visual/css";
 import { useSession } from "../state/session";
 import type { Live } from "../state/live";
 import {
@@ -78,6 +79,8 @@ export function JourneyOverlay(props: { voice: Voice; live: Live; hot?: Hot | nu
     threadSlot.replaceChildren(svg ?? document.createComment(""));
   });
 
+  // The microtask below runs outside the component body, so the cleanup is registered under this owner.
+  const owner = getOwner();
   function mount(el: HTMLDivElement) {
     queueMicrotask(() => {
       const journey = el.parentElement;
@@ -88,13 +91,13 @@ export function JourneyOverlay(props: { voice: Voice; live: Live; hot?: Hot | nu
       const ro = new ResizeObserver(run);
       ro.observe(journey);
       journey.querySelectorAll("[data-station]").forEach((b) => ro.observe(b));
-      onCleanup(() => ro.disconnect());
+      runWithOwner(owner, () => onCleanup(() => ro.disconnect()));
     });
   }
   return (
     <>
-      <div data-slot="overlay" style={{ position: "absolute", left: 0, top: 0 }} ref={(el: HTMLDivElement) => { slot = el; mount(el); }} />
-      <div data-slot="threads" style={{ position: "absolute", left: 0, top: 0, "pointer-events": "none" }} ref={threadSlot} />
+      <div data-slot="overlay" ref={(el: HTMLDivElement) => { slot = el; applyStyle(el, { position: "absolute", left: "0", top: "0" }); mount(el); }} />
+      <div data-slot="threads" ref={(el: HTMLDivElement) => { threadSlot = el; applyStyle(el, { position: "absolute", left: "0", top: "0", "pointer-events": "none" }); }} />
     </>
   );
 }
