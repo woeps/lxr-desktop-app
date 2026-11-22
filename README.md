@@ -105,6 +105,15 @@ the effect and other shared parameters, and all NRPNs, are accepted on any chann
 on. The full list is in [MIDI implementation](#midi-implementation). Note off, clock, transport,
 program change and system exclusive messages are ignored.
 
+To keep the current sound as the one the module starts with, send the store command: NRPN 16128
+(CC 99 = 126, CC 98 = 0) followed by CC 6 = 83 (0x53). Any other value on CC 6 does nothing. The
+module then saves the live sound, as `preset save` does without a name, to the slot that is loaded
+(or to the slot named by the saved settings if none is), and that slot becomes the boot sound. The
+write takes a moment on the control core and does not interrupt playing notes. Finish with the NRPN
+null (CC 99 = 127, CC 98 = 127) so that a later CC 6 cannot repeat the command. With `amidi`:
+`amidi -p hw:1,0,0 -S 'B0 63 7E B0 62 00 B0 06 53 B0 63 7F B0 62 7F'`. The command is not a
+parameter, so it is not in the table below.
+
 ## MIDI implementation
 
 Every sound parameter, generated from the firmware's parameter table. "Values" is the range the
