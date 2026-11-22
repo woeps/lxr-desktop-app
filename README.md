@@ -400,6 +400,12 @@ the console are not visible to the page.
 saves the sound it is playing now to the slot that is loaded at power-up, keeps that slot's name, and
 plays it after the next power-up.
 
+Preset importer. The "Preset importer" button opens a drawer where you pick a kit folder (or several
+`.SND` files). The drawer lists the kits it finds, and selecting one makes it the current sound and
+sends all its values live to the module. Nothing is stored on the module: after a power-cycle it plays
+its boot slot again, and "Seal into boot slot" is still the only way to keep a kit. Files that are not
+`.SND` kits, such as `.PAT`, `.SNG`, `.CFG` and `.NFO`, are ignored and only counted.
+
 Building and serving (tested with Node.js 24):
 
 ```sh
