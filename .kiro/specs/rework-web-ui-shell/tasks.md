@@ -55,7 +55,7 @@ Task 12 needs Chris at the browser.
 
 ## 5. Shell primitives (R1.5, R9)
 
-- [ ] 5.1 Add `Popover`, `SplitButton`, `visual/shellIcons.ts` and the shared button styles
+- [x] 5.1 Add `Popover`, `SplitButton`, `visual/shellIcons.ts` and the shared button styles
   (design 4.1, 4.6). Done when `shell.test.tsx` covers open and close by click, Enter, Space,
   arrows, Escape with focus return and outside click, and passes.
 - [ ] 5.2 Add the four header glyphs to `visual/glyphs.ts` with tests, and extend `tokens.test.ts`

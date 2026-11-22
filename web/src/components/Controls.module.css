@@ -1,0 +1,49 @@
+/* Shared button, split button and popover styles of the shell (design 4.6). Colours are tokens only. */
+.btn {
+  font: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  padding: 0.3em 0.8em;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 0.4em;
+  cursor: pointer;
+}
+.btn:disabled { color: var(--muted); cursor: default; }
+.btn:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+.icon { display: inline-flex; }
+
+.split { position: relative; display: inline-flex; }
+.split > .btn:first-child { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+.split > .caret { border-top-left-radius: 0; border-bottom-left-radius: 0; border-left-width: 0; padding: 0.3em 0.5em; }
+.split[data-accent="voice"] > .btn { border-color: var(--voice); color: var(--voice); }
+.split[data-accent="gold"] > .btn { border-color: var(--gold); color: var(--gold); }
+
+.popover {
+  position: absolute;
+  z-index: 10;
+  left: 0;
+  min-width: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 0.25em;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 0.4em;
+}
+.popover[data-placement="bottom"] { top: 100%; margin-top: 2px; }
+.popover[data-placement="top"] { bottom: 100%; margin-bottom: 2px; }
+.popover [role="menuitem"] {
+  font: inherit;
+  text-align: left;
+  padding: 0.3em 0.8em;
+  color: var(--text);
+  background: var(--bg);
+  border: 0;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.popover [role="menuitem"]:hover, .popover [role="menuitem"]:focus-visible { outline: 1px solid var(--gold); }
+.popover [role="menuitem"]:disabled { color: var(--muted); cursor: default; }
