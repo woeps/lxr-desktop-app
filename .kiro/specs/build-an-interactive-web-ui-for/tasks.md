@@ -81,7 +81,7 @@ is checked off. Host tests run with `ctest --test-dir build/host`; web tests wit
 - [x] 6.1 `state/settings.ts` (MIDI setup, key map, velocity, pitch, pause motion) and
   `state/session.ts` (store and context, `applyChanges`, page, pick mode, A/B, revert, session
   autosave). Done when their tests pass.
-- [ ] 6.2 `state/library.ts` with `library.test.ts` (CRUD, name rule, tags, sort and filter,
+- [x] 6.2 `state/library.ts` with `library.test.ts` (CRUD, name rule, tags, sort and filter,
   quota error, persistence, `navigator.storage.persist()`).
 - [ ] 6.3 `files/json.ts`, `files/snd.ts`, `files/download.ts` with `files.test.ts` (round trip,
   unknown, missing and clamped reporting, table id, `.SND` padding and extra bytes, refusal of
