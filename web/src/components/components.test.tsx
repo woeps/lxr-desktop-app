@@ -178,6 +178,16 @@ describe("TargetSelect", () => {
     expect(host.querySelectorAll("option").length).toBe(LFO_TARGET.values!.length);
   });
 
+  it("labels every group with the voice and the station heading, never a raw station id", () => {
+    const old = /\b(call|hero|threshold|trials|ordeal|forge|roadBack|mentor|oracle|brew|pour|millstone|journey)\b/i;
+    for (const def of [LFO_TARGET, ...PARAMS.filter((d) => d.name.startsWith("vel_dest"))]) {
+      for (const g of targetGroups(def)) expect(g.label).not.toMatch(old);
+    }
+    const labels = targetGroups(LFO_TARGET).map((g) => g.label);
+    expect(labels).toContain("Drum 1 · Drive");
+    expect(labels).toContain("Snare · Noise");
+  });
+
   it("selects a target through the menu and the value reaches the session", () => {
     const sel = host.querySelector("select")!;
     expect(sel.getAttribute("aria-label")).toBe(LFO_TARGET.label);

@@ -691,7 +691,7 @@ parameter do not add up, the one that updates last wins.
 - The **Mentor** card holds only the LFO's character; the **Bindings** card holds only where the
   Mentor and the Oracle act; the **Oracle** card holds only velocity strength. If the firmware
   later allows several targets per LFO, Bindings becomes a list without changing the Mentor card.
-- `TargetSelect` lists all 229 targets grouped as voice › station › label; targets on other voices
+- `TargetSelect` lists all 229 targets grouped as "voice · station heading" (for example "Drum 1 · Drive", "Snare · Noise", from `headingOf`), each option named by its label; targets on other voices
   read "(other voice)". "pick" enters pick mode: journey rows get a dashed gold outline and a
   crosshair; clicking a row (or Enter on its control) binds it; Esc or "pick" again cancels.
 - **Threads** from the Bindings card rise and run to the bottom of the bound station: gold for the

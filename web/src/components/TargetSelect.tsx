@@ -1,6 +1,7 @@
 import { For } from "solid-js";
 import { MOD_TARGETS, PARAMS, type ParamDef } from "../generated/params";
 import { useSession, type PickMode } from "../state/session";
+import { headingOf } from "../model/headings";
 import { isLocked, setValue, valueOf } from "./param";
 import styles from "./TargetSelect.module.css";
 
@@ -12,7 +13,7 @@ function groupOf(index: number): string {
   const id = MOD_TARGETS[index];
   const p = id == null ? undefined : byId.get(id);
   if (!p) return index === 0 ? "None" : "Other";
-  return `${p.voice < 0 ? "Cauldron" : VOICE_NAMES[p.voice]} · ${p.station}`;
+  return `${p.voice < 0 ? "Cauldron" : VOICE_NAMES[p.voice]} · ${headingOf(p.station, p.voice)}`;
 }
 
 /** Targets of `def` grouped for the menu, in first-appearance order (design 4.9). */
