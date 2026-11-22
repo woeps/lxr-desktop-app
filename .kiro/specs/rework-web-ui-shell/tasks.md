@@ -25,7 +25,7 @@ Task 12 needs Chris at the browser.
   behaviour (design 3.2, 3.4). Done when `session.test.ts` shows: no undo step, dirty after a name
   change, name survives the autosave round trip, `renameBaseline` clears the name part of the dirty
   state only.
-- [ ] 2.2 Add `state/saveState.ts` and its test with the four kinds and the loaded-entry cases
+- [x] 2.2 Add `state/saveState.ts` and its test with the four kinds and the loaded-entry cases
   (design 3.4). Done when the test passes.
 
 ## 3. Settings, roll and status state (R4, R6, R7)
