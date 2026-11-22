@@ -6,6 +6,7 @@ import {
 } from "../visual/overlay";
 import { picInput, type Voice } from "../visual/vignettes";
 import { bindings, contestedIds } from "../model/links";
+import type { Hot } from "../model/caption";
 import { paramById } from "../model/params";
 import { threadPaths, type Thread } from "../visual/threads";
 
@@ -27,7 +28,7 @@ export function measure(journey: HTMLElement): Measured {
  * is recomputed only when a ResizeObserver reports a change.
  * shortcut: without ResizeObserver (jsdom) the geometry is measured once after mount.
  */
-export function JourneyOverlay(props: { voice: Voice; live: Live }) {
+export function JourneyOverlay(props: { voice: Voice; live: Live; hot?: Hot | null }) {
   const session = useSession();
   const [measured, setMeasured] = createSignal<Measured | null>(null);
   let slot!: HTMLDivElement;
@@ -50,8 +51,10 @@ export function JourneyOverlay(props: { voice: Voice; live: Live }) {
     view = buildOverlay(g, l);
     slot.replaceChildren(view.svg);
     view.update(live());
+    view.highlight(props.hot?.from ?? null, props.hot?.fall ?? false);
   });
   createEffect(live, (l) => view?.update(l));
+  createEffect(() => ({ g: geometry(), from: props.hot?.from ?? null, fall: props.hot?.fall ?? false }), ({ from, fall }) => view?.highlight(from, fall));
 
   // Threads from the Bindings card to the bound station (design 4.12.8); other voices draw none.
   let threadSlot!: HTMLDivElement;
@@ -65,8 +68,13 @@ export function JourneyOverlay(props: { voice: Voice; live: Live }) {
       return p && p.voice === props.voice ? [{ kind: b.kind, station: p.station, contested: hot.has(b.target!) }] : [];
     });
   });
-  createEffect(() => ({ m: measured(), t: threads() }), ({ m, t }) => {
-    threadSlot.replaceChildren(m ? threadPaths(m.stations, m.cards[1], t, m.w, m.h) : document.createComment(""));
+  createEffect(() => ({ m: measured(), t: threads(), hot: props.hot?.thread ?? null }), ({ m, t, hot }) => {
+    const svg = m ? threadPaths(m.stations, m.cards[1], t, m.w, m.h) : null;
+    svg?.querySelectorAll<SVGElement>(`[data-thread=${hot ?? "none"}]`).forEach((g) => {
+      g.setAttribute("data-hot", "1");
+      g.querySelector("path")!.setAttribute("stroke-width", "4");
+    });
+    threadSlot.replaceChildren(svg ?? document.createComment(""));
   });
 
   function mount(el: HTMLDivElement) {

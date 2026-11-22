@@ -126,7 +126,12 @@ export interface OverlayLive {
   /** One level per bridge (model/levels.ts). */
   levels: readonly number[];
 }
-export interface OverlayView { svg: SVGSVGElement; update(live: OverlayLive): void }
+export interface OverlayView {
+  svg: SVGSVGElement;
+  update(live: OverlayLive): void;
+  /** Light bridges from..6 (gold, thicker) and the fall arc (design 4.12.9). */
+  highlight(from: number | null, fall: boolean): void;
+}
 
 const qd = (a: Pt, c: Pt, b: Pt) => `M${a[0]} ${a[1]}Q${c[0]} ${c[1]} ${b[0]} ${b[1]}`;
 const place = (el: SVGElement, p: Pt, half: number, size = half * 2) => {
@@ -225,6 +230,19 @@ export function buildOverlay(geo: Geometry, labels: readonly (string | null)[]):
 
   return {
     svg,
+    highlight(from, fall) {
+      bridges.forEach(({ g }, i) => {
+        const on = from !== null && i >= from;
+        const line = g.querySelector("path")!;
+        line.setAttribute("stroke", on ? "var(--gold)" : "var(--voice)");
+        line.setAttribute("stroke-width", on ? "3.5" : "2");
+        if (on) g.setAttribute("data-hot", "1"); else g.removeAttribute("data-hot");
+      });
+      if (fallPath) {
+        fallPath.setAttribute("stroke-width", String(geo.fall!.width + (fall ? 2 : 0)));
+        if (fall) fallPath.setAttribute("data-hot", "1"); else fallPath.removeAttribute("data-hot");
+      }
+    },
     update(live) {
       bridges.forEach(({ g, sparks, b }, i) => {
         const l = live.levels[i] ?? 0;

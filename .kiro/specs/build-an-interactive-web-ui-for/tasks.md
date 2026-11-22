@@ -133,7 +133,7 @@ is checked off. Host tests run with `ctest --test-dir build/host`; web tests wit
   geometry from a `ResizeObserver`.
 - [x] 10.2 Threads, badges, incoming list, contested styling and pick-to-bind (Esc cancels, Enter
   binds) for the Mentor and the Oracle.
-- [ ] 10.3 `Caption` and downstream highlighting for station, fall, Mentor, Oracle and Bindings
+- [x] 10.3 `Caption` and downstream highlighting for station, fall, Mentor, Oracle and Bindings
   rows.
 - [ ] 10.4 Measure a full voice page with every animation running in Chrome's performance panel.
   Done when script time stays under 4 ms per frame on Chris's laptop, and the page is still with

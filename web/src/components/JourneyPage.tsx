@@ -1,6 +1,8 @@
-import { For, onCleanup } from "solid-js";
+import { createMemo, createSignal, For, onCleanup } from "solid-js";
 import { PARAMS, type Station as StationId } from "../generated/params";
 import { stationRows } from "../model/stations";
+import { hotFor } from "../model/caption";
+import { Caption } from "./Caption";
 import { useSession } from "../state/session";
 import { useApp } from "../state/app";
 import { createLive } from "../state/live";
@@ -49,9 +51,26 @@ export function JourneyPage(props: { voice: Voice }) {
   const onEsc = (e: KeyboardEvent) => { if (e.key === "Escape" && session.state.pick) session.setPick(null); };
   document.addEventListener("keydown", onEsc);
   onCleanup(() => document.removeEventListener("keydown", onEsc));
+  // Pointing at or focusing a row lights everything downstream (design 4.12.9).
+  const [pointed, setPointed] = createSignal<number | null>(null);
+  const hot = createMemo(() => {
+    const id = pointed();
+    const def = id === null ? undefined : PARAMS.find((p) => p.id === id);
+    return def ? hotFor(def, session.state.current.values) : null;
+  });
+  const point = (e: Event) => {
+    const el = (e.target as Element | null)?.closest?.("[data-param]");
+    const def = el ? PARAMS.find((p) => p.name === el.getAttribute("data-param") && p.voice === props.voice) : undefined;
+    setPointed(def ? def.id : null);
+  };
+  const leave = () => setPointed(null);
   return (
-    <div class={styles.journey} data-journey={props.voice}>
-      <JourneyOverlay voice={props.voice} live={live} />
+    <div class={styles.journey} data-journey={props.voice}
+      ref={(el: HTMLElement) => {
+        for (const t of ["mouseover", "focusin"]) el.addEventListener(t, point);
+        for (const t of ["mouseleave", "focusout"]) el.addEventListener(t, leave);
+      }}>
+      <JourneyOverlay voice={props.voice} live={live} hot={hot()} />
       <div class={styles.stations}>
         <For each={JOURNEY}>
           {(s) => (
@@ -74,6 +93,7 @@ export function JourneyPage(props: { voice: Voice }) {
         <BindingsCard rows={stationRows(props.voice, "bindings")} />
         <OracleCard rows={stationRows(props.voice, "oracle")} />
       </div>
+      <Caption text={hot()?.caption ?? ""} />
     </div>
   );
 }
