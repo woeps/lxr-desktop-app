@@ -136,6 +136,18 @@ describe("page shell", () => {
     }
   });
 
+  it("Roll <voice> changes only the current voice", () => {
+    const before = Uint8Array.from(app.session.state.current.values);
+    const slider = btn("Roll amount") as HTMLInputElement;
+    slider.value = "100";
+    slider.dispatchEvent(new Event("input", { bubbles: true }));
+    flush();
+    click(btn("Roll Drum 1"));
+    const changed = PARAMS.filter((p) => app.session.state.current.values[p.id] !== before[p.id]);
+    expect(changed.length).toBeGreaterThan(0);
+    expect(changed.every((p) => p.voice === 0)).toBe(true);
+  });
+
   it("Roll uses the amount", () => {
     const slider = btn("Roll amount") as HTMLInputElement;
     const before = Uint8Array.from(app.session.state.current.values);

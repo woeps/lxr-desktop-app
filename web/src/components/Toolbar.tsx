@@ -3,7 +3,7 @@ import { useApp } from "../state/app";
 import { nameError } from "../state/library";
 import { copyVoice, diff, factory, pasteVoice, randomise } from "../model/sound";
 import { NOTICE_NOT_SEEN } from "./notices";
-import { voiceOf } from "./voices";
+import { PAGES, voiceOf } from "./voices";
 import styles from "./Shell.module.css";
 
 /**
@@ -26,8 +26,14 @@ export function Toolbar(props: { onSeal: () => void; onGrimoire: () => void; onI
     const f = factory();
     session.applyChanges(diff(session.state.current, f).map((id) => [id, session.state.current.values[id]!, f.values[id]!]));
   }
-  function roll() {
+  const voiceName = () => PAGES.find((p) => p.page === session.state.page)?.name ?? "voice";
+  function rollVoice() {
     const changes = randomise(session.state.current, voice(), amount() / 100, new Set(session.state.locked), app.rng);
+    session.applyChanges(changes);
+  }
+  function roll() {
+    const locked = new Set(session.state.locked);
+    const changes = PAGES.flatMap((p) => randomise(session.state.current, voiceOf(p.page), amount() / 100, locked, app.rng));
     session.applyChanges(changes);
   }
   function paste() {
@@ -74,6 +80,7 @@ export function Toolbar(props: { onSeal: () => void; onGrimoire: () => void; onI
         onInput={(e) => setAmount(Number(e.currentTarget.value))} />
       <output aria-label="Roll amount value">{amount()}%</output>
       <button type="button" onClick={roll}>Roll</button>
+      <button type="button" onClick={rollVoice}>{`Roll ${voiceName()}`}</button>
       <Show when={isDrum()}>
         <button type="button" onClick={() => session.setCopyBuffer(copyVoice(session.state.current, voice()))}>Copy</button>
         <button type="button" disabled={!session.state.copyBuffer} onClick={paste}>Paste</button>
