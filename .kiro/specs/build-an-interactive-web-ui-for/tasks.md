@@ -72,7 +72,7 @@ is checked off. Host tests run with `ctest --test-dir build/host`; web tests wit
 - [x] 5.2 `midi/sender.ts` with `sender.test.ts` on a fake output and clock (order, coalescing,
   10 ms per parameter, byte pacing, full transfer under 2 s, cancel, `pending()`, per-id "handed
   to output" events for the row flash).
-- [ ] 5.3 `midi/access.ts` (secure-context and no-Web-MIDI messages, permission denial, output
+- [x] 5.3 `midi/access.ts` (secure-context and no-Web-MIDI messages, permission denial, output
   list, saved choice, hot-plug, Test note). Done when its tests with a fake
   `navigator.requestMIDIAccess` pass.
 
