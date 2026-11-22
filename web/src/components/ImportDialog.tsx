@@ -1,6 +1,7 @@
 import { createSignal, createStore, flush, For, Show } from "solid-js";
 import { checkJsonName, importJson } from "../files/json";
-import { checkSndName, importSnd } from "../files/snd";
+import { readFile } from "../files/read";
+import { checkSndName, importSnd, sndNotes } from "../files/snd";
 import type { Sound } from "../model/sound";
 import { useApp } from "../state/app";
 import { nameError, NAME_MAX } from "../state/library";
@@ -14,15 +15,6 @@ interface Entry {
   /** Differences found while reading (R8.4, R8.5). */
   notes: string[];
   checked: boolean;
-}
-
-function read(file: File): Promise<ArrayBuffer> {
-  return new Promise((resolve, reject) => {
-    const r = new FileReader();
-    r.onload = () => resolve(r.result as ArrayBuffer);
-    r.onerror = () => reject(r.error);
-    r.readAsArrayBuffer(file);
-  });
 }
 
 /**
@@ -50,16 +42,12 @@ export function ImportDialog(props: { onClose: () => void }) {
     const added: Entry[] = [];
     const errs: string[] = [];
     for (const f of Array.from(files ?? [])) {
-      const buf = await read(f);
+      const buf = await readFile(f);
       if (checkSndName(f.name) === null && !f.name.toLowerCase().endsWith(".json")) {
         const r = importSnd(f.name, new Uint8Array(buf));
         if (!r.ok) { errs.push(r.error); continue; }
         const v = r.value;
-        const notes: string[] = [];
-        if (v.padded) notes.push(`older firmware: ${v.padded} parameters set to 0`);
-        if (v.extra) notes.push(`${v.extra} extra bytes ignored`);
-        if (v.clamped) notes.push(`${v.clamped} values out of range were clamped`);
-        added.push({ key: ++seq, file: f.name, name: v.sound.name, tags: [], sound: v.sound, notes, checked: true });
+        added.push({ key: ++seq, file: f.name, name: v.sound.name, tags: [], sound: v.sound, notes: sndNotes(v), checked: true });
         continue;
       }
       const bad = checkJsonName(f.name);

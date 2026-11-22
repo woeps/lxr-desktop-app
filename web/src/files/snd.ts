@@ -17,6 +17,15 @@ export interface SndImport {
 }
 export type SndResult = { ok: true; value: SndImport } | { ok: false; error: string };
 
+/** The differences found while reading a kit file, as texts for the user. */
+export function sndNotes(v: SndImport): string[] {
+  const notes: string[] = [];
+  if (v.padded) notes.push(`older firmware: ${v.padded} parameters set to 0`);
+  if (v.extra) notes.push(`${v.extra} extra bytes ignored`);
+  if (v.clamped) notes.push(`${v.clamped} values out of range were clamped`);
+  return notes;
+}
+
 /** Only .SND is accepted; the message matches import_kit.py. Returns the refusal or null. */
 export function checkSndName(filename: string): string | null {
   const dot = filename.lastIndexOf(".");

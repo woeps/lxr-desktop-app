@@ -4,7 +4,7 @@ import { factory, diff } from "../model/sound";
 import { toParams, type LibrarySound } from "../state/library";
 import { download, type DownloadEnv } from "./download";
 import { checkJsonName, exportJson, importJson } from "./json";
-import { exportSnd, importSnd, SND_LENGTH } from "./snd";
+import { exportSnd, importSnd, sndNotes, SND_LENGTH } from "./snd";
 
 const lib = (name: string, params: Record<string, number>): LibrarySound => ({
   id: "x", name, tags: ["kick"], created: "2026-01-01T00:00:00Z", modified: "2026-01-02T00:00:00Z", params,
@@ -170,5 +170,17 @@ describe("download", () => {
     expect(env.url.revokeObjectURL).toHaveBeenCalledWith("blob:fake");
     expect(blob!.type).toBe("application/json");
     expect(await blob!.text()).toBe("{}");
+  });
+});
+
+describe("sndNotes", () => {
+  const base = { sound: factory("A"), padded: 0, extra: 0, clamped: 0 };
+  it("gives no notes for a clean file", () => {
+    expect(sndNotes(base)).toEqual([]);
+  });
+  it("gives one text per difference", () => {
+    expect(sndNotes({ ...base, padded: 3 })).toEqual(["older firmware: 3 parameters set to 0"]);
+    expect(sndNotes({ ...base, extra: 5 })).toEqual(["5 extra bytes ignored"]);
+    expect(sndNotes({ ...base, clamped: 2 })).toEqual(["2 values out of range were clamped"]);
   });
 });
