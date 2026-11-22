@@ -32,6 +32,8 @@ export interface Importer {
   /** Sends the current values again and shows the hint when the transfer ends (R3.5). */
   sendAgain(): void;
   tick(key: string, on: boolean): void;
+  /** Ticks every preset, or unticks all when every one is already ticked. Only the ticks change. */
+  toggleAll(): void;
   /** Edits the name used when the preset is added to the library (R4.2). */
   rename(key: string, name: string): void;
   /** Adds the ticked presets in list order; stops at the first library error (R4.1). Never touches the session or sender (R4.3). */
@@ -140,6 +142,13 @@ export function createImporter(app: App, clock: Clock = realClock): Importer {
         const i = s.ticked.indexOf(key);
         if (on && i < 0) s.ticked.push(key);
         else if (!on && i >= 0) s.ticked.splice(i, 1);
+      });
+      flush();
+    },
+    toggleAll() {
+      setState((s) => {
+        const all = s.presets.length > 0 && s.presets.every((p) => s.ticked.includes(p.key));
+        s.ticked = all ? [] : s.presets.map((p) => p.key);
       });
       flush();
     },

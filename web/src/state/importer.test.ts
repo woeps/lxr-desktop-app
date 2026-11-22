@@ -315,6 +315,30 @@ describe("importer: transfer-done hint and send again", () => {
       imp.select(key("Ccc"), true); done();
       expect(app.library.list().length).toBe(n);
     });
+    it("toggleAll ticks all, unticks all, and ticks all from a partial state", async () => {
+      await setup(true);
+      imp.select(key("Aaa")); done();
+      out.length = 0;
+      const before = JSON.stringify(app.session.state.current);
+      imp.toggleAll();
+      expect(imp.state.ticked).toEqual(NAMES.map(key));
+      imp.toggleAll();
+      expect(imp.state.ticked).toEqual([]);
+      imp.tick(key("Bbb"), true);
+      imp.toggleAll();
+      expect(imp.state.ticked.slice().sort()).toEqual(NAMES.map(key));
+      advance(1000);
+      expect(out).toEqual([]);
+      expect(imp.state.selected).toBe(key("Aaa"));
+      expect(JSON.stringify(app.session.state.current)).toBe(before);
+      expect(app.library.list().length).toBe(0);
+    });
+    it("toggleAll does nothing without presets", async () => {
+      await setup(true);
+      await imp.open([]);
+      imp.toggleAll();
+      expect(imp.state.ticked).toEqual([]);
+    });
     it("open clears ticks and result", async () => {
       await setup(true);
       imp.tick(key("Aaa"), true); imp.addTicked();

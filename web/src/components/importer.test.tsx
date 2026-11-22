@@ -151,6 +151,29 @@ describe("PresetImporter", () => {
     expect(rows()[1]!.getAttribute("aria-pressed")).toBe("true");
   });
 
+  it("toggles all ticks from the select all button", async () => {
+    const k = kitFolder();
+    await pick("Open folder", k.files, k.paths);
+    const boxes = () => [...host.querySelectorAll<HTMLInputElement>("li input[type=checkbox]")];
+    out.length = 0;
+    click(button("Select all"));
+    expect(boxes().length).toBe(3);
+    expect(boxes().every((b) => b.checked)).toBe(true);
+    expect(button("Deselect all")).toBeDefined();
+    click(button("Deselect all"));
+    expect(boxes().some((b) => b.checked)).toBe(false);
+    click(boxes()[0]!);
+    click(button("Select all"));
+    expect(boxes().every((b) => b.checked)).toBe(true);
+    expect(rows().every((r) => r.getAttribute("aria-pressed") === "false")).toBe(true);
+    expect(out).toEqual([]);
+    expect(app.library.list().length).toBe(0);
+  });
+
+  it("disables select all with an empty list", () => {
+    expect(button("Select all").disabled).toBe(true);
+  });
+
   it("shows a name with markup as text", async () => {
     await pick("Open files", [snd("<b>x</b>", 1)]);
     expect(host.querySelector("b")).toBeNull();

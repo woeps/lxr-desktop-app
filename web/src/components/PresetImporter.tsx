@@ -26,6 +26,8 @@ export function PresetImporter(props: { importer: Importer; onClose: () => void 
     return t.length > 0 && t.every((p) => nameError(p.name) === null);
   };
 
+  const allTicked = () => imp.state.presets.length > 0 && imp.state.presets.every((p) => imp.state.ticked.includes(p.key));
+
   function choose(files: FileList | null) {
     const all: PackFile[] = Array.from(files ?? []).map((f) => ({
       path: f.webkitRelativePath || f.name,
@@ -98,6 +100,9 @@ export function PresetImporter(props: { importer: Importer; onClose: () => void 
           title={app.hasOutput() ? undefined : "Connect a MIDI output first"} onClick={() => imp.sendAgain()}>Send again</button>
       </div>
       <p role="status" data-testid="importer-hint">{imp.state.hint ?? ""}</p>
+      <button type="button" disabled={imp.state.presets.length === 0} onClick={() => imp.toggleAll()}>
+        {allTicked() ? "Deselect all" : "Select all"}
+      </button>
       <ul ref={list}>
         <For each={imp.state.presets}>
           {(p) => (
