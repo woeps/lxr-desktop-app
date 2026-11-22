@@ -12,6 +12,8 @@
   padding: 6px 10px;
   background: var(--bg);
   border-top: 1px solid var(--gold);
+  /* Paints the reserved strip row below the dock, so the page does not show through while the strip is empty. */
+  box-shadow: 0 var(--strip-h) 0 0 var(--bg);
 }
 .dock label { display: inline-flex; align-items: center; gap: 0.4em; }
 .dock input[type="range"] { width: 8em; min-width: 0; accent-color: var(--voice); }
