@@ -6,7 +6,7 @@ export type SaveState =
   | { kind: "update"; entry: LibrarySound }
   | { kind: "saved"; entry: LibrarySound };
 
-/** What the Save button does for the typed name (design 3.4). `saved` needs the loaded entry and a clean sound. */
+/** What the Save button does for the typed name. `saved` needs the loaded entry and a clean sound. */
 export function saveState(
   name: string,
   library: Pick<Library, "findByName">,

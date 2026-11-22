@@ -4,7 +4,7 @@ import { useStatus } from "../state/status";
 import styles from "./Shell.module.css";
 
 /**
- * The status strip (R7, design 3.6), last row of the page. Shows, in this priority: a running
+ * The status strip, last row of the page. Shows, in this priority: a running
  * transfer, the mixed-sound note after a cancel, a posted message, the end of a transfer. Hidden
  * when there is nothing to show.
  */

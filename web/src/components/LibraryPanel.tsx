@@ -10,13 +10,13 @@ import { RenameDialog } from "./RenameDialog";
 import { SidePanel } from "./SidePanel";
 import styles from "./Panel.module.css";
 
-/** Libraries whose renamed-on-load notice was already shown (R3.3: once). */
+/** Libraries whose renamed-on-load notice was already shown (shown once). */
 const noticeShown = new WeakSet<object>();
 const day = (iso: string) => iso.slice(0, 16).replace("T", " ");
 const fileName = (name: string) => `${name.replace(/[^A-Za-z0-9_-]+/g, "_") || "sound"}.json`;
 
 /**
- * The sound library panel (R5.5): list, sort, filter, tags, Load, Send, Rename,
+ * The sound library panel: list, sort, filter, tags, Load, Send, Rename,
  * Delete, Export and the entry to Import.
  */
 export function LibraryPanel(props: { onImport: () => void }) {

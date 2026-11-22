@@ -6,7 +6,7 @@ import { SLOT_NAMES } from "./voices";
 
 const slots = Array.from({ length: SLOTS }, (_, i) => i);
 
-/** Settings panel (R5.7): module MIDI setup: channels, global channel and trigger notes. Kept in the browser, never sent. */
+/** Settings panel: module MIDI setup: channels, global channel and trigger notes. Kept in the browser, never sent. */
 export function SettingsPanel(props: { onClose: () => void }) {
   const { settings } = useApp();
   // A snapshot taken on open: edits stay in the panel until Save.

@@ -4,7 +4,7 @@ import type { App } from "./app";
 
 type RollApp = Pick<App, "session" | "rng">;
 
-/** Randomise one voice by `amount` percent; locked parameters stay. One undo step (R4.6). */
+/** Randomise one voice by `amount` percent; locked parameters stay. One undo step. */
 export function rollVoice(app: RollApp, voice: ReturnType<typeof voiceOf>, amount: number): void {
   const { session, rng } = app;
   session.applyChanges(randomise(session.state.current, voice, amount / 100, new Set(session.state.locked), rng));

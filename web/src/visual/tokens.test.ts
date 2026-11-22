@@ -43,7 +43,7 @@ describe("tokens.css", () => {
   });
 });
 
-// CSS modules of the shell rework (design 4.6, 6): colours come from tokens, never literals.
+// CSS modules of the shell: colours come from tokens, never literals.
 const SHELL_CSS = ["Controls", "AppBar", "Panel", "Dock"].map((n) => `src/components/${n}.module.css`);
 
 describe("shell CSS modules", () => {

@@ -7,7 +7,7 @@ import styles from "./Panel.module.css";
 const DIALOG = "[role=dialog], [role=alertdialog]";
 
 /**
- * A side panel over the right edge (R5, design 4.3). Focus moves in on open (to `[data-autofocus]`
+ * A side panel over the right edge. Focus moves in on open (to `[data-autofocus]`
  * or the X button) and back to the icon on close. Escape and a press outside close it, unless a
  * dialog is open: the dialog gets them first.
  */

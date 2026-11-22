@@ -5,7 +5,7 @@ import { useStatus } from "../state/status";
 import styles from "./AppBar.module.css";
 
 /**
- * Rename the loaded library entry and the current sound (R2.8, R2.9). Only names change: values,
+ * Rename the loaded library entry and the current sound. Only names change: values,
  * the baseline values, the history and the module are left alone.
  */
 export function RenameDialog(props: { entry: LibrarySound; onClose: () => void }) {
@@ -24,7 +24,7 @@ export function RenameDialog(props: { entry: LibrarySound; onClose: () => void }
     const other = library.findByName(c);
     return other && other.id !== props.entry.id ? `A sound named '${other.name}' already exists.` : null;
   };
-  // A change of capitalisation alone is a change (R2.8).
+  // A change of capitalisation alone is a change.
   const unchanged = () => clean() === props.entry.name;
   const ok = () => problem() === null && !unchanged();
 

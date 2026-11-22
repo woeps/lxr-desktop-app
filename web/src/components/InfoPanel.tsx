@@ -2,7 +2,7 @@ import { TABLE_ID } from "../generated/params";
 import { NOTICE_NO_FLASH, NOTICE_NOT_SEEN, NOTICE_ONE_WAY } from "./notices";
 import { SidePanel } from "./SidePanel";
 
-/** Info panel (R5.9): the parameter table id and the three notices. */
+/** Info panel: the parameter table id and the three notices. */
 export function InfoPanel() {
   return (
     <SidePanel title="Info" glyph="info">

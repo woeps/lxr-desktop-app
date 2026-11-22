@@ -11,7 +11,7 @@ export interface Status {
 
 export interface StatusStore {
   current(): Status | null;
-  /** Replace the message. Only `success` clears itself, after 5 s, unless paused (R7.5). */
+  /** Replace the message. Only `success` clears itself, after 5 s, unless paused. */
   say(s: Status): void;
   dismiss(): void;
   /** Pointer or focus entered the strip: stop the clock. */

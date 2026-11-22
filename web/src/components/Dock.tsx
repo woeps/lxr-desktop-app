@@ -10,9 +10,9 @@ import controls from "./Controls.module.css";
 import styles from "./Dock.module.css";
 
 /**
- * Fixed bottom dock (R6): connection pill, rune stones 1 to 7, velocity, pitch, Play all, Panic and
+ * Fixed bottom dock: connection pill, rune stones 1 to 7, velocity, pitch, Play all, Panic and
  * the collapse button. Collapsed it keeps the pill and an expand button; keys are handled in App.tsx.
- * Actions that need an output open the connection popover instead when there is none (R6.4).
+ * Actions that need an output open the connection popover instead when there is none.
  */
 export function Dock() {
   const app = useApp();

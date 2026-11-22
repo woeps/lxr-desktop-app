@@ -1,4 +1,4 @@
-/* Dock and connection pill (R6). Colours are tokens only. The dock sits at the page bottom; the status strip sits above it. */
+/* Dock and connection pill. Colours are tokens only. The dock sits at the page bottom; the status strip sits above it. */
 .dock {
   position: fixed;
   left: 0;
@@ -17,7 +17,7 @@
 .dock input[type="range"] { width: 8em; min-width: 0; accent-color: var(--voice); }
 .dock output { min-width: 2.2em; color: var(--muted); }
 .dock kbd { font: inherit; padding: 0 0.3em; border: 1px solid var(--line); border-radius: 0.3em; }
-/* The collapse button stays at the bottom right corner of the screen, expanded or collapsed (R6.1). */
+/* The collapse button stays at the bottom right corner of the screen, expanded or collapsed. */
 .toggle { position: absolute; right: 10px; bottom: 6px; }
 .dock { padding-right: 3.5em; }
 .dock[data-collapsed="true"] { padding-right: 10px; min-height: 2.4em; }
@@ -44,7 +44,7 @@
 .dot { width: 0.6em; height: 0.6em; flex: none; border-radius: 50%; border: 1px solid var(--text); }
 .dot[data-on="true"] { background: var(--text); }
 .connection { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; padding: 6px; width: max-content; max-width: min(24em, calc(100vw - 20px)); white-space: normal; }
-/* Collapsed dock: the pill shrinks to a bare dot; the label shows on hover and focus only (R6.5). */
+/* Collapsed dock: the pill shrinks to a bare dot; the label shows on hover and focus only. */
 .dock[data-collapsed="true"] .pill { padding: 0.35em; background: none; border: 0; border-radius: 50%; }
 .dock[data-collapsed="true"] .label {
   position: absolute;
@@ -60,7 +60,7 @@
 }
 .dock[data-collapsed="true"] .pill:hover .label, .dock[data-collapsed="true"] .pill:focus-visible .label { display: block; }
 .dock[data-collapsed="true"] { background: transparent; border-top: 0; }
-/* Help line (R6.8). Expanded: a band directly above the dock, overlaying the page edge like the status strip
+/* Help line. Expanded: a band directly above the dock, overlaying the page edge like the status strip
    (which covers it while a message shows), so showing it never moves the dock or the controls. */
 .help {
   position: absolute;

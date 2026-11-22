@@ -5,7 +5,7 @@ import { NOTICE_NOT_SENT, NOTICE_ONE_WAY } from "./notices";
 import { Popover } from "./Popover";
 import styles from "./Dock.module.css";
 
-/** Connect, output choice, status, Test and the one-way notice: the content of the popover (R6.3). */
+/** Connect, output choice, status, Test and the one-way notice: the content of the popover. */
 function ConnectionForm() {
   const app = useApp();
   const sel = () => { app.rev(); return app.conn.selected(); };
@@ -34,13 +34,13 @@ function ConnectionForm() {
   );
 }
 
-/** Pill with a dot and the output name; opens the connection popover above it (R6.2, R6.3). */
+/** Pill with a dot and the output name; opens the connection popover above it. */
 export function ConnectionPill() {
   const app = useApp();
   const shell = useShell();
   let pill: HTMLButtonElement | undefined;
   const sel = () => { app.rev(); return app.conn.selected(); };
-  // The text carries the state, the dot is decoration (R6.2).
+  // The text carries the state, the dot is decoration.
   const text = () => sel()?.name ?? (app.conn.status() === "ready" ? "No output" : "Not connected");
   return (
     <span class={styles.pillWrap}>

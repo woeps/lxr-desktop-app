@@ -5,13 +5,13 @@ export type PanelId = "library" | "import" | "settings" | "info";
 
 export interface Shell {
   panel(): PanelId | null;
-  /** Open `id` (closing any other); toggling the open one closes it (R5.2). */
+  /** Open `id` (closing any other); toggling the open one closes it. */
   toggle(id: PanelId): void;
   close(): void;
   connectionOpen(): boolean;
   openConnection(): void;
   closeConnection(): void;
-  /** The icon that opened the panel, the focus return target (R5.4). */
+  /** The icon that opened the panel, the focus return target. */
   lastIcon(): HTMLElement | null;
   setLastIcon(el: HTMLElement | null): void;
 }
@@ -34,7 +34,7 @@ export function createShell(): Shell {
   };
 }
 
-/** Run `fn` when an output exists, otherwise open the connection popover and do nothing (R6.4). */
+/** Run `fn` when an output exists, otherwise open the connection popover and do nothing. */
 export function guardOutput<A extends unknown[]>(
   app: Pick<App, "hasOutput">, shell: Pick<Shell, "openConnection">, fn: (...args: A) => void,
 ): (...args: A) => void {

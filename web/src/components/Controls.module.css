@@ -1,4 +1,4 @@
-/* Shared button, split button and popover styles of the shell (design 4.6). Colours are tokens only. */
+/* Shared button, split button and popover styles of the shell. Colours are tokens only. */
 .btn {
   font: inherit;
   display: inline-flex;

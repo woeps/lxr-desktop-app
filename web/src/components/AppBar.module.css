@@ -1,4 +1,4 @@
-/* App bar styles (design 4.6). Colours are tokens only. */
+/* App bar styles. Colours are tokens only. */
 .bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 6px 10px; border-bottom: 1px solid var(--line); background: var(--bg); }
 /* The spacer pushes the four panel icons to the right edge; on a wrapped row it collapses. */
 .grow { flex: 1 1 0; min-width: 0; }

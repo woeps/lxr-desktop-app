@@ -1,4 +1,4 @@
-/* Side panel styles (design 4.3). Colours are tokens only. */
+/* Side panel styles. Colours are tokens only. */
 .panel {
   position: fixed;
   top: var(--bar-h, 3em);

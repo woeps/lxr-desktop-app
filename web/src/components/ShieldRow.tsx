@@ -11,7 +11,7 @@ import styles from "./Shell.module.css";
 
 const ROLL_ALL_STEPS = [10, 25, 50, 75, 100];
 
-/** The selected shield's amount button: opens a popover with a 0..100 % slider (R4.3). */
+/** The selected shield's amount button: opens a popover with a 0..100 % slider. */
 function AmountButton() {
   const app = useApp();
   const [open, setOpen] = createSignal(false);
@@ -40,7 +40,7 @@ function AmountButton() {
 
 /**
  * Seven shields as a tablist, each voice with a dice button and the selected one with an amount
- * button, then Roll all with its own amount (R4, design 4.2). Only the tab buttons have role tab.
+ * button, then Roll all with its own amount. Only the tab buttons have role tab.
  */
 export function ShieldRow() {
   const app = useApp();

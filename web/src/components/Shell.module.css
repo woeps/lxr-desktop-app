@@ -1,4 +1,4 @@
-/* Page layout, shield row, voice page, rune stones and status strip (R9). Colours are tokens only. */
+/* Page layout, shield row, voice page, rune stones and status strip. Colours are tokens only. */
 
 /* The scrolling area. The fixed dock and strip cover its bottom edge, so it pads by their height. */
 .layout { min-width: 0; padding-bottom: calc(var(--dock-h, 4em) + var(--strip-h)); }

@@ -28,7 +28,7 @@ function Btn(props: { label: string; icon?: () => SVGElement; disabled?: boolean
 }
 
 /**
- * The one-line action bar (R1, design 4.2): name and Save, history, Revert, Copy and Paste, Send,
+ * The one-line action bar: name and Save, history, Revert, Copy and Paste, Send,
  * and on the right the four panel icons. `onSeal` opens the store dialog.
  */
 export function AppBar(props: { onSeal: () => void }) {
@@ -41,7 +41,7 @@ export function AppBar(props: { onSeal: () => void }) {
   const isDrum = () => typeof session.state.page === "number" && session.state.page <= 2;
   const voice = () => voiceOf(session.state.page);
 
-  /** Factory sound as one undo step, no confirmation (R1.3). */
+  /** Factory sound as one undo step, no confirmation. */
   function initialise() {
     const f = factory();
     session.applyChanges(diff(session.state.current, f).map((id) => [id, session.state.current.values[id]!, f.values[id]!]));

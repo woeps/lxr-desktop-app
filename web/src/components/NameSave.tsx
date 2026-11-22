@@ -11,7 +11,7 @@ import { SplitButton } from "./SplitButton";
 import styles from "./AppBar.module.css";
 
 /**
- * The sound name field with its Save split button (R2, design 3.4). The field keeps its own text;
+ * The sound name field with its Save split button. The field keeps its own text;
  * only valid names reach the session, and the name edit is not an undo step.
  */
 export function NameSave() {
@@ -68,7 +68,7 @@ export function NameSave() {
     status.say({ kind: "success", text: `Updated '${name}' in the library.` });
   }
 
-  // R2.10: Ctrl+S (Cmd+S on macOS) saves and always blocks the browser's save dialog.
+  // Ctrl+S (Cmd+S on macOS) saves and always blocks the browser's save dialog.
   const onDocKey = (e: KeyboardEvent) => {
     if ((e.ctrlKey || e.metaKey) && !e.altKey && e.key.toLowerCase() === "s") {
       e.preventDefault();
