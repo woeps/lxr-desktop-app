@@ -209,10 +209,11 @@ state ("Not connected", "No output", the output name); the dot has `aria-hidden`
 (`[data-collapsed]` on the dock) strips the pill to the bare dot; the label span shows as a tooltip
 on hover and `:focus-visible`, and the button keeps `aria-label` and `title` set to the label.
 The help line (`Caption`, text from `state/help.ts`, set by `JourneyPage` from `hotFor`) is the last child of the
-dock: expanded it is `position: absolute; bottom: 100%` (a band above the dock, no height change);
-collapsed it is an overlay at `left: 2.2em` next to the dot, `z-index: 9`, `pointer-events: none`. The
-collapse button is `position: absolute` at the bottom right corner of the dock, and the dock pads
-its right side to clear it. The dock has no reserved row below it. `StatusStrip` sets `data-kind` (`info`, `success`, `error`)
+dock. Expanded it is a flex item with `flex: 1 0 100%; order: 1`, a second row under the controls with a
+reserved `min-height` (1.4em, 4.2em at 600 px and below); the dock height follows it through the
+`ResizeObserver` (`--dock-h`). Collapsed it is an overlay at `left: 2.2em` next to the dot, `z-index: 9`,
+`pointer-events: none`. The collapse button is `position: absolute` at the bottom right corner of the dock,
+and the dock pads its right side to clear it, help row included. The dock has no reserved row below it. `StatusStrip` sets `data-kind` (`info`, `success`, `error`)
 and fills the band with `--notice-info`, `--notice-success` or `--notice-error` and black text.
 
 ### 4.5 Headings (R8)

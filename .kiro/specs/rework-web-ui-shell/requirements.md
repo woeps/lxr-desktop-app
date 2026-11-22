@@ -196,11 +196,12 @@ Acceptance criteria:
 6. THE dock SHALL sit at the bottom edge of the page with no reserved row below it. THE page SHALL
    leave bottom padding equal to the dock and strip height so that no control is covered.
 7. THE help line for the row being pointed at or focused (the path caption of the earlier feature, 4.12.9)
-   SHALL be shown by the dock and not under the page. WHILE the dock is expanded, it SHALL be a band
-   directly above the dock, overlaying the page edge, so that it does not change the dock height; the
-   status strip covers it while a message shows. WHILE the dock is collapsed, it SHALL appear right
-   next to the connection dot, above all other content, without taking clicks and without covering the
-   expand button. It SHALL stay one `aria-live="polite"` region, and use tokens for its colours.
+   SHALL be shown by the dock and not under the page. WHILE the dock is expanded, it SHALL be a second
+   row inside the dock, under the controls row and as the lowest line of the page; the row keeps a
+   reserved height (one line, three on narrow screens), so text appearing does not change the dock
+   height, and no space is left below it. WHILE the dock is collapsed, it SHALL appear right next to
+   the connection dot, above all other content, without taking clicks and without covering the expand
+   button. It SHALL stay one `aria-live="polite"` region, and use tokens for its colours.
 8. THE connection row, the transfer row and the Audition after send checkbox of the page SHALL be
    removed from the main flow; Audition after send is in the Send all menu (R1.4).
 
