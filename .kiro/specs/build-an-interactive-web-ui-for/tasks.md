@@ -25,7 +25,7 @@ is checked off. Host tests run with `ctest --test-dir build/host`; web tests wit
   full host suite passes and the RP2350 release build links, with `LXR_ENABLE_CONSOLE` on and off.
 - [x] 1.5 Document the store command in the README "Playing" section (R11.9). Done when
   `readme_midi_map` still passes.
-- [ ] 1.6 **[bench]** Flash the release build. With the USB MIDI interface wired to the TRS input,
+- [x] 1.6 **[bench]** Flash the release build. With the USB MIDI interface wired to the TRS input,
   send the five store messages with `amidi -p <port> -S 'B0 63 7E B0 62 00 B0 06 53 B0 63 7F B0 62 7F'`
   after changing a sound over MIDI. Done when the console prints `stored slot <n> '<name>'`, notes
   keep playing during the write, and after a cold power-cycle the module plays the stored sound.
