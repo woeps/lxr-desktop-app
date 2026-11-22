@@ -3,6 +3,7 @@ import { AuditionBar } from "./components/AuditionBar";
 import { ConnectBar } from "./components/ConnectBar";
 import { Footer } from "./components/Footer";
 import { Toolbar } from "./components/Toolbar";
+import { TransferStatus } from "./components/TransferStatus";
 import { VoicePage } from "./components/VoicePage";
 import { VoiceShields } from "./components/VoiceShields";
 import { AppContext, createApp, type App as AppState } from "./state/app";
@@ -32,6 +33,7 @@ export function App(props: { app?: AppState }) {
       <SessionContext value={app.session}>
         <ConnectBar />
         <Toolbar onSeal={() => { /* StoreDialog arrives with task 11.2 */ }} />
+        <TransferStatus />
         <VoiceShields />
         <VoicePage />
         <AuditionBar />

@@ -14,7 +14,7 @@ function fake(reduced = false) {
   const motion = createMotion(env);
   const listeners = new Set<(e: StrikeEvent) => void>();
   const app = {
-    motion, settings: { state: { pauseMotion: false } },
+    motion, transferWalk: () => null, settings: { state: { pauseMotion: false } },
     onStrike: (f: (e: StrikeEvent) => void) => { listeners.add(f); return () => listeners.delete(f); },
   } as unknown as App;
   return {

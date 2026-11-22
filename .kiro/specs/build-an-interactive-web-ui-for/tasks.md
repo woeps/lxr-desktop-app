@@ -141,7 +141,7 @@ is checked off. Host tests run with `ctest --test-dir build/host`; web tests wit
 
 ## 11. Transfer, store, library and dialogs (R6, R7, R2, R8)
 
-- [ ] 11.1 `TransferStatus` with progress, Cancel, Send again, the hero walking at transfer
+- [x] 11.1 `TransferStatus` with progress, Cancel, Send again, the hero walking at transfer
   progress, row flashes and "Audition after send".
 - [ ] 11.2 `StoreDialog` behind "Seal into boot slot" (R7.8 to R7.11): disabled while sending and
   for 2 s after a store, full transfer first when needed, the result text.

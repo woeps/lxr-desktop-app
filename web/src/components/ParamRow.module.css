@@ -19,3 +19,8 @@
 .row[data-contested="true"] .badge { border-color: var(--contested); color: var(--contested); }
 .row[data-pickable="true"] { outline: 1px dashed var(--gold); outline-offset: 1px; cursor: crosshair; }
 .row[data-pickable="true"] * { cursor: crosshair; }
+.row[data-flash="0"] { animation: flashA 0.3s; }
+.row[data-flash="1"] { animation: flashB 0.3s; }
+@keyframes flashA { from { background: #fff4; } to { background: transparent; } }
+@keyframes flashB { from { background: #fff4; } to { background: transparent; } }
+@media (prefers-reduced-motion: reduce) { .row[data-flash] { animation: none; } }

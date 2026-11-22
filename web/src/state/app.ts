@@ -34,6 +34,14 @@ export interface App {
   progress(): Transfer | null;
   /** True while a transfer is running: triggering is blocked (R3.9). */
   busy(): boolean;
+  /** Hero walk fraction 0..1 (sent / total) while a transfer runs, else null (design 4.12.10). */
+  transferWalk(): number | null;
+  /** True after the user cancelled the latest transfer, until the next one starts (R6.3). */
+  cancelled(): boolean;
+  /** Stop the running transfer: the module now holds a mix of old and new sounds. */
+  cancelTransfer(): void;
+  /** Called when a parameter is handed to the output during a transfer (row flash). */
+  onFlash(cb: (id: number) => void): () => void;
   /** Note on now, note off after NOTE_OFF_DELAY_MS, for voice slot 0..6 (R4.1). */
   strike(slot: number, velocity?: number): void;
   /** Every slot once, in voice order (R4.4). */
@@ -73,7 +81,17 @@ export function createApp(deps: AppDeps = defaultDeps()): App {
   const conn = createMidiConnection(env, storage, clock, settings.midiSetup);
   const sender = createSender(conn.output, settings.midiSetup, clock);
   const hasOutput = () => conn.output() !== null;
-  const session = createSession({ storage, clock, sender, hasOutput });
+  let transferring = false;
+  const [cancelled, setCancelled] = createSignal(false);
+  const flashListeners = new Set<(id: number) => void>();
+  sender.onHandedOff((id) => { if (transferring) flashListeners.forEach((f) => f(id)); });
+  // Every full transfer, from Send all or from loading a sound, starts here.
+  const startTransfer: Sender["sendTransfer"] = (values) => {
+    transferring = true;
+    setCancelled(false);
+    sender.sendTransfer(values);
+  };
+  const session = createSession({ storage, clock, sender: { setParam: sender.setParam, sendTransfer: startTransfer }, hasOutput });
   const library = createLibrary(storage);
 
   let lastOutput = conn.selected()?.id ?? null;
@@ -87,8 +105,14 @@ export function createApp(deps: AppDeps = defaultDeps()): App {
   });
   sender.onChange(() => {
     const t = sender.transfer();
+    const done = transferring && t !== null && t.sent === t.total;
+    if (done) transferring = false;
     if (t && t.sent === t.total && !session.state.moduleInSync && hasOutput()) session.setModuleInSync(true);
     bump();
+    if (done && settings.state.auditionAfterSend) {
+      const page = session.state.page;
+      strike(typeof page === "number" ? page : 0); // R6.4: the current voice; the Cauldron strikes drum 1
+    }
   });
 
   const held = new Map<string, { channel: number; note: number }>();
@@ -115,8 +139,24 @@ export function createApp(deps: AppDeps = defaultDeps()): App {
     return sender.pending() && t !== null && t.sent < t.total;
   };
 
+  const transferWalk = (): number | null => {
+    rev();
+    const t = sender.transfer();
+    return transferring && t && t.sent < t.total && !motion.reduced ? t.sent / t.total : null;
+  };
+
   return {
-    session, settings, library, conn, sender, rng, motion,
+    session, settings, transferWalk,
+    cancelled: () => cancelled(),
+    cancelTransfer() {
+      if (!transferring) return;
+      transferring = false;
+      sender.cancel();
+      setCancelled(true);
+      session.setModuleInSync(false);
+      bump();
+    },
+    onFlash(cb) { flashListeners.add(cb); return () => { flashListeners.delete(cb); }; }, library, conn, sender, rng, motion,
     onStrike(cb) { strikeListeners.add(cb); return () => { strikeListeners.delete(cb); }; },
     rev: () => rev(),
     hasOutput: () => { rev(); return hasOutput(); },
@@ -131,12 +171,12 @@ export function createApp(deps: AppDeps = defaultDeps()): App {
     },
     sendAll() {
       if (!hasOutput()) return;
-      sender.sendTransfer(session.state.current.values);
+      startTransfer(session.state.current.values);
     },
   };
 }
 
-export const AppContext = createContext<App>();
+export const AppContext = createContext<App | null>(null);
 
 export function useApp(): App {
   const a = useContext(AppContext);

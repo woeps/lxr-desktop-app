@@ -1,4 +1,5 @@
-import { createEffect, For, Match, Show, Switch } from "solid-js";
+import { createEffect, createSignal, For, Match, onCleanup, Show, Switch, useContext } from "solid-js";
+import { AppContext } from "../state/app";
 import { MOD_TARGETS, PARAMS, type ParamDef } from "../generated/params";
 import { badgesFor, bindings, contestedIds, targetIndex } from "../model/links";
 import { useSession } from "../state/session";
@@ -35,6 +36,14 @@ export function ParamRow(props: { def: ParamDef }) {
   }
   const intercept = (e: Event) => { if (pickable()) { e.preventDefault(); e.stopPropagation(); bind(); } };
   const onKey = (e: KeyboardEvent) => { if (e.key === "Enter") intercept(e); };
+  // Flash white once when the value is handed to the output during a transfer (design 4.9).
+  // Two alternating animation names restart the flash without a timer.
+  const [flash, setFlash] = createSignal(-1);
+  const app = useContext(AppContext);
+  if (app) {
+    const off = app.onFlash((id) => { if (id === props.def.id) setFlash((n) => (n + 1) % 2); });
+    onCleanup(off);
+  }
   const value = () => valueOf(session, props.def);
   const locked = () => isLocked(session, props.def);
   // R3.6: marked when different from the sound as last loaded or saved.
@@ -53,6 +62,7 @@ export function ParamRow(props: { def: ParamDef }) {
   return (
     <div class={styles.row} title={tip()} data-param={props.def.name}
       data-dimmed={dimmed() ? "true" : undefined}
+      data-flash={flash() < 0 ? undefined : String(flash())}
       data-contested={contested() ? "true" : undefined} data-pickable={pickable() ? "true" : undefined}
       tabindex={pickable() ? 0 : undefined}
       ref={(el: HTMLElement) => { el.addEventListener("click", intercept, true); el.addEventListener("keydown", onKey, true); }}

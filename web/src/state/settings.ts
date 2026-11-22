@@ -24,6 +24,8 @@ export interface Settings {
   /** 0..127, sent to voices that accept any note (R4.2) */
   pitch: number;
   pauseMotion: boolean;
+  /** Strike the current voice when a transfer completes (R6.4). */
+  auditionAfterSend: boolean;
 }
 
 const def = (name: string): number => MIDI_SETTINGS.find((s) => s.name === name)!.def;
@@ -37,6 +39,7 @@ export function defaultSettings(): Settings {
     velocity: DEFAULT_VELOCITY,
     pitch: DEFAULT_PITCH,
     pauseMotion: false,
+    auditionAfterSend: false,
   };
 }
 
@@ -62,6 +65,7 @@ export function sanitize(raw: unknown): Settings {
     velocity: int(o.velocity, 1, 127, d.velocity),
     pitch: int(o.pitch, 0, 127, d.pitch),
     pauseMotion: typeof o.pauseMotion === "boolean" ? o.pauseMotion : d.pauseMotion,
+    auditionAfterSend: typeof o.auditionAfterSend === "boolean" ? o.auditionAfterSend : d.auditionAfterSend,
   };
 }
 
@@ -94,7 +98,7 @@ export function createSettings(storage: Storage): SettingsStore {
 
   const snapshot = (): Settings => ({
     channels: [...state.channels], global: state.global, notes: [...state.notes], keys: [...state.keys],
-    velocity: state.velocity, pitch: state.pitch, pauseMotion: state.pauseMotion,
+    velocity: state.velocity, pitch: state.pitch, pauseMotion: state.pauseMotion, auditionAfterSend: state.auditionAfterSend,
   });
 
   function commit(next: Settings): void {

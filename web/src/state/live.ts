@@ -64,5 +64,5 @@ export function createLive(app: App, voice: () => number, raw: (voice: number, s
 
   createEffect(() => app.settings.state.pauseMotion, (p) => app.motion.setPaused(p));
   onCleanup(() => { off(); offStrike(); });
-  return { t, glow, walk, fall };
+  return { t, glow, walk: () => app.transferWalk() ?? walk(), fall };
 }
