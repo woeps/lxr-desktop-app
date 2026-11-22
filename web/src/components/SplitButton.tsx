@@ -10,7 +10,10 @@ export function SplitButton(props: {
   onPress: () => void;
   menu: JSX.Element;
   menuLabel?: string;
+  /** Disables both buttons. */
   disabled?: boolean;
+  /** Disables only the main button; the menu stays usable. */
+  mainDisabled?: boolean;
   accent?: "voice" | "gold";
 }) {
   const [open, setOpen] = createSignal(false);
@@ -21,7 +24,7 @@ export function SplitButton(props: {
   };
   return (
     <span class={styles.split} data-accent={props.accent} ref={wrap}>
-      <button type="button" class={styles.btn} disabled={props.disabled} onClick={() => props.onPress()}>
+      <button type="button" class={styles.btn} disabled={props.disabled || props.mainDisabled} onClick={() => props.onPress()}>
         {props.icon ? <span class={styles.icon} aria-hidden="true">{props.icon()}</span> : null}
         {props.label}
       </button>

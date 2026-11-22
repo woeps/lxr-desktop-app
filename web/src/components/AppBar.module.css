@@ -1,0 +1,33 @@
+/* App bar styles (design 4.6). Colours are tokens only. Task 11.1 adds the bar layout itself. */
+.bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 6px 10px; border-bottom: 1px solid var(--line); }
+.grow { flex: 1 1 0; }
+.name { position: relative; display: inline-flex; align-items: center; gap: 6px; }
+.nameInput {
+  font: inherit;
+  width: 9ch;
+  padding: 0.3em 0.5em;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 0.4em;
+}
+.nameInput[aria-invalid="true"] { border-color: var(--contested); }
+.nameInput:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+.count { color: var(--muted); font-size: 0.8em; }
+.dot { color: var(--gold); font-size: 0.8em; }
+.note { position: absolute; top: 100%; left: 0; font-size: 0.8em; color: var(--muted); white-space: nowrap; }
+.note [role="alert"] { color: var(--contested); }
+.rename {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 10;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-top: 2px;
+  padding: 0.4em;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 0.4em;
+}

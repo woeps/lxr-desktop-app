@@ -1,4 +1,4 @@
-import { createSignal, flush } from "solid-js";
+import { createContext, createSignal, flush, useContext } from "solid-js";
 import type { Clock } from "../midi/sender";
 
 export const SUCCESS_MS = 5000;
@@ -44,4 +44,12 @@ export function createStatus(clock: Clock = realClock): StatusStore {
     pause() { paused = true; stop(); },
     resume() { paused = false; start(); },
   };
+}
+
+export const StatusContext = createContext<StatusStore | null>(null);
+
+export function useStatus(): StatusStore {
+  const s = useContext(StatusContext);
+  if (!s) throw new Error("useStatus outside StatusContext");
+  return s;
 }

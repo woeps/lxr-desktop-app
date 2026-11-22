@@ -1,4 +1,4 @@
-import { createSignal, flush } from "solid-js";
+import { createContext, createSignal, flush, useContext } from "solid-js";
 import type { App } from "./app";
 
 export type PanelId = "library" | "import" | "settings" | "info";
@@ -39,4 +39,12 @@ export function guardOutput<A extends unknown[]>(
   app: Pick<App, "hasOutput">, shell: Pick<Shell, "openConnection">, fn: (...args: A) => void,
 ): (...args: A) => void {
   return (...args) => { if (app.hasOutput()) fn(...args); else shell.openConnection(); };
+}
+
+export const ShellContext = createContext<Shell | null>(null);
+
+export function useShell(): Shell {
+  const s = useContext(ShellContext);
+  if (!s) throw new Error("useShell outside ShellContext");
+  return s;
 }

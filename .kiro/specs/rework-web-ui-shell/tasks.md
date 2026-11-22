@@ -63,7 +63,7 @@ Task 12 needs Chris at the browser.
 
 ## 6. App bar and name (R1, R2)
 
-- [ ] 6.1 Add `NameSave` and `RenameDialog` (design 3.4): field, count, invalid state, restore on
+- [x] 6.1 Add `NameSave` and `RenameDialog` (design 3.4): field, count, invalid state, restore on
   blur and Escape, dot, Save states, confirmation, Enter and Ctrl/Cmd+S, rename. Done when
   `name.test.tsx` covers R2.1 to R2.12 and passes.
 - [ ] 6.2 Add `AppBar` with Revert and Send split buttons, Copy and Paste, and the four panel
