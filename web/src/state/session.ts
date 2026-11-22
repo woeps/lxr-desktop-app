@@ -48,6 +48,10 @@ export interface Session {
   load(sound: Sound, libraryId?: string | null, opts?: { send?: boolean }): void;
   /** Current becomes the baseline, after a save to the library (R3.6). */
   markSaved(libraryId?: string | null): void;
+  /** Rename the current sound: no undo step, nothing sent, the sound turns dirty (R2.12). */
+  setName(name: string): void;
+  /** Rename the baseline only, so a library rename alone leaves the sound clean (R2.8). */
+  renameBaseline(name: string): void;
   /** Restore the sound as last loaded or saved, as one step (R5.3). */
   revert(): void;
   /** First press takes the snapshot, later presses swap it with current (R5.2). */
@@ -186,6 +190,16 @@ export function createSession(deps: SessionDeps): Session {
         s.baseline = copySound(state.current);
         if (libraryId !== undefined) s.libraryId = libraryId;
       });
+      flush();
+      scheduleSave();
+    },
+    setName(name) {
+      setState((s) => { s.current = { name, values: s.current.values }; });
+      flush();
+      scheduleSave();
+    },
+    renameBaseline(name) {
+      setState((s) => { s.baseline = { name, values: s.baseline.values }; });
       flush();
       scheduleSave();
     },

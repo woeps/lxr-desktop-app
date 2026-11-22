@@ -21,7 +21,7 @@ Task 12 needs Chris at the browser.
 
 ## 2. Session name and save state (R2)
 
-- [ ] 2.1 Add `Session.setName` and `Session.renameBaseline`, keep the autosave and `isDirty`
+- [x] 2.1 Add `Session.setName` and `Session.renameBaseline`, keep the autosave and `isDirty`
   behaviour (design 3.2, 3.4). Done when `session.test.ts` shows: no undo step, dirty after a name
   change, name survives the autosave round trip, `renameBaseline` clears the name part of the dirty
   state only.

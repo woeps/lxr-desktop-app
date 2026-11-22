@@ -3,6 +3,7 @@ import { PARAMS } from "../generated/params";
 import { factory } from "../model/sound";
 import type { Change } from "../model/sound";
 import type { Clock } from "../midi/sender";
+import { isDirty } from "./dirty";
 import { AUTOSAVE_MS, createSession, SESSION_KEY } from "./session";
 
 const byName = (n: string) => PARAMS.find((p) => p.name === n)!;
@@ -176,6 +177,31 @@ describe("session", () => {
     expect(b.session.state.current.values[B.id]).toBe(40);
     expect(b.session.state.abSnapshot!.values[A.id]).toBe(30);
     expect(b.session.state.baseline.values[A.id]).toBe(factory().values[A.id]);
+  });
+
+  it("setName: no undo step, no send, dirty, survives the autosave round trip", () => {
+    const a = make();
+    a.session.setName("Kick2");
+    expect(a.session.state.current.name).toBe("Kick2");
+    expect(a.session.history.canUndo()).toBe(false);
+    expect(a.params).toEqual([]);
+    expect(a.transfers).toEqual([]);
+    expect(isDirty(a.session)).toBe(true);
+    a.advance(AUTOSAVE_MS);
+    const b = make();
+    expect(b.session.state.current.name).toBe("Kick2");
+    expect(isDirty(b.session)).toBe(true);
+  });
+
+  it("renameBaseline changes the baseline name only, so a rename alone stays clean", () => {
+    const a = make();
+    a.session.setName("New");
+    a.session.renameBaseline("New");
+    expect(a.session.state.baseline.name).toBe("New");
+    expect(isDirty(a.session)).toBe(false);
+    a.session.applyChanges([change(A.id, 30)]);
+    expect(isDirty(a.session)).toBe(true);
+    expect(a.session.state.current.name).toBe("New");
   });
 
   it("flushSave writes at once; corrupt or wrong-size saved data is ignored", () => {
