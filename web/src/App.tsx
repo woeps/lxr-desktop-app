@@ -2,6 +2,9 @@ import { createSignal, onCleanup, Show } from "solid-js";
 import { AuditionBar } from "./components/AuditionBar";
 import { ConnectBar } from "./components/ConnectBar";
 import { Footer } from "./components/Footer";
+import { Grimoire } from "./components/Grimoire";
+import { ImportDialog } from "./components/ImportDialog";
+import { MidiSetupDialog } from "./components/MidiSetupDialog";
 import { StoreDialog } from "./components/StoreDialog";
 import { Toolbar } from "./components/Toolbar";
 import { TransferStatus } from "./components/TransferStatus";
@@ -30,13 +33,19 @@ export function App(props: { app?: AppState }) {
   onCleanup(() => window.removeEventListener("pagehide", onPageHide));
 
   const [sealing, setSealing] = createSignal(false);
+  const [grimoire, setGrimoire] = createSignal(false);
+  const [importing, setImporting] = createSignal(false);
+  const [setup, setSetup] = createSignal(false);
 
   return (
     <AppContext value={app}>
       <SessionContext value={app.session}>
         <ConnectBar />
-        <Toolbar onSeal={() => setSealing(true)} />
+        <Toolbar onSeal={() => setSealing(true)} onGrimoire={() => setGrimoire(!grimoire())} onSetup={() => setSetup(true)} />
         <Show when={sealing()}><StoreDialog onClose={() => setSealing(false)} /></Show>
+        <Show when={grimoire()}><Grimoire onClose={() => setGrimoire(false)} onImport={() => setImporting(true)} /></Show>
+        <Show when={importing()}><ImportDialog onClose={() => setImporting(false)} /></Show>
+        <Show when={setup()}><MidiSetupDialog onClose={() => setSetup(false)} /></Show>
         <TransferStatus />
         <VoiceShields />
         <VoicePage />

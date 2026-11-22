@@ -145,7 +145,7 @@ is checked off. Host tests run with `ctest --test-dir build/host`; web tests wit
   progress, row flashes and "Audition after send".
 - [x] 11.2 `StoreDialog` behind "Seal into boot slot" (R7.8 to R7.11): disabled while sending and
   for 2 s after a store, full transfer first when needed, the result text.
-- [ ] 11.3 `Grimoire` drawer (library list, tags, sort and filter, Load, Send, Rename, Duplicate,
+- [x] 11.3 `Grimoire` drawer (library list, tags, sort and filter, Load, Send, Rename, Duplicate,
   Delete, Export and Import), `ImportDialog`, `ConfirmDialog` for unsaved edits, `MidiSetupDialog`.
 - [ ] 11.4 `app.test.tsx`: connect with a fake MIDI access, move a bar and see the CC, seal into
   the boot slot and see the transfer followed by the store command, voice switch, pick-to-bind,

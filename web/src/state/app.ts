@@ -46,6 +46,8 @@ export interface App {
   storedAt(): number | null;
   /** Send the full sound first when the module may differ, then the store command, as one action (R7.10). */
   store(): void;
+  /** Send a sound other than the current one in full (R7.5). The module then differs from the page's sound. */
+  sendSound(values: Uint8Array): void;
   /** Stop the running transfer: the module now holds a mix of old and new sounds. */
   cancelTransfer(): void;
   /** Called when a parameter is handed to the output during a transfer (row flash). */
@@ -97,7 +99,9 @@ export function createApp(deps: AppDeps = defaultDeps()): App {
   const flashListeners = new Set<(id: number) => void>();
   sender.onHandedOff((id) => { if (transferring) flashListeners.forEach((f) => f(id)); });
   // Every full transfer, from Send all or from loading a sound, starts here.
+  let foreign = false; // the running transfer carries a sound that is not the page's current one
   const startTransfer: Sender["sendTransfer"] = (values) => {
+    foreign = false;
     transferring = true;
     setCancelled(false);
     sender.sendTransfer(values);
@@ -130,7 +134,7 @@ export function createApp(deps: AppDeps = defaultDeps()): App {
     if (done) transferring = false;
     if (waitingStore && !hasOutput()) waitingStore = false;
     else if (done && waitingStore) sendStore();
-    if (t && t.sent === t.total && !session.state.moduleInSync && hasOutput()) session.setModuleInSync(true);
+    if (t && t.sent === t.total && !foreign && !session.state.moduleInSync && hasOutput()) session.setModuleInSync(true);
     bump();
     if (done && settings.state.auditionAfterSend) {
       const page = session.state.page;
@@ -187,6 +191,12 @@ export function createApp(deps: AppDeps = defaultDeps()): App {
       bump();
     },
     cancelled: () => cancelled(),
+    sendSound(values) {
+      if (!hasOutput()) return;
+      startTransfer(values);
+      foreign = true;
+      session.setModuleInSync(false);
+    },
     cancelTransfer() {
       if (!transferring) return;
       transferring = false;
