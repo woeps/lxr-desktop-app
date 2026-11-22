@@ -3,6 +3,7 @@ import { createMidiConnection, type MidiConnection, type MidiEnv } from "../midi
 import { encodeNote, encodePanic, NOTE_OFF_DELAY_MS } from "../midi/encode";
 import { createSender, realClock, type Clock, type Sender, type Transfer } from "../midi/sender";
 import type { Rng } from "../model/sound";
+import { browserEnv, createMotion, type Motion, type MotionEnv } from "../visual/motion";
 import { createLibrary, type Library } from "./library";
 import { createSession, type Session } from "./session";
 import { createSettings, SLOTS, type SettingsStore } from "./settings";
@@ -12,7 +13,12 @@ export interface AppDeps {
   env: MidiEnv;
   clock: Clock;
   rng: Rng;
+  /** Animation loop environment; tests inject a fake, the page uses the browser's. */
+  motionEnv?: MotionEnv;
 }
+
+/** A strike the page has just sent (slot 0..6, velocity 1..127). */
+export interface StrikeEvent { slot: number; velocity: number }
 
 /** Everything the page shell shares: the session plus the MIDI side (settings, connection, sender, audition). */
 export interface App {
@@ -37,6 +43,10 @@ export interface App {
   /** Send every parameter (R3.8). */
   sendAll(): void;
   rng: Rng;
+  /** The page's single animation loop (design 4.12.10). */
+  motion: Motion;
+  /** Called on every strike that is sent; returns the unsubscribe function. */
+  onStrike(cb: (e: StrikeEvent) => void): () => void;
 }
 
 export function defaultDeps(): AppDeps {
@@ -54,6 +64,8 @@ export function defaultDeps(): AppDeps {
 
 export function createApp(deps: AppDeps = defaultDeps()): App {
   const { storage, env, clock, rng } = deps;
+  const motion = createMotion(deps.motionEnv ?? browserEnv());
+  const strikeListeners = new Set<(e: StrikeEvent) => void>();
   const [rev, setRev] = createSignal(0);
   const bump = () => { setRev((n) => n + 1); flush(); };
 
@@ -84,7 +96,9 @@ export function createApp(deps: AppDeps = defaultDeps()): App {
 
   function strike(slot: number, velocity?: number): void {
     if (busy() || !hasOutput()) return;
-    const n = encodeNote(settings.midiSetup(), slot, velocity ?? settings.state.velocity, settings.state.pitch);
+    const vel = velocity ?? settings.state.velocity;
+    const n = encodeNote(settings.midiSetup(), slot, vel, settings.state.pitch);
+    for (const cb of [...strikeListeners]) cb({ slot, velocity: vel });
     const key = `${n.channel}:${n.note}`;
     const id = ++seq;
     sender.enqueue(`n:${id}`, n.on);
@@ -102,7 +116,8 @@ export function createApp(deps: AppDeps = defaultDeps()): App {
   };
 
   return {
-    session, settings, library, conn, sender, rng,
+    session, settings, library, conn, sender, rng, motion,
+    onStrike(cb) { strikeListeners.add(cb); return () => { strikeListeners.delete(cb); }; },
     rev: () => rev(),
     hasOutput: () => { rev(); return hasOutput(); },
     pending: () => { rev(); return sender.pending(); },

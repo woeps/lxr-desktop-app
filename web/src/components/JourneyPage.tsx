@@ -2,6 +2,10 @@ import { For } from "solid-js";
 import { PARAMS, type Station as StationId } from "../generated/params";
 import { stationRows } from "../model/stations";
 import { useSession } from "../state/session";
+import { useApp } from "../state/app";
+import { createLive } from "../state/live";
+import { picInput } from "../visual/vignettes";
+import { JourneyOverlay } from "./JourneyOverlay";
 import { valueOf } from "./param";
 import { BindingsCard, MentorCard, OracleCard } from "./cards";
 import { Station } from "./Station";
@@ -36,17 +40,19 @@ export function subtitleOf(station: string, voice: Voice): string {
 /** The journey of one voice: stations in a row, then Mentor, Bindings and Oracle (design 4.12.2). */
 export function JourneyPage(props: { voice: Voice }) {
   const session = useSession();
+  const app = useApp();
+  const live = createLive(app, () => props.voice, (v, key) => picInput(v as Voice, session.state.current.values).raw(key));
   const out = () => PARAMS.find((p) => p.voice === props.voice && p.name.startsWith("audio_out"))!;
   const outText = () => out().values![valueOf(session, out()) - out().min] ?? "";
   const toFx = () => outText() === "FX";
   return (
     <div class={styles.journey} data-journey={props.voice}>
-      <div class={styles.trail} data-slot="trail" />
+      <JourneyOverlay voice={props.voice} live={live} />
       <div class={styles.stations}>
         <For each={JOURNEY}>
           {(s) => (
             <Station station={s.id} numeral={s.numeral} title={s.title}
-              subtitle={subtitleOf(s.id, props.voice)} kind={s.id === "return" ? "return" : "station"} voice={props.voice}
+              subtitle={subtitleOf(s.id, props.voice)} kind={s.id === "return" ? "return" : "station"} voice={props.voice} live={live}
               rows={s.id === "return" ? [] : stationRows(props.voice, s.id)}
               onPicture={s.id === "return" && toFx() ? () => session.setPage("cauldron") : undefined}>
               {s.id === "return" && <p class={styles.result} data-part="result">{outText()}</p>}

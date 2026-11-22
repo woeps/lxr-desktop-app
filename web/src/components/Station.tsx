@@ -2,6 +2,8 @@ import { createEffect, For, onCleanup } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import type { ParamDef } from "../generated/params";
 import { useSession } from "../state/session";
+import type { Live } from "../state/live";
+import { voiceLevels } from "../visual/overlay";
 import { frameSvg, type FrameId } from "../visual/frames";
 import { picInput, PICTURE_IDS, vignetteSvg, type PictureId, type Voice } from "../visual/vignettes";
 import { ParamRow } from "./ParamRow";
@@ -28,15 +30,22 @@ function mountFrame(box: HTMLElement, id: FrameId) {
 
 export function Station(props: {
   station: string; numeral?: string; title: string; subtitle: string; rows: readonly ParamDef[];
-  kind?: BoxKind; voice?: Voice; onPicture?: () => void; children?: JSX.Element;
+  kind?: BoxKind; voice?: Voice; live?: Live; onPicture?: () => void; children?: JSX.Element;
 }) {
   const session = useSession();
   const voice = () => props.voice ?? (props.rows[0]?.voice as Voice | undefined);
   let pic!: HTMLDivElement;
   if ((PICTURE_IDS as readonly string[]).includes(props.station)) {
-    // Ambient time, strike glow and level stay 0 until the animation loop (task 10).
+    // Ambient time and strike glow come from the page's animation loop; the level is the last bridge's.
     createEffect(
-      () => (voice() === undefined ? undefined : vignetteSvg(props.station as PictureId, picInput(voice()!, session.state.current.values))),
+      () => {
+        if (voice() === undefined) return undefined;
+        const values = session.state.current.values;
+        const glow = props.live?.glow() ?? 0;
+        const base = picInput(voice()!, values);
+        const level = voice()! >= 0 ? voiceLevels(base, glow)[6]! : 0;
+        return vignetteSvg(props.station as PictureId, picInput(voice()!, values, { t: props.live?.t() ?? 0, glow, level }));
+      },
       (svg) => { if (svg) pic.replaceChildren(svg); else pic.replaceChildren(); },
     );
   }

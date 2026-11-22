@@ -1,6 +1,5 @@
-.journey { display: flex; flex-direction: column; gap: 16px; padding: 6px 0; }
-.trail { height: 2px; background: var(--gold); opacity: 0.6; margin: 0 4px; }
-.stations { display: flex; gap: 40px; align-items: flex-start; overflow-x: auto; padding: 30px 0 6px; }
+.journey { display: flex; flex-direction: column; gap: 16px; padding: 6px 0; position: relative; overflow-x: auto; }
+.stations { display: flex; gap: 40px; align-items: flex-start; padding: 72px 0 6px; }
 .cards { display: flex; gap: 44px; padding-top: 30px; align-items: flex-start; flex-wrap: wrap; }
 .box { flex: none; width: 132px; border: 1px solid transparent; padding: 6px; position: relative; }
 .return { width: 100px; }

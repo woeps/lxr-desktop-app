@@ -183,13 +183,14 @@ export function createMotion(env: MotionEnv): Motion {
   };
 }
 
-/** The page's loop on the real browser objects. */
+/** The page's loop on the real browser objects (timers stand in where rAF or matchMedia are missing, as in jsdom). */
 export function browserEnv(): MotionEnv {
+  const hasRaf = typeof requestAnimationFrame === "function";
   return {
     now: () => performance.now(),
-    raf: (cb) => requestAnimationFrame(cb),
-    caf: (i) => cancelAnimationFrame(i),
-    matchMedia: (q) => matchMedia(q),
+    raf: (cb) => (hasRaf ? requestAnimationFrame(cb) : (setTimeout(cb, 16) as unknown as number)),
+    caf: (i) => (hasRaf ? cancelAnimationFrame(i) : clearTimeout(i)),
+    matchMedia: typeof matchMedia === "function" ? (q) => matchMedia(q) : undefined,
     doc: document,
   };
 }
