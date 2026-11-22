@@ -49,7 +49,7 @@ is checked off. Host tests run with `ctest --test-dir build/host`; web tests wit
   bound to 127.0.0.1), `index.html` with the CSP of design 4.10, `src/main.tsx` rendering an empty
   `App`, and `.gitignore` entries for `web/node_modules/` and `web/dist/`. Done when `npm ci`,
   `npm run build` and `npm test` pass with Node 24.
-- [ ] 3.2 Add `test/safety.test.ts` (no `innerHTML`, `outerHTML`, `insertAdjacentHTML` in
+- [x] 3.2 Add `test/safety.test.ts` (no `innerHTML`, `outerHTML`, `insertAdjacentHTML` in
   `web/src`). Done when it passes.
 
 ## 4. Model (R3, R5, design 4.4, 4.12.3, 4.12.7, 4.12.8)
