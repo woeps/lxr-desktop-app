@@ -84,4 +84,16 @@ describe("JourneyPage", () => {
     const row = stationRows(0, "forge")[0]!;
     expect(host.querySelector(`[data-param=${row.name}] [role=slider]`)).toBeTruthy();
   });
+
+  it("draws one aria-hidden frame per box (no ResizeObserver in jsdom)", async () => {
+    mount(0);
+    await Promise.resolve();
+    const bs = boxes();
+    expect(bs).toHaveLength(11);
+    for (const b of bs) {
+      const svg = b.querySelector("[data-slot=frame] > svg")!;
+      expect(svg.getAttribute("aria-hidden")).toBe("true");
+      expect(svg.getAttribute("data-frame")).toBe(b.getAttribute("data-station"));
+    }
+  });
 });

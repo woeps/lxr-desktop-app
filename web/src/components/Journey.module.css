@@ -1,12 +1,12 @@
 .journey { display: flex; flex-direction: column; gap: 16px; padding: 6px 0; }
 .trail { height: 2px; background: var(--gold); opacity: 0.6; margin: 0 4px; }
-.stations { display: flex; gap: 40px; align-items: flex-start; overflow-x: auto; padding-bottom: 6px; }
-.cards { display: flex; gap: 44px; align-items: flex-start; flex-wrap: wrap; }
-.box { flex: none; width: 132px; border: 1px solid var(--gold); padding: 6px; position: relative; }
+.stations { display: flex; gap: 40px; align-items: flex-start; overflow-x: auto; padding: 30px 0 6px; }
+.cards { display: flex; gap: 44px; padding-top: 30px; align-items: flex-start; flex-wrap: wrap; }
+.box { flex: none; width: 132px; border: 1px solid transparent; padding: 6px; position: relative; }
 .return { width: 100px; }
-.mentor { width: 300px; border-color: var(--gold); }
-.bindings { width: 330px; border-color: var(--bindings); }
-.oracle { width: 240px; border-color: var(--oracle); }
+.mentor { width: 300px; }
+.bindings { width: 330px; }
+.oracle { width: 240px; }
 .ribbon {
   margin: 0 -6px 4px; padding: 2px 14px; background: var(--gold); color: #000; text-align: center;
   font: bold 0.85em Georgia, "Times New Roman", serif; text-transform: uppercase; letter-spacing: 0.08em;
@@ -17,6 +17,8 @@
 .numeral { margin-right: 0.4em; }
 .subtitle { margin: 0 0 4px; text-align: center; color: var(--muted); font: italic 0.85em Georgia, "Times New Roman", serif; }
 .slot { min-height: 0; }
+.slot[data-slot=frame] { position: absolute; inset: -1px; z-index: -1; pointer-events: none; }
+.box { isolation: isolate; }
 .result { text-align: center; color: var(--text); }
 /* A 132 px box is too narrow for one line: label on the first line, value and control wrap below. */
 .box [data-param] { flex-wrap: wrap; row-gap: 2px; }
