@@ -1,0 +1,12 @@
+.chips { display: inline-flex; gap: 2px; }
+.chip {
+  font: inherit;
+  padding: 0.1em 0.6em;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 0.8em;
+  cursor: pointer;
+}
+.chip[aria-checked="true"] { background: var(--voice); color: #000; border-color: var(--voice); }
+.chip:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }

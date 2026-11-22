@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-// Every file under src (including src/generated), read as raw text.
-const files = import.meta.glob("../src/**/*", {
+// Every file under src (including src/generated) except CSS Modules (Vite returns those as class maps, not text), read as raw text.
+const files = import.meta.glob(["../src/**/*", "!../src/**/*.module.css"], {
   query: "?raw",
   import: "default",
   eager: true,

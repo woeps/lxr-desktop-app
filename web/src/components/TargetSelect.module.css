@@ -1,0 +1,11 @@
+.target { display: inline-flex; gap: 4px; align-items: center; }
+.select, .pick {
+  font: inherit;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 0.4em;
+}
+.pick { cursor: pointer; padding: 0.1em 0.6em; }
+.pick[aria-pressed="true"] { background: var(--gold); color: #000; }
+.select:focus-visible, .pick:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }

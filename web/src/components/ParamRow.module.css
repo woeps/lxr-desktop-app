@@ -1,0 +1,15 @@
+.row { display: flex; align-items: center; gap: 6px; padding: 2px 0; }
+.dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.dot[data-modified="true"] { background: var(--voice); }
+.icon { flex: none; width: 30px; height: 18px; }
+.label { min-width: 5em; color: var(--text); }
+.badge { font-size: 0.8em; padding: 0 0.4em; border: 1px solid var(--oracle); border-radius: 0.6em; color: var(--oracle); }
+.value { min-width: 3em; text-align: right; color: var(--muted); }
+.select { font: inherit; color: var(--text); background: var(--bg); border: 1px solid var(--line); border-radius: 0.4em; }
+.tool {
+  font: inherit; color: var(--text); background: none; border: 0; cursor: pointer;
+  opacity: 0; /* hover and focus reveal (design 4.9); a locked lock stays visible */
+}
+.row:hover .tool, .row:focus-within .tool, .on { opacity: 1; }
+.tool:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+.tool:disabled { cursor: not-allowed; }

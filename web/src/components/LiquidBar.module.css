@@ -1,0 +1,15 @@
+.bar {
+  position: relative;
+  flex: 1 1 8em;
+  min-width: 6em;
+  height: 1.1em;
+  border: 1px solid var(--line);
+  border-radius: 0.55em;
+  background: var(--bg);
+  overflow: hidden;
+  cursor: ew-resize;
+  touch-action: none;
+}
+.bar:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+.fill { height: 100%; background: var(--voice); border-radius: inherit; }
+.locked { cursor: not-allowed; opacity: 0.7; }

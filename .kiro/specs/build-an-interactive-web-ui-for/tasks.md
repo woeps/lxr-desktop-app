@@ -99,7 +99,7 @@ is checked off. Host tests run with `ctest --test-dir build/host`; web tests wit
 
 ## 8. Controls and page shell (R3, R4, R10.3, design 4.9)
 
-- [ ] 8.1 `ParamRow`, `LiquidBar`, `Chips`, `TargetSelect`: labels, live icon, modified dot, lock,
+- [x] 8.1 `ParamRow`, `LiquidBar`, `Chips`, `TargetSelect`: labels, live icon, modified dot, lock,
   reset, badges, keyboard and pointer behaviour of design 4.9; one drag is one undo step; value
   changes go through `applyChanges`. Done when component tests cover keyboard, relative drag,
   Shift fine drag, double-click reset and lock.
