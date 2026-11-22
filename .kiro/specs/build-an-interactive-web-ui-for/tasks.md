@@ -143,7 +143,7 @@ is checked off. Host tests run with `ctest --test-dir build/host`; web tests wit
 
 - [x] 11.1 `TransferStatus` with progress, Cancel, Send again, the hero walking at transfer
   progress, row flashes and "Audition after send".
-- [ ] 11.2 `StoreDialog` behind "Seal into boot slot" (R7.8 to R7.11): disabled while sending and
+- [x] 11.2 `StoreDialog` behind "Seal into boot slot" (R7.8 to R7.11): disabled while sending and
   for 2 s after a store, full transfer first when needed, the result text.
 - [ ] 11.3 `Grimoire` drawer (library list, tags, sort and filter, Load, Send, Rename, Duplicate,
   Delete, Export and Import), `ImportDialog`, `ConfirmDialog` for unsaved edits, `MidiSetupDialog`.

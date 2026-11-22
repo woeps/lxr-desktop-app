@@ -7,8 +7,7 @@ import { voiceOf } from "./voices";
 import styles from "./Shell.module.css";
 
 /**
- * Edit actions of the page (design 4.9). `onSeal` opens the store dialog (task 11.2); until then
- * the page passes a stub.
+ * Edit actions of the page (design 4.9). `onSeal` opens the store dialog.
  */
 export function Toolbar(props: { onSeal: () => void }) {
   const app = useApp();

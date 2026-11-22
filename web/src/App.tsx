@@ -1,7 +1,8 @@
-import { onCleanup } from "solid-js";
+import { createSignal, onCleanup, Show } from "solid-js";
 import { AuditionBar } from "./components/AuditionBar";
 import { ConnectBar } from "./components/ConnectBar";
 import { Footer } from "./components/Footer";
+import { StoreDialog } from "./components/StoreDialog";
 import { Toolbar } from "./components/Toolbar";
 import { TransferStatus } from "./components/TransferStatus";
 import { VoicePage } from "./components/VoicePage";
@@ -28,11 +29,14 @@ export function App(props: { app?: AppState }) {
   window.addEventListener("pagehide", onPageHide);
   onCleanup(() => window.removeEventListener("pagehide", onPageHide));
 
+  const [sealing, setSealing] = createSignal(false);
+
   return (
     <AppContext value={app}>
       <SessionContext value={app.session}>
         <ConnectBar />
-        <Toolbar onSeal={() => { /* StoreDialog arrives with task 11.2 */ }} />
+        <Toolbar onSeal={() => setSealing(true)} />
+        <Show when={sealing()}><StoreDialog onClose={() => setSealing(false)} /></Show>
         <TransferStatus />
         <VoiceShields />
         <VoicePage />

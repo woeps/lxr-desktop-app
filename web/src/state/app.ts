@@ -1,6 +1,6 @@
 import { createContext, createSignal, flush, useContext } from "solid-js";
 import { createMidiConnection, type MidiConnection, type MidiEnv } from "../midi/access";
-import { encodeNote, encodePanic, NOTE_OFF_DELAY_MS } from "../midi/encode";
+import { encodeNote, encodePanic, encodeStore, NOTE_OFF_DELAY_MS } from "../midi/encode";
 import { createSender, realClock, type Clock, type Sender, type Transfer } from "../midi/sender";
 import type { Rng } from "../model/sound";
 import { browserEnv, createMotion, type Motion, type MotionEnv } from "../visual/motion";
@@ -38,6 +38,14 @@ export interface App {
   transferWalk(): number | null;
   /** True after the user cancelled the latest transfer, until the next one starts (R6.3). */
   cancelled(): boolean;
+  /** True while Store is not allowed: sending, a full transfer ahead of the store, or within STORE_GAP_MS of the last one (R7.9, R7.11). */
+  storeBlocked(): boolean;
+  /** True while the store waits for its full transfer to finish (R7.10). */
+  storeWaiting(): boolean;
+  /** Time of day (ms since epoch) the latest store command was handed to the sender, or null. */
+  storedAt(): number | null;
+  /** Send the full sound first when the module may differ, then the store command, as one action (R7.10). */
+  store(): void;
   /** Stop the running transfer: the module now holds a mix of old and new sounds. */
   cancelTransfer(): void;
   /** Called when a parameter is handed to the output during a transfer (row flash). */
@@ -56,6 +64,9 @@ export interface App {
   /** Called on every strike that is sent; returns the unsubscribe function. */
   onStrike(cb: (e: StrikeEvent) => void): () => void;
 }
+
+/** At most one store command per this many ms (R7.11). */
+export const STORE_GAP_MS = 2000;
 
 export function defaultDeps(): AppDeps {
   return {
@@ -91,6 +102,16 @@ export function createApp(deps: AppDeps = defaultDeps()): App {
     setCancelled(false);
     sender.sendTransfer(values);
   };
+  let waitingStore = false;
+  let lastStoreClock: number | null = null;
+  let lastStoreWall: number | null = null;
+  function sendStore(): void {
+    waitingStore = false;
+    lastStoreClock = clock.now();
+    lastStoreWall = Date.now();
+    sender.enqueue("s", encodeStore(settings.midiSetup()));
+    clock.setTimeout(bump, STORE_GAP_MS); // re-enable the button once the gap has passed
+  }
   const session = createSession({ storage, clock, sender: { setParam: sender.setParam, sendTransfer: startTransfer }, hasOutput });
   const library = createLibrary(storage);
 
@@ -107,6 +128,8 @@ export function createApp(deps: AppDeps = defaultDeps()): App {
     const t = sender.transfer();
     const done = transferring && t !== null && t.sent === t.total;
     if (done) transferring = false;
+    if (waitingStore && !hasOutput()) waitingStore = false;
+    else if (done && waitingStore) sendStore();
     if (t && t.sent === t.total && !session.state.moduleInSync && hasOutput()) session.setModuleInSync(true);
     bump();
     if (done && settings.state.auditionAfterSend) {
@@ -145,12 +168,29 @@ export function createApp(deps: AppDeps = defaultDeps()): App {
     return transferring && t && t.sent < t.total && !motion.reduced ? t.sent / t.total : null;
   };
 
+  const storeBlocked = (): boolean => {
+    rev();
+    return !hasOutput() || sender.pending() || waitingStore
+      || (lastStoreClock !== null && clock.now() < lastStoreClock + STORE_GAP_MS);
+  };
+
   return {
     session, settings, transferWalk,
+    storeBlocked,
+    storeWaiting: () => { rev(); return waitingStore; },
+    storedAt: () => { rev(); return lastStoreWall; },
+    store() {
+      if (storeBlocked()) return;
+      if (session.state.moduleInSync) { sendStore(); bump(); return; }
+      waitingStore = true;
+      startTransfer(session.state.current.values);
+      bump();
+    },
     cancelled: () => cancelled(),
     cancelTransfer() {
       if (!transferring) return;
       transferring = false;
+      waitingStore = false;
       sender.cancel();
       setCancelled(true);
       session.setModuleInSync(false);
