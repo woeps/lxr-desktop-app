@@ -78,7 +78,7 @@ is checked off. Host tests run with `ctest --test-dir build/host`; web tests wit
 
 ## 6. State, library and files (R2, R6, R8, design 4.5, 4.7, 4.8)
 
-- [ ] 6.1 `state/settings.ts` (MIDI setup, key map, velocity, pitch, pause motion) and
+- [x] 6.1 `state/settings.ts` (MIDI setup, key map, velocity, pitch, pause motion) and
   `state/session.ts` (store and context, `applyChanges`, page, pick mode, A/B, revert, session
   autosave). Done when their tests pass.
 - [ ] 6.2 `state/library.ts` with `library.test.ts` (CRUD, name rule, tags, sort and filter,
