@@ -32,7 +32,7 @@ is checked off. Host tests run with `ctest --test-dir build/host`; web tests wit
 
 ## 2. Parameter data generator (R9)
 
-- [ ] 2.1 Write `host/scripts/gen_web_params.py` reusing `gen_midi_map.py` (design 4.3): `PARAMS`
+- [x] 2.1 Write `host/scripts/gen_web_params.py` reusing `gen_midi_map.py` (design 4.3): `PARAMS`
   with station, order, icon kind, short label, `slotKey`, `inert`, `mix`; `MIDI_SETTINGS`;
   `MOD_TARGETS`; `OUTPUT_CHOICES`; `FX_LABELS`; `STORE` parsed from `engine.h`; `TABLE_ID`. It
   stops with an error naming any parameter without a station, icon or description, and when drum
