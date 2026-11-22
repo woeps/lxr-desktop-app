@@ -8,7 +8,7 @@ Task 12 needs Chris at the browser.
 
 ## 1. Library name rules (R3)
 
-- [ ] 1.1 In `state/library.ts` add `nameKey`, `cleanName`, `findByName`, `replace`, `freeName` and
+- [x] 1.1 In `state/library.ts` add `nameKey`, `cleanName`, `findByName`, `replace`, `freeName` and
   `renamedOnLoad`; make `add` and `rename` refuse names that exist (case-insensitive); remove
   `duplicate`; add the migration in `parse` with the write-back (design 3.3). Done when
   `library.test.ts` covers the R3.1 and R3.3 cases (including the examples, a three-way duplicate,

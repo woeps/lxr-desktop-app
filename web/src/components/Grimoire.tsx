@@ -11,7 +11,7 @@ const fileName = (name: string) => `${name.replace(/[^A-Za-z0-9_-]+/g, "_") || "
 
 /**
  * The sound library as a drawer (R6, design 4.7): list, sort, filter, tags, Load, Send, Rename,
- * Duplicate, Delete, Export and the entry to Import.
+ * Delete, Export and the entry to Import.
  */
 export function Grimoire(props: { onClose: () => void; onImport: () => void }) {
   const app = useApp();
@@ -100,7 +100,6 @@ export function Grimoire(props: { onClose: () => void; onImport: () => void }) {
                 <button type="button" onClick={() => (dirty() ? setLoading(e) : load(e))}>{`Load ${e.name}`}</button>
                 <button type="button" disabled={!app.hasOutput() || app.busy()} onClick={() => app.sendSound(toSound(e).values)}>{`Send ${e.name} to module`}</button>
                 <button type="button" onClick={() => startRename(e)}>{`Rename ${e.name}`}</button>
-                <button type="button" onClick={() => report(library.duplicate(e.id))}>{`Duplicate ${e.name}`}</button>
                 <button type="button" onClick={() => setDeleting(e)}>{`Delete ${e.name}`}</button>
                 <button type="button" onClick={() => download(fileName(e.name), exportJson([e]), "application/json")}>{`Export ${e.name}`}</button>
               </div>

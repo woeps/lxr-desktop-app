@@ -32,6 +32,20 @@ export function nameError(name: string): string | null {
   return null;
 }
 
+export const nameKey = (n: string) => n.trim().toLowerCase();
+export const cleanName = (raw: string) => raw.trim();
+
+/** A numbered variant of `name` whose key is not in `taken`: trailing digits removed, then 2, 3, ... appended within NAME_MAX. */
+export function freeName(name: string, taken: ReadonlySet<string>): string {
+  const stem = name.replace(/\d+$/, "") || "s";
+  for (let k = 2; ; k++) {
+    const cand = stem.slice(0, NAME_MAX - String(k).length) + k;
+    if (!taken.has(nameKey(cand))) return cand;
+  }
+}
+
+const existsError = (name: string) => `A sound named '${name}' already exists.`;
+
 export function toParams(sound: Sound): Record<string, number> {
   const out: Record<string, number> = {};
   for (const p of PARAMS) out[p.name] = sound.values[p.id]!;
@@ -65,12 +79,13 @@ export interface LibraryDeps {
 const str = (v: unknown): v is string => typeof v === "string";
 
 /** Keep valid entries; anything unreadable gives an empty or shorter library. */
-function parse(raw: string | null): LibrarySound[] {
-  if (raw === null) return [];
+function parse(raw: string | null): { sounds: LibrarySound[]; renamed: number } {
+  const none = { sounds: [], renamed: 0 };
+  if (raw === null) return none;
   let p: unknown;
-  try { p = JSON.parse(raw); } catch { return []; }
+  try { p = JSON.parse(raw); } catch { return none; }
   const list = (p as { version?: unknown; sounds?: unknown } | null)?.sounds;
-  if ((p as { version?: unknown } | null)?.version !== 1 || !Array.isArray(list)) return [];
+  if ((p as { version?: unknown } | null)?.version !== 1 || !Array.isArray(list)) return none;
   const seen = new Set<string>();
   const out: LibrarySound[] = [];
   for (const e of list as Record<string, unknown>[]) {
@@ -84,7 +99,14 @@ function parse(raw: string | null): LibrarySound[] {
     seen.add(e.id);
     out.push({ id: e.id, name: e.name, tags, created: e.created, modified: e.modified, params });
   }
-  return out;
+  // R3.3: the first by `created` keeps its name, later ones get a free numbered name.
+  const taken = new Set<string>();
+  let renamed = 0;
+  for (const e of [...out].sort((a, b) => (a.created < b.created ? -1 : a.created > b.created ? 1 : 0))) {
+    if (taken.has(nameKey(e.name))) { e.name = freeName(e.name, taken); renamed++; }
+    taken.add(nameKey(e.name));
+  }
+  return { sounds: out, renamed };
 }
 
 export interface Library {
@@ -92,13 +114,17 @@ export interface Library {
   readonly sounds: readonly LibrarySound[];
   get(id: string): LibrarySound | undefined;
   list(opts?: ListOptions): LibrarySound[];
-  /** Store a sound under a new id. */
+  /** Entry with this name, compared case-insensitively. */
+  findByName(name: string): LibrarySound | undefined;
+  /** Sounds renamed on load to make names unique (R3.3). */
+  readonly renamedOnLoad: number;
+  /** Store a sound under a new id. Fails when the name exists. */
   add(name: string, sound: Sound, tags?: string[]): LibraryResult<LibrarySound>;
   /** Replace the values of an existing entry. */
   update(id: string, sound: Sound): LibraryResult;
+  /** Set values and name of an existing entry in one write. */
+  replace(id: string, name: string, sound: Sound): LibraryResult;
   rename(id: string, name: string): LibraryResult;
-  /** Copy with a new id and the same name (names need not be unique). */
-  duplicate(id: string): LibraryResult<LibrarySound>;
   remove(id: string): LibraryResult;
   addTag(id: string, tag: string): LibraryResult;
   removeTag(id: string, tag: string): LibraryResult;
@@ -113,11 +139,18 @@ export interface Library {
 export function createLibrary(storage: Storage, deps: LibraryDeps = {}): Library {
   const now = deps.now ?? (() => new Date());
   const uuid = deps.uuid ?? (() => crypto.randomUUID());
-  const [state, setState] = createStore<{ sounds: LibrarySound[] }>({ sounds: parse(storage.getItem(LIBRARY_KEY)) });
+  const loaded = parse(storage.getItem(LIBRARY_KEY));
+  const [state, setState] = createStore<{ sounds: LibrarySound[] }>({ sounds: loaded.sounds });
+  if (loaded.renamed > 0) {
+    // A failed write (quota) keeps the in-memory fix and leaves the stored list as is.
+    try { storage.setItem(LIBRARY_KEY, JSON.stringify({ version: 1, sounds: loaded.sounds })); } catch { /* keep */ }
+  }
   let persistAsked: Promise<boolean | null> | null = null;
 
   const find = (id: string) => state.sounds.find((s) => s.id === id);
   const snap = (s: LibrarySound): LibrarySound => ({ ...s, tags: [...s.tags], params: { ...s.params } });
+  const byName = (name: string, except?: string) =>
+    state.sounds.find((s) => s.id !== except && nameKey(s.name) === nameKey(name));
   const missing = { ok: false, error: "That sound is not in the library." } as const;
 
   function commit(next: LibrarySound[]): LibraryResult {
@@ -150,6 +183,8 @@ export function createLibrary(storage: Storage, deps: LibraryDeps = {}): Library
   return {
     get sounds() { return state.sounds; },
     get: (id) => find(id),
+    findByName: (name) => byName(name),
+    renamedOnLoad: loaded.renamed,
     list({ sort = "name", filter = "" } = {}) {
       const q = filter.trim().toLowerCase();
       const out = state.sounds.filter((s) =>
@@ -161,21 +196,28 @@ export function createLibrary(storage: Storage, deps: LibraryDeps = {}): Library
       };
       return out.sort(by[sort]);
     },
-    add(name, sound, tags = []) {
+    add(raw, sound, tags = []) {
+      const name = cleanName(raw);
       const e = nameError(name);
       if (e) return { ok: false, error: e };
+      if (byName(name)) return { ok: false, error: existsError(name) };
       const t = now().toISOString();
       const clean = [...new Set(tags.map((x) => x.trim()).filter((x) => x !== ""))];
       return insert({ id: uuid(), name, tags: clean, created: t, modified: t, params: toParams(sound) });
     },
     update: (id, sound) => edit(id, (s) => { s.params = toParams(sound); return null; }),
-    rename: (id, name) => edit(id, (s) => { const e = nameError(name); if (!e) s.name = name; return e; }),
-    duplicate(id) {
-      const cur = find(id);
-      if (!cur) return missing;
-      const t = now().toISOString();
-      return insert({ ...snap(cur), id: uuid(), created: t, modified: t });
-    },
+    replace: (id, raw, sound) => edit(id, (s) => {
+      const name = cleanName(raw);
+      const e = nameError(name) ?? (byName(name, id) ? existsError(name) : null);
+      if (!e) { s.name = name; s.params = toParams(sound); }
+      return e;
+    }),
+    rename: (id, raw) => edit(id, (s) => {
+      const name = cleanName(raw);
+      const e = nameError(name) ?? (byName(name, id) ? existsError(name) : null);
+      if (!e) s.name = name;
+      return e;
+    }),
     remove(id) {
       if (!find(id)) return missing;
       return commit(state.sounds.filter((s) => s.id !== id).map(snap));

@@ -170,19 +170,18 @@ describe("Grimoire", () => {
     expect(names()).toEqual(["Zulu"]);
   });
 
-  it("duplicates, then deletes only after confirmation", async () => {
+  it("deletes only after confirmation", async () => {
     await mount();
     app.library.add("Alpha", sound("Alpha"));
     openGrimoire();
-    click(button("Duplicate Alpha"));
-    expect(names()).toEqual(["Alpha", "Alpha"]);
+    expect(Array.from(host.querySelectorAll("button")).some((b) => /^Duplicate/.test(b.textContent ?? ""))).toBe(false);
     click(button("Delete Alpha"));
     click(button("Cancel"));
-    expect(names().length).toBe(2);
+    expect(names().length).toBe(1);
     click(button("Delete Alpha"));
     click(button("Delete"));
-    expect(names().length).toBe(1);
-    expect(app.library.sounds.length).toBe(1);
+    expect(names().length).toBe(0);
+    expect(app.library.sounds.length).toBe(0);
   });
 
   it("adds and removes tags", async () => {
