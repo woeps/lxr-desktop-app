@@ -5,7 +5,7 @@ built on the LXR V2 drum engine: three drum voices, snare, cymbal and hi-hat (cl
 master FX bus (distortion, ring modulator, compressor, delay). It is played over serial MIDI on a
 3.5 mm TRS jack, sound comes out of a PCM5102A I2S DAC, and 16 sounds can be stored in flash. There
 is no sequencer and no front panel: sounds are edited over MIDI (CC and NRPN) or with a serial console
-on the USB port.
+on the USB port. A browser page in `web/` ([Web UI](#web-ui)) is the easiest way to design sounds.
 
 The firmware is a port of the LXR V2 desktop firmware (STM32F765), which is in the git history.
 
@@ -387,6 +387,11 @@ and can send the whole sound to the module. Changes are sent as the same CC and 
 described in [MIDI implementation](#midi-implementation), so the module needs no extra firmware
 support beyond the store command.
 
+Use it to design and audition sounds without typing CC numbers: pick a voice tab, adjust its controls,
+and use Undo, Redo and A/B to compare. "Roll" randomises every voice by the Roll amount, "Roll <voice>"
+(for example "Roll Snare") randomises only the voice you are editing, and locked parameters are never
+changed. Good sounds go into the library, and "Seal into boot slot" keeps one on the module.
+
 Connection. Wire a computer MIDI interface (USB to DIN or TRS) to the module's TRS input as described
 in [Hardware](#hardware): the interface's MIDI out goes to the TRS socket. In the page, choose that
 interface as the MIDI output.
@@ -414,6 +419,8 @@ npm ci
 npm run build     # writes web/dist/
 npm run preview   # serves it at http://127.0.0.1:4173/
 ```
+
+For development, `npm run dev` serves the page with hot reload on `http://127.0.0.1:5173/`.
 
 `npm test` runs the page's tests and `npm run typecheck` checks the types. Web MIDI works only on
 `https://` pages and on `localhost`, so open the page from the preview server or from an HTTPS host,
