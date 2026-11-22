@@ -62,7 +62,7 @@ is checked off. Host tests run with `ctest --test-dir build/host`; web tests wit
   parameters, visible counts 35/34/35/35, row order).
 - [x] 4.4 `model/links.ts` (bindings from all twelve modulators, own and incoming badges, contested
   detection, target labels "voice › station › label") with `links.test.ts`.
-- [ ] 4.5 `model/levels.ts` (formulas of design 4.12.7) with `levels.test.ts`.
+- [x] 4.5 `model/levels.ts` (formulas of design 4.12.7) with `levels.test.ts`.
 
 ## 5. MIDI output (R1, R3.3, R3.4, R4, R7, design 4.6)
 
