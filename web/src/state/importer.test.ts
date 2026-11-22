@@ -269,4 +269,58 @@ describe("importer: transfer-done hint and send again", () => {
     imp.sendAgain(); advance(HINT_MS + 5000);
     expect(strikes).toBe(2);
   });
+
+  describe("add to library", () => {
+    const names = () => app.library.list().map((e) => e.name);
+    it("adds ticked presets in list order with edited names", async () => {
+      await setup(true);
+      imp.tick(key("Ccc"), true); imp.tick(key("Aaa"), true);
+      imp.rename(key("Ccc"), "Third");
+      imp.addTicked();
+      expect(names().sort()).toEqual(["Aaa", "Third"]);
+      expect(imp.state.ticked).toEqual([]);
+      expect(imp.state.result).toBe("Added 2 sounds to the library.");
+      imp.tick(key("Aaa"), true); imp.tick(key("Aaa"), false);
+      expect(imp.state.ticked).toEqual([]);
+    });
+    it("stops at an invalid name and keeps the rest ticked", async () => {
+      await setup(true);
+      ["Aaa", "Bbb", "Ccc"].forEach((n) => imp.tick(key(n), true));
+      imp.rename(key("Bbb"), "");
+      imp.addTicked();
+      expect(names()).toEqual(["Aaa"]);
+      expect(imp.state.ticked).toEqual([key("Bbb"), key("Ccc")]);
+      expect(imp.state.result).toMatch(/Added 1 of 3\.$/);
+    });
+    it("stops at a library error such as a full store", async () => {
+      await setup(true);
+      ["Aaa", "Bbb", "Ccc"].forEach((n) => imp.tick(key(n), true));
+      const add = app.library.add.bind(app.library);
+      let calls = 0;
+      app.library.add = (n, s, t) => (++calls === 2 ? { ok: false, error: "Full." } : add(n, s, t));
+      imp.addTicked();
+      expect(names()).toEqual(["Aaa"]);
+      expect(imp.state.ticked).toEqual([key("Bbb"), key("Ccc")]);
+      expect(imp.state.result).toBe("Full. Added 1 of 3.");
+    });
+    it("touches neither sender nor session; selecting adds nothing", async () => {
+      await setup(true);
+      imp.select(key("Aaa")); done();
+      out.length = 0;
+      const before = JSON.stringify(app.session.state.current);
+      imp.tick(key("Bbb"), true); imp.addTicked(); advance(1000);
+      expect(out).toEqual([]);
+      expect(JSON.stringify(app.session.state.current)).toBe(before);
+      const n = app.library.list().length;
+      imp.select(key("Ccc"), true); done();
+      expect(app.library.list().length).toBe(n);
+    });
+    it("open clears ticks and result", async () => {
+      await setup(true);
+      imp.tick(key("Aaa"), true); imp.addTicked();
+      await imp.open([kit("Zzz", 1)]);
+      expect(imp.state.ticked).toEqual([]);
+      expect(imp.state.result).toBeNull();
+    });
+  });
 });

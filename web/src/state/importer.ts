@@ -17,6 +17,10 @@ export interface ImporterState {
   /** Preset.key */
   selected: string | null;
   hint: string | null;
+  /** Preset.key of the rows ticked for Add to library */
+  ticked: string[];
+  /** Outcome of the last Add to library */
+  result: string | null;
 }
 
 export interface Importer {
@@ -27,12 +31,17 @@ export interface Importer {
   step(delta: 1 | -1): "ok" | "confirm";
   /** Sends the current values again and shows the hint when the transfer ends (R3.5). */
   sendAgain(): void;
+  tick(key: string, on: boolean): void;
+  /** Edits the name used when the preset is added to the library (R4.2). */
+  rename(key: string, name: string): void;
+  /** Adds the ticked presets in list order; stops at the first library error (R4.1). Never touches the session or sender (R4.3). */
+  addTicked(): void;
 }
 
 /** Never calls `app.store()`: a selection is live only (R2.3). */
 export function createImporter(app: App, clock: Clock = realClock): Importer {
   const [state, setState] = createStore<ImporterState>({
-    presets: [], unreadable: [], ignored: 0, selected: null, hint: null,
+    presets: [], unreadable: [], ignored: 0, selected: null, hint: null, ticked: [], result: null,
   });
   let sendTimer: unknown = null;
   let hintTimer: unknown = null;
@@ -106,6 +115,8 @@ export function createImporter(app: App, clock: Clock = realClock): Importer {
         s.ignored = pack.ignored;
         s.selected = null;
         s.hint = null;
+        s.ticked = [];
+        s.result = null;
       });
       flush();
     },
@@ -122,6 +133,39 @@ export function createImporter(app: App, clock: Clock = realClock): Importer {
       setHint(null);
       awaiting = true;
       app.sendAll();
+      flush();
+    },
+    tick(key, on) {
+      setState((s) => {
+        const i = s.ticked.indexOf(key);
+        if (on && i < 0) s.ticked.push(key);
+        else if (!on && i >= 0) s.ticked.splice(i, 1);
+      });
+      flush();
+    },
+    rename(key, name) {
+      setState((s) => {
+        const p = s.presets.find((x) => x.key === key);
+        if (p) p.name = name;
+      });
+      flush();
+    },
+    addTicked() {
+      const todo = state.presets.filter((p) => state.ticked.includes(p.key));
+      let n = 0;
+      let error: string | null = null;
+      for (const p of todo) {
+        const r = app.library.add(p.name, p.sound, []);
+        if (!r.ok) { error = r.error; break; }
+        n++;
+      }
+      const added = new Set(todo.slice(0, n).map((p) => p.key));
+      setState((s) => {
+        s.ticked = s.ticked.filter((k) => !added.has(k));
+        s.result = error === null
+          ? `Added ${n} ${n === 1 ? "sound" : "sounds"} to the library.`
+          : `${error} Added ${n} of ${todo.length}.`;
+      });
       flush();
     },
   };
