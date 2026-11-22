@@ -153,7 +153,7 @@ is checked off. Host tests run with `ctest --test-dir build/host`; web tests wit
 
 ## 12. Documentation and bench check
 
-- [ ] 12.1 Add a self-contained "Web UI" section to `README.md`: what it does, the MIDI interface
+- [x] 12.1 Add a self-contained "Web UI" section to `README.md`: what it does, the MIDI interface
   wiring, building and serving (`npm ci`, `npm run build`, `npm run preview`), supported browsers,
   the one-way link and what "Seal into boot slot" does.
 - [ ] 12.2 **[bench]** With Chris, using the USB MIDI interface wired to the module, run the bench

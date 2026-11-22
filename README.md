@@ -379,6 +379,44 @@ modulation off.
 
 After a change to the parameter table, regenerate both lists with `host/scripts/gen_midi_map.py`.
 
+## Web UI
+
+`web/` holds a browser page for sound design. It shows every voice and master FX parameter as a
+control, plays a test note, keeps a library of sounds in the browser (with file import and export),
+and can send the whole sound to the module. Changes are sent as the same CC and NRPN messages
+described in [MIDI implementation](#midi-implementation), so the module needs no extra firmware
+support beyond the store command.
+
+Connection. Wire a computer MIDI interface (USB to DIN or TRS) to the module's TRS input as described
+in [Hardware](#hardware): the interface's MIDI out goes to the TRS socket. In the page, choose that
+interface as the MIDI output.
+
+The link is one way. The module has no MIDI output, so the page cannot read parameters, preset slots
+or connection state from it. The page keeps its own copy of the sound and shows what it last sent;
+use "Send all" to bring the module in line with it. Sounds loaded from the module's own slots with
+the console are not visible to the page.
+
+"Seal into boot slot" sends the store command (NRPN 16128, value 0x53) on drum 1's channel. The module
+saves the sound it is playing now to the slot that is loaded at power-up, keeps that slot's name, and
+plays it after the next power-up.
+
+Building and serving (tested with Node.js 24):
+
+```sh
+cd web
+npm ci
+npm run build     # writes web/dist/
+npm run preview   # serves it at http://127.0.0.1:4173/
+```
+
+`npm test` runs the page's tests and `npm run typecheck` checks the types. Web MIDI works only on
+`https://` pages and on `localhost`, so open the page from the preview server or from an HTTPS host,
+not as a `file://` file.
+
+Browsers. Chrome, Edge and Opera support Web MIDI and allow the page to use the MIDI interface after a
+permission prompt. Other browsers can still edit sounds and use the library and file export, but
+cannot send to the module.
+
 ## Console
 
 The USB port is a serial device: open it with any terminal (for example `picocom /dev/ttyACM0`) and
