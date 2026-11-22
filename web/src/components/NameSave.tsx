@@ -119,9 +119,11 @@ export function NameSave() {
       </span>
       <Show when={replacing()}>
         {(entry) => (
-          <ConfirmDialog title="Replace library sound" confirmLabel="Replace" onConfirm={() => replace(entry())} onCancel={() => setReplacing(null)}>
-            {`Replace the library sound '${entry().name}' with the current sound?`}
-          </ConfirmDialog>
+          <div class={styles.rename}>
+            <ConfirmDialog title="Replace library sound" confirmLabel="Replace" onConfirm={() => replace(entry())} onCancel={() => setReplacing(null)}>
+              {`Replace the library sound '${entry().name}' with the current sound?`}
+            </ConfirmDialog>
+          </div>
         )}
       </Show>
       <Show when={renaming() && loaded()}>

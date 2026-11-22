@@ -36,3 +36,10 @@
   border: 1px solid var(--line);
   border-radius: 0.4em;
 }
+.rename [role="alertdialog"] { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; max-width: min(28em, calc(100vw - 20px)); }
+.rename p { margin: 0; flex: 1 1 100%; }
+.rename :is(input, button) { font: inherit; padding: 0.2em 0.6em; color: var(--text); background: var(--bg); border: 1px solid var(--line); border-radius: 0.4em; }
+.rename button { cursor: pointer; }
+.rename button:disabled { color: var(--muted); cursor: default; }
+.rename :is(input, button):focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+.rename [role="alert"] { color: var(--contested); }
