@@ -234,6 +234,16 @@ def render(d):
 
 def main():
     text = render(build())
+    if "--check" in sys.argv[1:]:
+        try:
+            with open(OUT, newline="") as f:
+                current = f.read()
+        except FileNotFoundError:
+            current = None
+        if current != text:
+            sys.exit("%s is out of date with engine/src/param_table.c; "
+                     "run: python3 host/scripts/gen_web_params.py" % OUT)
+        return
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     with open(OUT, "w", newline="\n") as f:
         f.write(text)

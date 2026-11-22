@@ -121,6 +121,9 @@ if(Python3_FOUND)
     # the README's MIDI table must match the parameter table
     add_test(NAME readme_midi_map
         COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/scripts/gen_midi_map.py --check)
+    # the web UI's generated parameter table must match the parameter table
+    add_test(NAME web_params
+        COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/scripts/gen_web_params.py --check)
 endif()
 
 # --- compiled-in render scripts for the Pico's `render` command (task 14.1) ------------

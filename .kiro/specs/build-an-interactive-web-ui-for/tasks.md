@@ -38,7 +38,7 @@ is checked off. Host tests run with `ctest --test-dir build/host`; web tests wit
   stops with an error naming any parameter without a station, icon or description, and when drum
   1, 2 and 3 do not have the same `slotKey`s. Done when it writes `web/src/generated/params.ts`
   and the station membership matches design 4.12.3 for all six voices and the Cauldron.
-- [ ] 2.2 Add `--check` and the ctest `web_params` next to `readme_midi_map` in
+- [x] 2.2 Add `--check` and the ctest `web_params` next to `readme_midi_map` in
   `host/CMakeLists.txt` (R9.2). Done when the test passes, and fails after a hand edit of the
   generated file.
 
