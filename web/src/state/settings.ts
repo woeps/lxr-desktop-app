@@ -8,6 +8,7 @@ export const SLOTS = 7;
 /** Keys for slots 1..7 and Play all (R4.3, design 4.9). */
 export const DEFAULT_KEYS: readonly string[] = ["1", "2", "3", "4", "5", "6", "7", "0"];
 export const DEFAULT_VELOCITY = 100;
+export const DEFAULT_ROLL = 50;
 
 /** Browser-side settings (design 4.5, 4.9). The module MIDI setup is not sent to the module (R2.3). */
 export interface Settings {
@@ -26,6 +27,12 @@ export interface Settings {
   pauseMotion: boolean;
   /** Strike the current voice when a transfer completes (R6.4). */
   auditionAfterSend: boolean;
+  /** Amount of the voice dice buttons, 0..100 percent (R4.5). */
+  rollVoice: number;
+  /** Amount of Roll all, 0..100 percent (R4.5). */
+  rollAll: number;
+  /** The audition dock shows only its thin strip (R6.5). */
+  dockCollapsed: boolean;
 }
 
 const def = (name: string): number => MIDI_SETTINGS.find((s) => s.name === name)!.def;
@@ -40,11 +47,18 @@ export function defaultSettings(): Settings {
     pitch: DEFAULT_PITCH,
     pauseMotion: false,
     auditionAfterSend: false,
+    rollVoice: DEFAULT_ROLL,
+    rollAll: DEFAULT_ROLL,
+    dockCollapsed: false,
   };
 }
 
 const int = (v: unknown, min: number, max: number, fallback: number): number =>
   typeof v === "number" && Number.isInteger(v) && v >= min && v <= max ? v : fallback;
+
+/** A finite number is rounded and clamped into min..max; anything else gives the fallback. */
+const clamped = (v: unknown, min: number, max: number, fallback: number): number =>
+  typeof v === "number" && Number.isFinite(v) ? Math.min(max, Math.max(min, Math.round(v))) : fallback;
 
 const intList = (v: unknown, n: number, min: number, max: number, fallback: number[]): number[] =>
   Array.isArray(v) && v.length === n ? v.map((x, i) => int(x, min, max, fallback[i]!)) : [...fallback];
@@ -66,6 +80,9 @@ export function sanitize(raw: unknown): Settings {
     pitch: int(o.pitch, 0, 127, d.pitch),
     pauseMotion: typeof o.pauseMotion === "boolean" ? o.pauseMotion : d.pauseMotion,
     auditionAfterSend: typeof o.auditionAfterSend === "boolean" ? o.auditionAfterSend : d.auditionAfterSend,
+    rollVoice: clamped(o.rollVoice, 0, 100, d.rollVoice),
+    rollAll: clamped(o.rollAll, 0, 100, d.rollAll),
+    dockCollapsed: typeof o.dockCollapsed === "boolean" ? o.dockCollapsed : d.dockCollapsed,
   };
 }
 
@@ -99,6 +116,7 @@ export function createSettings(storage: Storage): SettingsStore {
   const snapshot = (): Settings => ({
     channels: [...state.channels], global: state.global, notes: [...state.notes], keys: [...state.keys],
     velocity: state.velocity, pitch: state.pitch, pauseMotion: state.pauseMotion, auditionAfterSend: state.auditionAfterSend,
+    rollVoice: state.rollVoice, rollAll: state.rollAll, dockCollapsed: state.dockCollapsed,
   });
 
   function commit(next: Settings): void {

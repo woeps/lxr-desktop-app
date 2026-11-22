@@ -17,6 +17,25 @@ describe("settings", () => {
     expect(s.midiSetup()).toEqual({ channels: [1, 2, 3, 4, 5, 6, 7], global: 0, notes: [0, 0, 0, 0, 0, 0, 0] });
   });
 
+  it("old stored settings without the roll fields and dockCollapsed load with defaults (R4.5, R6.5)", () => {
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify({ velocity: 90, pauseMotion: true }));
+    const s = createSettings(localStorage).state;
+    expect([s.rollVoice, s.rollAll, s.dockCollapsed]).toEqual([50, 50, false]);
+    expect(s.velocity).toBe(90);
+  });
+
+  it("clamps out-of-range roll amounts and defaults invalid ones", () => {
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify({ rollVoice: 150, rollAll: -5, dockCollapsed: "x" }));
+    const s = createSettings(localStorage).state;
+    expect([s.rollVoice, s.rollAll, s.dockCollapsed]).toEqual([100, 0, false]);
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify({ rollVoice: "a", rollAll: NaN }));
+    expect(createSettings(localStorage).state.rollVoice).toBe(50);
+    const t = createSettings(localStorage);
+    t.set({ rollVoice: 33, rollAll: 200, dockCollapsed: true });
+    const u = createSettings(localStorage).state;
+    expect([u.rollVoice, u.rollAll, u.dockCollapsed]).toEqual([33, 100, true]);
+  });
+
   it("persists and restores", () => {
     const a = createSettings(localStorage);
     a.set({ channels: [9, 2, 3, 4, 5, 6, 7], global: 10, velocity: 64, pitch: 48, pauseMotion: true,

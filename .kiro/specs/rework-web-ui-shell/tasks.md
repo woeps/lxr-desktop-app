@@ -30,7 +30,7 @@ Task 12 needs Chris at the browser.
 
 ## 3. Settings, roll and status state (R4, R6, R7)
 
-- [ ] 3.1 Add `rollVoice`, `rollAll` and `dockCollapsed` to `state/settings.ts` with sanitising.
+- [x] 3.1 Add `rollVoice`, `rollAll` and `dockCollapsed` to `state/settings.ts` with sanitising.
   Done when `settings.test.ts` passes with defaults, clamping and a stored object without the new
   fields.
 - [ ] 3.2 Add `state/roll.ts` (`rollVoice`, `rollAll`) by moving the bodies out of `Toolbar.tsx`,
