@@ -69,7 +69,7 @@ is checked off. Host tests run with `ctest --test-dir build/host`; web tests wit
 - [x] 5.1 `midi/encode.ts` with `encode.test.ts` (CC and NRPN bytes, channel choice, notes, store
   sequence from `STORE`, panic without CC 120/123, output choices sent as 0/2/3/6 and aliases sent
   unchanged).
-- [ ] 5.2 `midi/sender.ts` with `sender.test.ts` on a fake output and clock (order, coalescing,
+- [x] 5.2 `midi/sender.ts` with `sender.test.ts` on a fake output and clock (order, coalescing,
   10 ms per parameter, byte pacing, full transfer under 2 s, cancel, `pending()`, per-id "handed
   to output" events for the row flash).
 - [ ] 5.3 `midi/access.ts` (secure-context and no-Web-MIDI messages, permission denial, output
