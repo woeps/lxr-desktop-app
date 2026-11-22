@@ -6,6 +6,8 @@ import { Chips } from "./Chips";
 import { LiquidBar } from "./LiquidBar";
 import { isLocked, resetValue, setValue, valueOf } from "./param";
 import { TargetSelect } from "./TargetSelect";
+import { OutputChips } from "./OutputChips";
+import { aliasTitle, choiceOf, isOutputParam, outParamOf, panDims, PAN_NOTE } from "../model/outputs";
 import styles from "./ParamRow.module.css";
 
 const isTarget = (d: ParamDef) => d.name.startsWith("target_lfo") || d.name.startsWith("vel_dest");
@@ -22,6 +24,9 @@ export function ParamRow(props: { def: ParamDef; badges?: readonly string[] }) {
   const modified = () => value() !== session.state.baseline.values[props.def.id];
   const shown = () => props.def.values?.[value() - props.def.min] ?? String(value());
 
+  const dimmed = () => { const o = outParamOf(props.def); return !!o && panDims(valueOf(session, o)); };
+  const tip = () => dimmed() ? PAN_NOTE : (isOutputParam(props.def) ? aliasTitle(value()) : undefined) ?? props.def.desc;
+
   let iconBox!: HTMLSpanElement;
   createEffect(
     () => renderIcon(props.def.icon, iconInput(props.def, value())),
@@ -29,16 +34,18 @@ export function ParamRow(props: { def: ParamDef; badges?: readonly string[] }) {
   );
 
   return (
-    <div class={styles.row} title={props.def.desc} data-param={props.def.name}>
+    <div class={styles.row} title={tip()} data-param={props.def.name}
+      data-dimmed={dimmed() ? "true" : undefined} style={dimmed() ? { opacity: "0.4" } : undefined}>
       <span class={styles.dot} data-modified={modified() ? "true" : "false"} />
       <span ref={iconBox} class={styles.icon} />
       <span class={styles.label}>{props.def.label}</span>
       <For each={props.badges ?? []}>{(b) => <span class={styles.badge}>{b}</span>}</For>
       <Show when={!isTarget(props.def)}>
-        <span class={styles.value} data-testid="value">{props.def.kind === "enum" ? shown() : value()}</span>
+        <span class={styles.value} data-testid="value">{isOutputParam(props.def) ? choiceOf(value()).label : props.def.kind === "enum" ? shown() : value()}</span>
       </Show>
       <Switch>
         <Match when={isTarget(props.def)}><TargetSelect def={props.def} /></Match>
+        <Match when={isOutputParam(props.def)}><OutputChips def={props.def} /></Match>
         <Match when={props.def.kind === "num"}><LiquidBar def={props.def} /></Match>
         <Match when={(props.def.values?.length ?? 0) <= 4}><Chips def={props.def} /></Match>
         <Match when={true}>

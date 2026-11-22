@@ -123,7 +123,7 @@ is checked off. Host tests run with `ctest --test-dir build/host`; web tests wit
 - [x] 9.4 `CauldronPage`: The Brew, The Pour and The Millstone with their frames and pictures,
   only the parameters the chosen effect uses, and `FX_LABELS`; clicking the Return cauldron opens
   it.
-- [ ] 9.5 Output handling: four choices, aliases shown as their equivalent, pan dims for left and
+- [x] 9.5 Output handling: four choices, aliases shown as their equivalent, pan dims for left and
   right (`outputs.test.ts`).
 
 ## 10. Connections and modulation (design 4.12.7 to 4.12.9)

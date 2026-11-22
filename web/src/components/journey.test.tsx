@@ -78,8 +78,7 @@ describe("JourneyPage", () => {
     mount(0);
     const def = PARAMS.find((p) => p.name === "audio_out1")!;
     expect(host.querySelector("[data-part=result]")!.textContent).toBe(def.values![0]);
-    const sel = host.querySelector<HTMLSelectElement>("[data-param=audio_out1] select")
-      ?? host.querySelector<HTMLSelectElement>("[data-param=audio_out1]")!.querySelector("select")!;
+    const sel = host.querySelector("[data-param=audio_out1] [role=radiogroup]");
     const before = app.session.state.current.values[def.id];
     expect(before).toBe(def.def);
     app.session.applyChanges([[def.id, before!, 2]]);
@@ -100,5 +99,27 @@ describe("JourneyPage", () => {
       expect(svg.getAttribute("aria-hidden")).toBe("true");
       expect(svg.getAttribute("data-frame")).toBe(b.getAttribute("data-station"));
     }
+  });
+});
+
+describe("output rows", () => {
+  it("shows four choices, an alias as its equivalent, and dims pan for left and right", () => {
+    mount(0);
+    const out = PARAMS.find((p) => p.name === "audio_out1")!;
+    const row = () => host.querySelector<HTMLElement>("[data-param=audio_out1]")!;
+    const pan = () => host.querySelector<HTMLElement>("[data-param=pan1]")!;
+    expect([...row().querySelectorAll("[role=radio]")].map((b) => b.textContent)).toEqual(["main", "left", "right", "FX"]);
+    expect(pan().dataset.dimmed).toBeUndefined();
+    app.session.applyChanges([[out.id, 0, 4]]);
+    flush();
+    expect(row().querySelector("[aria-checked=true]")!.textContent).toBe("left");
+    expect(row().title).toBe("plays as left");
+    expect(app.session.state.current.values[out.id]).toBe(4);
+    expect(pan().dataset.dimmed).toBe("true");
+    expect(pan().style.opacity).toBe("0.4");
+    row().querySelector<HTMLElement>("[data-choice=main]")!.click();
+    flush();
+    expect(app.session.state.current.values[out.id]).toBe(0);
+    expect(pan().dataset.dimmed).toBeUndefined();
   });
 });
