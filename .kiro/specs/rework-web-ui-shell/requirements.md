@@ -181,7 +181,7 @@ at the bottom, and I want to be able to hide them.
 Acceptance criteria:
 1. THE dock SHALL be fixed to the bottom of the page and SHALL contain, left to right: the
    connection indicator, the seven rune stones, Velocity, Pitch, Play all, Panic and a collapse
-   button.
+   button. THE collapse button SHALL stay at the bottom right corner of the screen, expanded or collapsed.
 2. THE connection indicator SHALL be a pill with a coloured dot and the output name, or
    "Not connected" when no output is selected. The state SHALL NOT be shown by colour alone.
 3. Pressing the indicator SHALL open the connection popover above it, with Connect, the output
@@ -195,7 +195,13 @@ Acceptance criteria:
    feature. THE collapsed state SHALL persist in the settings.
 6. THE dock SHALL sit at the bottom edge of the page with no reserved row below it. THE page SHALL
    leave bottom padding equal to the dock and strip height so that no control is covered.
-7. THE connection row, the transfer row and the Audition after send checkbox of the page SHALL be
+7. THE help line for the row being pointed at or focused (the path caption of the earlier feature, 4.12.9)
+   SHALL be shown by the dock and not under the page. WHILE the dock is expanded, it SHALL be a band
+   directly above the dock, overlaying the page edge, so that it does not change the dock height; the
+   status strip covers it while a message shows. WHILE the dock is collapsed, it SHALL appear right
+   next to the connection dot, above all other content, without taking clicks and without covering the
+   expand button. It SHALL stay one `aria-live="polite"` region, and use tokens for its colours.
+8. THE connection row, the transfer row and the Audition after send checkbox of the page SHALL be
    removed from the main flow; Audition after send is in the Send all menu (R1.4).
 
 ### R7. Status strip

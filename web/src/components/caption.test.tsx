@@ -7,6 +7,7 @@ import { SessionContext } from "../state/session";
 import { targetIndex } from "../model/links";
 import { hotFor } from "../model/caption";
 import { JourneyPage } from "./JourneyPage";
+import { Caption } from "./Caption";
 
 const def = (name: string) => PARAMS.find((p) => p.name === name)!;
 let host: HTMLElement;
@@ -20,7 +21,7 @@ async function mount(voice: 0 | 1 | 2 | 3 | 4 | 5 = 0) {
   host = document.createElement("div");
   document.body.appendChild(host);
   dispose = render(
-    () => <AppContext value={app}><SessionContext value={app.session}><JourneyPage voice={voice} /></SessionContext></AppContext>,
+    () => <AppContext value={app}><SessionContext value={app.session}><JourneyPage voice={voice} /><Caption /></SessionContext></AppContext>,
     host,
   );
   flush();

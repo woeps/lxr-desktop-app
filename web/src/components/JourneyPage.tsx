@@ -1,9 +1,9 @@
-import { createMemo, createSignal, For, onCleanup } from "solid-js";
+import { createEffect, createMemo, createSignal, For, onCleanup } from "solid-js";
 import { PARAMS, type Station as StationId } from "../generated/params";
 import { stationRows } from "../model/stations";
 import { headingOf } from "../model/headings";
 import { hotFor } from "../model/caption";
-import { Caption } from "./Caption";
+import { setHelp } from "../state/help";
 import { useSession } from "../state/session";
 import { useApp } from "../state/app";
 import { createLive } from "../state/live";
@@ -53,6 +53,9 @@ export function JourneyPage(props: { voice: Voice }) {
     setPointed(def ? def.id : null);
   };
   const leave = () => setPointed(null);
+  // The dock shows the help line (R6.8).
+  createEffect(() => hot()?.caption ?? "", (text) => setHelp(text));
+  onCleanup(() => setHelp(""));
   return (
     <div class={styles.journey} data-journey={props.voice}
       ref={(el: HTMLElement) => {
@@ -81,7 +84,6 @@ export function JourneyPage(props: { voice: Voice }) {
         <BindingsCard rows={stationRows(props.voice, "bindings")} />
         <OracleCard rows={stationRows(props.voice, "oracle")} />
       </div>
-      <Caption text={hot()?.caption ?? ""} />
     </div>
   );
 }

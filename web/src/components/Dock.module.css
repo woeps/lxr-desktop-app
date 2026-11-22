@@ -17,10 +17,13 @@
 .dock input[type="range"] { width: 8em; min-width: 0; accent-color: var(--voice); }
 .dock output { min-width: 2.2em; color: var(--muted); }
 .dock kbd { font: inherit; padding: 0 0.3em; border: 1px solid var(--line); border-radius: 0.3em; }
-/* The collapse button stays on the right edge when the dock is wide. */
-.dock > button:last-child { margin-left: auto; }
+/* The collapse button stays at the bottom right corner of the screen, expanded or collapsed (R6.1). */
+.toggle { position: absolute; right: 10px; bottom: 6px; }
+.dock { padding-right: 3.5em; }
+.dock[data-collapsed="true"] { padding-right: 10px; min-height: 2.4em; }
 @media (max-width: 600px) {
-  .dock { gap: 6px 8px; padding: 4px 6px; }
+  .dock { gap: 6px 8px; padding: 4px 3.5em 4px 6px; }
+  .toggle { right: 6px; bottom: 4px; }
   .dock input[type="range"] { width: 6em; }
 }
 .pillWrap { position: relative; display: inline-block; }
@@ -57,3 +60,31 @@
 }
 .dock[data-collapsed="true"] .pill:hover .label, .dock[data-collapsed="true"] .pill:focus-visible .label { display: block; }
 .dock[data-collapsed="true"] { background: transparent; border-top: 0; }
+/* Help line (R6.8). Expanded: a band directly above the dock, overlaying the page edge like the status strip
+   (which covers it while a message shows), so showing it never moves the dock or the controls. */
+.help {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 100%;
+  margin: 0;
+  padding: 0.2em 10px;
+  color: var(--muted);
+  background: var(--bg);
+  border-top: 1px solid var(--gold);
+  pointer-events: none;
+}
+.help:empty { visibility: hidden; }
+/* Collapsed: an overlay beside the dot, above the page, never taking clicks or space. */
+.dock[data-collapsed="true"] .help {
+  left: 2.2em;
+  right: auto;
+  bottom: 0.3em;
+  z-index: 9;
+  max-width: calc(100vw - 7em);
+  padding: 0.2em 0.6em;
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 0.4em;
+}
+.dock[data-collapsed="true"] .help:empty { display: none; }

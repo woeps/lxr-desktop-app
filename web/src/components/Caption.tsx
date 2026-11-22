@@ -1,6 +1,7 @@
-import { applyStyle } from "../visual/css";
+import { help } from "../state/help";
+import styles from "./Dock.module.css";
 
-/** The line under the journey that names the path of the row being pointed at (design 4.12.9). */
-export const Caption = (props: { text: string }) => (
-  <p data-part="caption" aria-live="polite" ref={(el: HTMLElement) => applyStyle(el, { "min-height": "1.4em", margin: "8px 0 0" })}>{props.text}</p>
+/** The help line that names the path of the row being pointed at (design 4.12.9). It lives in the dock (R6.8). */
+export const Caption = () => (
+  <p class={styles.help} data-part="caption" aria-live="polite">{help()}</p>
 );

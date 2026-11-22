@@ -2,6 +2,7 @@ import { For, onSettled, Show } from "solid-js";
 import { useApp } from "../state/app";
 import { trackHeight } from "../visual/layout";
 import { guardOutput, useShell } from "../state/shell";
+import { Caption } from "./Caption";
 import { ConnectionPill } from "./ConnectionPill";
 import { RuneStone } from "./RuneStone";
 import { SLOT_COLORS, SLOT_NAMES } from "./voices";
@@ -50,11 +51,12 @@ export function Dock() {
         </button>
         <button type="button" class={controls.btn} onClick={() => panic()}>Panic</button>
       </Show>
-      <button type="button" class={controls.btn} aria-expanded={collapsed() ? "false" : "true"}
+      <button type="button" class={`${controls.btn} ${styles.toggle}`} aria-expanded={collapsed() ? "false" : "true"}
         aria-label={collapsed() ? "Expand dock" : "Collapse dock"}
         onClick={() => settings.set({ dockCollapsed: !collapsed() })}>
         {collapsed() ? "▴" : "▾"}
       </button>
+      <Caption />
     </div>
   );
 }

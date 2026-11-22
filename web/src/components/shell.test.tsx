@@ -8,6 +8,7 @@ import { App } from "../App";
 import { PARAMS } from "../generated/params";
 import { factory } from "../model/sound";
 import { createApp, type App as AppState } from "../state/app";
+import { setHelp } from "../state/help";
 import { NOTICE_NOT_SEEN, NOTICE_ONE_WAY } from "./notices";
 
 let host: HTMLElement;
@@ -366,5 +367,18 @@ describe("dock and connection pill", () => {
     expect(sent.length).toBeGreaterThan(0);
     click(named("Expand dock"));
     expect(host.querySelector("[aria-label='Trigger Snare']")).not.toBeNull();
+  });
+
+  it("shows the help line inside the dock, expanded and collapsed, as one live region (R6.8)", () => {
+    mountDock(false);
+    const line = () => host.querySelector("[role=group][aria-label=Audition] [data-part=caption]")!;
+    expect(line().getAttribute("aria-live")).toBe("polite");
+    expect(line().textContent).toBe("");
+    setHelp("cutoff shapes Filter."); flush();
+    expect(line().textContent).toBe("cutoff shapes Filter.");
+    click(named("Collapse dock"));
+    expect(line().textContent).toBe("cutoff shapes Filter.");
+    expect(host.querySelectorAll("[data-part=caption]")).toHaveLength(1);
+    setHelp(""); flush();
   });
 });
