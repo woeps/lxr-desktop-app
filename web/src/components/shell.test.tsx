@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { render } from "@solidjs/web";
 import { createSignal, flush } from "solid-js";
 import { Popover } from "./Popover";
@@ -6,6 +6,7 @@ import { SplitButton } from "./SplitButton";
 import { readFileSync } from "node:fs";
 import { App } from "../App";
 import { PARAMS } from "../generated/params";
+import { factory } from "../model/sound";
 import { createApp, type App as AppState } from "../state/app";
 import { NOTICE_NOT_SEEN, NOTICE_ONE_WAY } from "./notices";
 
@@ -201,10 +202,10 @@ describe("AppBar", () => {
     mountApp();
     click(byLabel("Library"));
     expect(byLabel("Library").getAttribute("aria-pressed")).toBe("true");
-    expect(host.querySelector("aside[aria-label='Grimoire']")).not.toBeNull();
+    expect(host.querySelector("aside[aria-label='Library']")).not.toBeNull();
     click(byLabel("Import presets"));
-    expect(host.querySelector("aside[aria-label='Grimoire']")).toBeNull();
-    expect(host.querySelector("aside[aria-label='Preset importer']")).not.toBeNull();
+    expect(host.querySelector("aside[aria-label='Library']")).toBeNull();
+    expect(host.querySelector("aside[aria-label='Import presets']")).not.toBeNull();
     click(byLabel("Import presets"));
     expect(host.querySelector("aside")).toBeNull();
   });
@@ -246,5 +247,61 @@ describe("AppBar", () => {
 
   it("wraps to two lines below 1100 px without hiding anything (flex-wrap)", () => {
     expect(readFileSync("src/components/AppBar.module.css", "utf8")).toMatch(/\.bar\s*\{[^}]*flex-wrap:\s*wrap/);
+  });
+});
+
+describe("side panels", () => {
+  let app: AppState;
+  beforeEach(() => {
+    localStorage.clear();
+    app = createApp({ storage: localStorage, env: { isSecureContext: true, requestMIDIAccess: undefined },
+      clock: { now: () => 0, setTimeout: () => 1, clearTimeout: () => {} }, rng: () => 0.5 });
+    mount(() => <App app={app} />);
+  });
+  const icon = (l: string) => host.querySelector<HTMLButtonElement>(`button[aria-label="${l}"]`)!;
+  const panels = () => [...host.querySelectorAll("aside[role=complementary]")].map((a) => a.getAttribute("aria-label"));
+  const esc = (el: Element) => { el.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true })); flush(); };
+
+  it("is a complementary region named like its icon, with focus moved in and back", () => {
+    icon("Import presets").focus();
+    click(icon("Import presets"));
+    expect(panels()).toEqual(["Import presets"]);
+    expect(document.activeElement).toBe(host.querySelector("aside button[aria-label='Close Import presets']"));
+    esc(document.activeElement!);
+    expect(panels()).toEqual([]);
+    expect(document.activeElement).toBe(icon("Import presets"));
+  });
+
+  it("holds one panel at a time and has an X but no bottom Close", () => {
+    click(icon("Library"));
+    click(icon("Import presets"));
+    expect(panels()).toEqual(["Import presets"]);
+    expect(document.activeElement).toBe(host.querySelector("aside button[aria-label='Close Import presets']"));
+    expect([...host.querySelectorAll("aside button")].some((b) => b.textContent!.trim() === "Close")).toBe(false);
+    click(host.querySelector("aside button[aria-label='Close Import presets']")!);
+    expect(panels()).toEqual([]);
+  });
+
+  it("closes on a press outside, not on a press inside", () => {
+    click(icon("Import presets"));
+    host.querySelector("aside")!.dispatchEvent(new Event("pointerdown", { bubbles: true }));
+    flush();
+    expect(panels()).toEqual(["Import presets"]);
+    document.body.dispatchEvent(new Event("pointerdown", { bubbles: true }));
+    flush();
+    expect(panels()).toEqual([]);
+  });
+
+  it("Escape closes a nested dialog first, then the panel", () => {
+    app.library.add("Alpha", factory("Alpha"));
+    app.session.applyChanges([[PARAMS[0]!.id, 0, 1]]);
+    click(icon("Library"));
+    click([...host.querySelectorAll<HTMLButtonElement>("aside button")].find((b) => b.textContent === "Load Alpha")!);
+    const dlg = host.querySelector("[role=alertdialog]")!;
+    esc(dlg);
+    expect(host.querySelector("[role=alertdialog]")).toBeNull();
+    expect(panels()).toEqual(["Library"]);
+    esc(host.querySelector("aside")!);
+    expect(panels()).toEqual([]);
   });
 });

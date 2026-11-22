@@ -6,14 +6,15 @@ import { useApp } from "../state/app";
 import type { Importer } from "../state/importer";
 import { nameError, NAME_MAX } from "../state/library";
 import { ConfirmDialog } from "./ConfirmDialog";
+import { SidePanel } from "./SidePanel";
 
 const isSnd = (path: string) => path.toUpperCase().endsWith(".SND");
 
 /**
- * The preset importer drawer (R1, R2, R3, R4, R5.2, R5.4): open a kit folder or files, step through
+ * The Import presets panel (R1, R2, R3, R4, R5.2, R5.4): open a kit folder or files, step through
  * the presets and send each one live. Text only goes through text nodes.
  */
-export function PresetImporter(props: { importer: Importer; onClose: () => void }) {
+export function ImportPanel(props: { importer: Importer }) {
   const app = useApp();
   const imp = props.importer;
   const [message, setMessage] = createSignal<string | null>(null);
@@ -70,9 +71,7 @@ export function PresetImporter(props: { importer: Importer; onClose: () => void 
   const selectingName = () => imp.state.presets.find((p) => p.key === selecting())?.name ?? "";
 
   return (
-    <aside aria-label="Preset importer"
-      onKeyDown={(e) => { if (e.key === "Escape" && !replacing() && !selecting()) props.onClose(); }}>
-      <h2>Preset importer</h2>
+    <SidePanel title="Import presets" glyph="import">
       <div>
         <label>Open folder…{" "}
           <input type="file" aria-label="Open folder" webkitdirectory
@@ -126,7 +125,6 @@ export function PresetImporter(props: { importer: Importer; onClose: () => void 
       </ul>
       <button type="button" disabled={!canAdd()} onClick={() => { if (imp.addTicked() === "confirm") setReplacingSounds(true); }}>Add ticked to library</button>
       <Show when={imp.state.result}>{(m) => <p role="status" data-testid="importer-result">{m()}</p>}</Show>
-      <button type="button" onClick={props.onClose}>Close</button>
       <Show when={replacing()}>
         {(files) => (
           <ConfirmDialog title="Replace list" confirmLabel="Replace list" onCancel={() => setReplacing(null)}
@@ -149,6 +147,6 @@ export function PresetImporter(props: { importer: Importer; onClose: () => void 
           </ConfirmDialog>
         )}
       </Show>
-    </aside>
+    </SidePanel>
   );
 }

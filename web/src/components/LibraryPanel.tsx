@@ -3,8 +3,11 @@ import { download } from "../files/download";
 import { exportJson } from "../files/json";
 import { useApp } from "../state/app";
 import { isDirty } from "../state/dirty";
-import { nameError, NAME_MAX, toSound, type LibrarySound, type LibraryResult, type SortKey } from "../state/library";
+import { toSound, type LibrarySound, type LibraryResult, type SortKey } from "../state/library";
 import { ConfirmDialog } from "./ConfirmDialog";
+import { RenameDialog } from "./RenameDialog";
+import { SidePanel } from "./SidePanel";
+import styles from "./Panel.module.css";
 
 /** Libraries whose renamed-on-load notice was already shown (R3.3: once). */
 const noticeShown = new WeakSet<object>();
@@ -12,16 +15,15 @@ const day = (iso: string) => iso.slice(0, 16).replace("T", " ");
 const fileName = (name: string) => `${name.replace(/[^A-Za-z0-9_-]+/g, "_") || "sound"}.json`;
 
 /**
- * The sound library as a drawer (R6, design 4.7): list, sort, filter, tags, Load, Send, Rename,
+ * The sound library panel (R5.5): list, sort, filter, tags, Load, Send, Rename,
  * Delete, Export and the entry to Import.
  */
-export function Grimoire(props: { onClose: () => void; onImport: () => void }) {
+export function LibraryPanel(props: { onImport: () => void }) {
   const app = useApp();
   const { library, session } = app;
   const [sort, setSort] = createSignal<SortKey>("name");
   const [filter, setFilter] = createSignal("");
   const [renaming, setRenaming] = createSignal<string | null>(null);
-  const [renameText, setRenameText] = createSignal("");
   const [tagText, setTagText] = createSignal<Record<string, string>>({});
   const [deleting, setDeleting] = createSignal<LibrarySound | null>(null);
   const [loading, setLoading] = createSignal<LibrarySound | null>(null);
@@ -41,14 +43,6 @@ export function Grimoire(props: { onClose: () => void; onImport: () => void }) {
     session.load(toSound(e), e.id);
     setError(null);
   }
-  function startRename(e: LibrarySound) { setRenaming(e.id); setRenameText(e.name); setError(null); }
-  function saveRename(id: string) {
-    const bad = nameError(renameText());
-    if (bad) return setError(bad);
-    const r = library.rename(id, renameText());
-    report(r);
-    if (r.ok) setRenaming(null);
-  }
   function addTag(id: string) {
     const r = library.addTag(id, tagText()[id] ?? "");
     report(r);
@@ -56,8 +50,7 @@ export function Grimoire(props: { onClose: () => void; onImport: () => void }) {
   }
 
   return (
-    <aside aria-label="Grimoire" onKeyDown={(e) => { if (e.key === "Escape" && !deleting() && !loading()) props.onClose(); }}>
-      <h2>Grimoire <small>sound library</small></h2>
+    <SidePanel title="Library" glyph="library">
       <p data-testid="storage-warning">
         The library lives in this browser's storage, which the browser can clear. Export the library
         to keep a backup.
@@ -85,13 +78,10 @@ export function Grimoire(props: { onClose: () => void; onImport: () => void }) {
       <ul>
         <For each={rows()}>
           {(e) => (
-            <li data-sound={e.name}>
-              <Show when={renaming() === e.id} fallback={<strong>{e.name}</strong>}>
-                <input aria-label={`New name for ${e.name}`} maxlength={NAME_MAX * 4} value={renameText()}
-                  onInput={(ev) => setRenameText(ev.currentTarget.value)}
-                  onKeyDown={(ev) => { if (ev.key === "Enter") saveRename(e.id); }} />
-                <button type="button" onClick={() => saveRename(e.id)}>Save name</button>
-                <button type="button" onClick={() => setRenaming(null)}>Cancel rename</button>
+            <li data-sound={e.name} class={styles.row}>
+              <strong>{e.name}</strong>
+              <Show when={renaming() === e.id}>
+                <RenameDialog entry={e} onClose={() => setRenaming(null)} />
               </Show>
               <div>created {day(e.created)} · modified {day(e.modified)}</div>
               <div>
@@ -106,7 +96,7 @@ export function Grimoire(props: { onClose: () => void; onImport: () => void }) {
               <div>
                 <button type="button" onClick={() => (dirty() ? setLoading(e) : load(e))}>{`Load ${e.name}`}</button>
                 <button type="button" disabled={!app.hasOutput() || app.busy()} onClick={() => app.sendSound(toSound(e).values)}>{`Send ${e.name} to module`}</button>
-                <button type="button" onClick={() => startRename(e)}>{`Rename ${e.name}`}</button>
+                <button type="button" onClick={() => { setRenaming(e.id); setError(null); }}>{`Rename ${e.name}`}</button>
                 <button type="button" onClick={() => setDeleting(e)}>{`Delete ${e.name}`}</button>
                 <button type="button" onClick={() => download(fileName(e.name), exportJson([e]), "application/json")}>{`Export ${e.name}`}</button>
               </div>
@@ -117,7 +107,6 @@ export function Grimoire(props: { onClose: () => void; onImport: () => void }) {
       <button type="button" disabled={library.sounds.length === 0}
         onClick={() => download("lxr-library.json", exportJson(library.sounds), "application/json")}>Export library</button>
       <button type="button" onClick={props.onImport}>Import…</button>
-      <button type="button" onClick={props.onClose}>Close Grimoire</button>
       <Show when={deleting()}>
         {(e) => (
           <ConfirmDialog title="Delete sound" confirmLabel="Delete" onCancel={() => setDeleting(null)}
@@ -134,6 +123,6 @@ export function Grimoire(props: { onClose: () => void; onImport: () => void }) {
           </ConfirmDialog>
         )}
       </Show>
-    </aside>
+    </SidePanel>
   );
 }

@@ -63,7 +63,7 @@ function type(el: HTMLInputElement, v: string) {
 }
 const names = () => [...host.querySelectorAll("li[data-sound]")].map((li) => li.getAttribute("data-sound"));
 const byLabel = (l: string) => host.querySelector<HTMLElement>(`button[aria-label="${l}"]`)!;
-const openGrimoire = () => click(byLabel("Library"));
+const openLibrary = () => click(byLabel("Library"));
 
 const WIDE = PARAMS.find((p) => p.max - p.min >= 20)!;
 function sound(name: string, v0 = 0) {
@@ -89,13 +89,13 @@ beforeEach(() => {
 });
 afterEach(() => { dispose(); host.remove(); vi.restoreAllMocks(); });
 
-describe("Grimoire", () => {
+describe("LibraryPanel", () => {
   it("warns about storage, shows an empty list and closes", async () => {
     await mount();
-    openGrimoire();
+    openLibrary();
     expect(host.querySelector("[data-testid=storage-warning]")!.textContent).toContain("can clear");
     expect(host.querySelector("[data-testid=library-empty]")).toBeTruthy();
-    click(button("Close Grimoire"));
+    click(byLabel("Close Library"));
     expect(host.querySelector("aside")).toBeNull();
   });
 
@@ -103,7 +103,7 @@ describe("Grimoire", () => {
     await mount();
     app.library.add("Bravo", sound("Bravo"), ["kick"]);
     app.library.add("Alpha", sound("Alpha"), ["snare"]);
-    openGrimoire();
+    openLibrary();
     expect(names()).toEqual(["Alpha", "Bravo"]);
     type(input("Filter by name or tag"), "kic");
     expect(names()).toEqual(["Bravo"]);
@@ -115,7 +115,7 @@ describe("Grimoire", () => {
   it("loads a sound and sends it in full when nothing is unsaved", async () => {
     await mount();
     app.library.add("Alpha", sound("Alpha", 5));
-    openGrimoire();
+    openLibrary();
     click(button("Load Alpha"));
     expect(host.querySelector("[role=alertdialog]")).toBeNull();
     expect(app.session.state.current.name).toBe("Alpha");
@@ -128,7 +128,7 @@ describe("Grimoire", () => {
     await mount();
     app.library.add("Alpha", sound("Alpha", 5));
     app.session.applyChanges([[WIDE.id, 0, 19]]);
-    openGrimoire();
+    openLibrary();
     click(button("Load Alpha"));
     expect(host.querySelector("[role=alertdialog]")!.textContent).toContain("not saved");
     click(button("Cancel"));
@@ -142,7 +142,7 @@ describe("Grimoire", () => {
   it("sends a library sound without making it current", async () => {
     await mount();
     app.library.add("Alpha", sound("Alpha", 5));
-    openGrimoire();
+    openLibrary();
     const before = app.session.state.current.name;
     click(button("Send Alpha to module"));
     advance(2000);
@@ -154,27 +154,29 @@ describe("Grimoire", () => {
   it("disables Send without an output", async () => {
     await mount(false);
     app.library.add("Alpha", sound("Alpha"));
-    openGrimoire();
+    openLibrary();
     expect(button("Send Alpha to module").disabled).toBe(true);
   });
 
   it("renames, refusing a bad name", async () => {
     await mount();
     app.library.add("Alpha", sound("Alpha"));
-    openGrimoire();
+    openLibrary();
     click(button("Rename Alpha"));
-    type(input("New name for Alpha"), "far too long name");
-    click(button("Save name"));
-    expect(host.querySelector("[role=alert]")!.textContent).toMatch(/at most 8/);
-    type(input("New name for Alpha"), "Zulu");
-    click(button("Save name"));
+    expect(host.querySelector("[role=dialog][aria-label='Rename sound']")).not.toBeNull();
+    type(input("New name"), "far too long name");
+    expect(host.querySelector("[data-testid=rename-error]")!.textContent).toMatch(/at most 8/);
+    expect(button("Rename").disabled).toBe(true);
+    type(input("New name"), "Zulu");
+    click(button("Rename"));
     expect(names()).toEqual(["Zulu"]);
+    expect(app.session.state.current.name).not.toBe("Zulu"); // Alpha is not the loaded sound
   });
 
   it("deletes only after confirmation", async () => {
     await mount();
     app.library.add("Alpha", sound("Alpha"));
-    openGrimoire();
+    openLibrary();
     expect(Array.from(host.querySelectorAll("button")).some((b) => /^Duplicate/.test(b.textContent ?? ""))).toBe(false);
     click(button("Delete Alpha"));
     click(button("Cancel"));
@@ -190,18 +192,18 @@ describe("Grimoire", () => {
     const e = (id: string, created: string) => ({ id, name: "Kick", tags: [], created, modified: created, params: {} });
     localStorage.setItem("lxr.library.v1", JSON.stringify({ version: 1, sounds: [e("a", "1"), e("b", "2"), e("c", "3")] }));
     await mount(false);
-    openGrimoire();
+    openLibrary();
     expect(host.querySelector("[data-testid=renamed-notice]")!.textContent).toBe("2 sounds were renamed because names must be unique.");
     expect(names().sort()).toEqual(["Kick", "Kick2", "Kick3"]);
-    click(button("Close Grimoire"));
-    openGrimoire();
+    click(byLabel("Close Library"));
+    openLibrary();
     expect(host.querySelector("[data-testid=renamed-notice]")).toBeNull();
   });
 
   it("adds and removes tags", async () => {
     await mount();
     app.library.add("Alpha", sound("Alpha"));
-    openGrimoire();
+    openLibrary();
     type(input("New tag for Alpha"), "bass");
     click(button("Add tag to Alpha"));
     expect(app.library.sounds[0]!.tags).toEqual(["bass"]);
@@ -212,7 +214,7 @@ describe("Grimoire", () => {
   it("exports one sound and the whole library as files", async () => {
     await mount(false);
     app.library.add("Alpha", sound("Alpha"));
-    openGrimoire();
+    openLibrary();
     click(button("Export Alpha"));
     click(button("Export library"));
     expect(downloads.map((d) => d.name)).toEqual(["Alpha.json", "lxr-library.json"]);
@@ -220,7 +222,7 @@ describe("Grimoire", () => {
 });
 
 describe("ImportDialog", () => {
-  const open = () => { openGrimoire(); click(button("Import…")); };
+  const open = () => { openLibrary(); click(button("Import…")); };
 
   it("lists a JSON file, changes nothing until confirmed, then adds the ticked sounds", async () => {
     await mount(false);

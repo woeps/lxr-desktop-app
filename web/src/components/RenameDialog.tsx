@@ -33,8 +33,11 @@ export function RenameDialog(props: { entry: LibrarySound; onClose: () => void }
     const name = clean();
     const r = library.rename(props.entry.id, name);
     if (!r.ok) { status.say({ kind: "error", text: r.error }); return; }
-    session.setName(name);
-    session.renameBaseline(name);
+    // The current sound follows only when the renamed entry is the loaded one.
+    if (props.entry.id === session.state.libraryId) {
+      session.setName(name);
+      session.renameBaseline(name);
+    }
     status.say({ kind: "success", text: `Renamed '${props.entry.name}' to '${name}'.` });
     props.onClose();
   }

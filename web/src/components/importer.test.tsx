@@ -6,7 +6,8 @@ import { exportSnd } from "../files/snd";
 import { factory } from "../model/sound";
 import { AppContext, createApp, type App as AppState } from "../state/app";
 import { createImporter, type Importer } from "../state/importer";
-import { PresetImporter } from "./PresetImporter";
+import { ImportPanel } from "./ImportPanel";
+import { ShellContext, createShell } from "../state/shell";
 
 let host: HTMLElement;
 let dispose: () => void;
@@ -45,7 +46,7 @@ async function mount(connect: boolean) {
   imp = createImporter(app, clock);
   host = document.createElement("div");
   document.body.appendChild(host);
-  dispose = render(() => <AppContext value={app}><PresetImporter importer={imp} onClose={() => {}} /></AppContext>, host);
+  dispose = render(() => <AppContext value={app}><ShellContext value={createShell()}><ImportPanel importer={imp} /></ShellContext></AppContext>, host);
   flush();
   if (connect) {
     await app.conn.connect();
@@ -82,7 +83,7 @@ const kitFolder = () => {
 
 afterEach(() => { dispose(); host.remove(); });
 
-describe("PresetImporter", () => {
+describe("ImportPanel", () => {
   beforeEach(() => mount(true));
 
   it("lists a folder with its summary line", async () => {
@@ -198,7 +199,7 @@ describe("PresetImporter", () => {
   });
 });
 
-describe("PresetImporter without an output", () => {
+describe("ImportPanel without an output", () => {
   beforeEach(() => mount(false));
   it("disables Send again", async () => {
     await pick("Open files", [snd("Aaa", 1)]);

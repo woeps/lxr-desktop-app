@@ -2,11 +2,11 @@ import { createSignal, onCleanup, Show } from "solid-js";
 import { AppBar } from "./components/AppBar";
 import { AuditionBar } from "./components/AuditionBar";
 import { ConnectBar } from "./components/ConnectBar";
-import { Footer } from "./components/Footer";
-import { Grimoire } from "./components/Grimoire";
 import { ImportDialog } from "./components/ImportDialog";
+import { ImportPanel } from "./components/ImportPanel";
+import { LibraryPanel } from "./components/LibraryPanel";
 import { MidiSetupDialog } from "./components/MidiSetupDialog";
-import { PresetImporter } from "./components/PresetImporter";
+import { Footer } from "./components/Footer";
 import { StoreDialog } from "./components/StoreDialog";
 import { TransferStatus } from "./components/TransferStatus";
 import { ShieldRow } from "./components/ShieldRow";
@@ -40,7 +40,7 @@ export function App(props: { app?: AppState }) {
   const [importing, setImporting] = createSignal(false);
   const shell = createShell();
   const status = createStatus();
-  // Created once so the list and selection survive closing and reopening the drawer.
+  // Created once so the list and selection survive closing and reopening the panel.
   const importer = createImporter(app);
 
   return (
@@ -51,8 +51,8 @@ export function App(props: { app?: AppState }) {
         <ConnectBar />
         <AppBar onSeal={() => setSealing(true)} />
         <Show when={sealing()}><StoreDialog onClose={() => setSealing(false)} /></Show>
-        <Show when={shell.panel() === "library"}><Grimoire onClose={() => shell.close()} onImport={() => setImporting(true)} /></Show>
-        <Show when={shell.panel() === "import"}><PresetImporter importer={importer} onClose={() => shell.close()} /></Show>
+        <Show when={shell.panel() === "library"}><LibraryPanel onImport={() => setImporting(true)} /></Show>
+        <Show when={shell.panel() === "import"}><ImportPanel importer={importer} /></Show>
         <Show when={importing()}><ImportDialog onClose={() => setImporting(false)} /></Show>
         <Show when={shell.panel() === "settings"}><MidiSetupDialog onClose={() => shell.close()} /></Show>
         <TransferStatus />

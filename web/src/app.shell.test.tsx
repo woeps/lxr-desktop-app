@@ -196,10 +196,10 @@ describe("with a MIDI output", () => {
   });
 });
 
-describe("preset importer drawer", () => {
+describe("Import presets panel", () => {
   beforeEach(() => mount());
   const toggle = () => click([...host.querySelectorAll("button")].find((b) => b.getAttribute("aria-label") === "Import presets")!);
-  const drawer = () => host.querySelector("aside[aria-label='Preset importer']");
+  const drawer = () => host.querySelector("aside[aria-label='Import presets']");
 
   it("opens and closes from the toolbar and keeps its list while closed", async () => {
     expect(drawer()).toBeNull();

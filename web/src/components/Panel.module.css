@@ -1,0 +1,17 @@
+/* Side panel styles (design 4.3). Colours are tokens only. */
+.panel {
+  position: fixed; top: 3em; right: 0; bottom: 4em; z-index: 5;
+  width: 320px; max-width: 100%; overflow-y: auto;
+  background: var(--bg); border-left: 1px solid var(--line);
+  animation: slide 160ms ease-out;
+}
+@keyframes slide { from { transform: translateX(100%); } to { transform: none; } }
+@media (prefers-reduced-motion: reduce) { .panel { animation: none; } }
+@media (max-width: 480px) { .panel { width: 100%; } }
+.header { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-bottom: 1px solid var(--line); }
+.glyph { display: inline-flex; }
+.title { flex: 1; margin: 0; font-size: 1.1em; }
+.x { font: inherit; color: var(--text); background: var(--bg); border: 1px solid var(--line); border-radius: 0.4em; cursor: pointer; }
+.x:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+.body { padding: 6px 10px; }
+.row { position: relative; }
