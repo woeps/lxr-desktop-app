@@ -1,25 +1,59 @@
-.bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 6px 10px; border-bottom: 1px solid var(--line); }
-.bar button, .bar select, .bar input { font: inherit; color: var(--text); background: var(--bg); border: 1px solid var(--line); border-radius: 0.4em; }
-.bar button { cursor: pointer; padding: 0.2em 0.7em; }
-.bar button:disabled { opacity: 0.6; cursor: not-allowed; }
-.bar button:focus-visible, .shield:focus-visible, .stone:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
-.grow { flex: 1 1 20em; color: var(--muted); font-size: 0.9em; }
-.shieldRow { display: flex; align-items: center; gap: 8px; padding: 6px 10px; flex-wrap: wrap; }
-.shields { display: flex; gap: 6px; }
+/* Page layout, shield row, voice page, rune stones and status strip (R9). Colours are tokens only. */
+
+/* The scrolling area. The fixed dock and strip cover its bottom edge, so it pads by their height. */
+.layout { min-width: 0; padding-bottom: calc(var(--dock-h, 4em) + var(--strip-h)); }
+.top { position: sticky; top: 0; z-index: 7; }
+
+/* Status strip: the last row of the page, below the dock. Always reserved, so showing it moves nothing. */
+.strip {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 8;
+  box-sizing: border-box;
+  height: var(--strip-h);
+  display: flex;
+  align-items: center;
+  gap: 8px 12px;
+  padding: 2px 10px;
+  overflow-y: auto;
+  font-size: 0.9em;
+  background: var(--bg);
+  border-top: 1px solid var(--line);
+  animation: stripIn 160ms ease-out;
+}
+.strip > span { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; min-width: 0; }
+.strip > button:last-child { margin-left: auto; }
+.strip progress { width: 10em; max-width: 40vw; accent-color: var(--gold); }
+.strip button { font: inherit; padding: 0.1em 0.7em; color: var(--text); background: var(--bg); border: 1px solid var(--line); border-radius: 0.4em; cursor: pointer; }
+.strip button:disabled { color: var(--muted); cursor: not-allowed; }
+.strip button:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+.strip [role="alert"] { color: var(--contested); }
+@keyframes stripIn { from { transform: translateY(100%); } to { transform: none; } }
+
+.shieldRow { display: flex; align-items: center; gap: 8px 12px; padding: 6px 10px; flex-wrap: wrap; }
+.shields { display: flex; flex-wrap: wrap; gap: 6px; }
 .shieldWrap { position: relative; display: inline-flex; align-items: center; gap: 2px; }
-.dice, .amountBtn { font: inherit; display: inline-flex; align-items: center; padding: 0.2em 0.35em; color: var(--text); background: var(--bg); border: 1px solid var(--shield); border-radius: 0.4em; cursor: pointer; }
+.dice, .amountBtn { font: inherit; display: inline-flex; align-items: center; padding: 0.2em 0.35em; color: var(--text); background: var(--bg); border: 1px solid var(--voice); border-radius: 0.4em; cursor: pointer; }
 .dice { opacity: 0; }
 .shieldWrap[data-selected="true"] .dice, .shieldWrap:hover .dice, .shieldWrap:focus-within .dice { opacity: 1; }
-.dice:focus-visible, .amountBtn:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+.shield:focus-visible, .dice:focus-visible, .amountBtn:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
 .amount { position: relative; display: inline-flex; }
 .amountLabel { display: flex; align-items: center; gap: 0.5em; white-space: nowrap; }
 .rollAllAmount { color: var(--muted); font-size: 0.9em; }
 .shield { font: inherit; display: inline-flex; gap: 4px; align-items: center; padding: 0.3em 0.9em; color: var(--text); background: var(--bg); border: 2px solid var(--shield); border-radius: 0.3em 0.3em 1.2em 1.2em; cursor: pointer; }
-.shield[aria-selected="true"] { background: var(--shield); color: #000; }
+.shield[aria-selected="true"] { background: var(--shield); color: var(--bg); }
 .count { min-width: 1em; font-size: 0.8em; }
-.page { padding: 6px 10px; }
-.box { border: 1px solid var(--line); margin: 6px 0; }
-.box legend { color: var(--voice); text-transform: capitalize; }
-.stone { font: inherit; width: 3em; height: 3em; color: #000; background: var(--stone); border: 2px solid var(--text); border-radius: 40% 60% 50% 50%; cursor: pointer; }
+
+.page { padding: 6px 10px; min-width: 0; }
+.stone { font: inherit; flex: none; width: 3em; height: 3em; color: var(--bg); background: var(--stone); border: 2px solid var(--text); border-radius: 40% 60% 50% 50%; cursor: pointer; }
+.stone:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
 .stone:disabled { opacity: 0.5; cursor: not-allowed; }
 .stoneKey { font-weight: bold; }
+
+@media (max-width: 600px) {
+  .stone { width: 2.4em; height: 2.4em; }
+  .shieldRow { padding: 6px; }
+  .page { padding: 6px; }
+}

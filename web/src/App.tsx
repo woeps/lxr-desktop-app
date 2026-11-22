@@ -1,4 +1,4 @@
-import { createEffect, createSignal, onCleanup, Show } from "solid-js";
+import { createEffect, createSignal, onCleanup, onSettled, Show } from "solid-js";
 import { AppBar } from "./components/AppBar";
 import { Dock } from "./components/Dock";
 import { ImportDialog } from "./components/ImportDialog";
@@ -15,6 +15,8 @@ import { createImporter } from "./state/importer";
 import { SessionContext } from "./state/session";
 import { createShell, guardOutput, ShellContext } from "./state/shell";
 import { createStatus, StatusContext } from "./state/status";
+import { trackHeight } from "./visual/layout";
+import styles from "./components/Shell.module.css";
 
 /** Page shell (design 4.9). `app` is injectable for tests. */
 export function App(props: { app?: AppState }) {
@@ -38,6 +40,14 @@ export function App(props: { app?: AppState }) {
   window.addEventListener("pagehide", onPageHide);
   onCleanup(() => window.removeEventListener("pagehide", onPageHide));
 
+  // R9.5: the pauseMotion setting switches off slides and fades like prefers-reduced-motion does.
+  createEffect(() => app.settings.state.pauseMotion, (p) => {
+    document.documentElement.dataset.reduceMotion = p ? "true" : "false";
+  });
+  // The side panels start under the app bar, which wraps on narrow widths.
+  let top: HTMLElement | undefined;
+  onSettled(() => (top ? trackHeight(top, "--bar-h") : undefined));
+
   const [sealing, setSealing] = createSignal(false);
   const [importing, setImporting] = createSignal(false);
   const status = createStatus();
@@ -60,7 +70,10 @@ export function App(props: { app?: AppState }) {
       <SessionContext value={app.session}>
        <ShellContext value={shell}>
         <StatusContext value={status}>
-        <AppBar onSeal={guardOutput(app, shell, () => setSealing(true))} />
+        <div class={styles.layout}>
+        <header ref={top} class={styles.top}>
+          <AppBar onSeal={guardOutput(app, shell, () => setSealing(true))} />
+        </header>
         <Show when={sealing()}><StoreDialog onClose={() => setSealing(false)} /></Show>
         <Show when={shell.panel() === "library"}><LibraryPanel onImport={() => setImporting(true)} /></Show>
         <Show when={shell.panel() === "import"}><ImportPanel importer={importer} /></Show>
@@ -69,6 +82,7 @@ export function App(props: { app?: AppState }) {
         <Show when={shell.panel() === "info"}><InfoPanel /></Show>
         <ShieldRow />
         <VoicePage />
+        </div>
         <Dock />
         <StatusStrip />
         </StatusContext>

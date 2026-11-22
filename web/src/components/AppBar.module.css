@@ -1,6 +1,11 @@
-/* App bar styles (design 4.6). Colours are tokens only. Task 11.1 adds the bar layout itself. */
-.bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 6px 10px; border-bottom: 1px solid var(--line); }
-.grow { flex: 1 1 0; }
+/* App bar styles (design 4.6). Colours are tokens only. */
+.bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 6px 10px; border-bottom: 1px solid var(--line); background: var(--bg); }
+/* The spacer pushes the four panel icons to the right edge; on a wrapped row it collapses. */
+.grow { flex: 1 1 0; min-width: 0; }
+@media (max-width: 600px) {
+  .bar { gap: 6px; padding: 6px; }
+  .nameInput { width: 7ch; }
+}
 .name { position: relative; display: inline-flex; align-items: center; gap: 6px; }
 .nameInput {
   font: inherit;

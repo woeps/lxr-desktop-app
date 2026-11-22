@@ -1,17 +1,27 @@
-/* Dock and connection pill (R6). Colours are tokens only. */
+/* Dock and connection pill (R6). Colours are tokens only. The dock sits above the strip row. */
 .dock {
   position: fixed;
   left: 0;
   right: 0;
-  bottom: 0;
-  z-index: 5;
+  bottom: var(--strip-h);
+  z-index: 6;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
+  gap: 8px 12px;
   padding: 6px 10px;
   background: var(--bg);
-  border-top: 1px solid var(--line);
+  border-top: 1px solid var(--gold);
+}
+.dock label { display: inline-flex; align-items: center; gap: 0.4em; }
+.dock input[type="range"] { width: 8em; min-width: 0; accent-color: var(--voice); }
+.dock output { min-width: 2.2em; color: var(--muted); }
+.dock kbd { font: inherit; padding: 0 0.3em; border: 1px solid var(--line); border-radius: 0.3em; }
+/* The collapse button stays on the right edge when the dock is wide. */
+.dock > button:last-child { margin-left: auto; }
+@media (max-width: 600px) {
+  .dock { gap: 6px 8px; padding: 4px 6px; }
+  .dock input[type="range"] { width: 6em; }
 }
 .pillWrap { position: relative; display: inline-block; }
 .pill {
@@ -19,6 +29,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.4em;
+  max-width: 100%;
   padding: 0.2em 0.7em;
   color: var(--text);
   background: var(--bg);
@@ -26,6 +37,7 @@
   border-radius: 1em;
   cursor: pointer;
 }
-.dot { width: 0.6em; height: 0.6em; border-radius: 50%; border: 1px solid var(--text); }
+.pill:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+.dot { width: 0.6em; height: 0.6em; flex: none; border-radius: 50%; border: 1px solid var(--text); }
 .dot[data-on="true"] { background: var(--text); }
-.connection { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; padding: 6px; max-width: 24em; white-space: normal; }
+.connection { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; padding: 6px; width: max-content; max-width: min(24em, calc(100vw - 20px)); white-space: normal; }

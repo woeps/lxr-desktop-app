@@ -105,7 +105,7 @@ Task 12 needs Chris at the browser.
 
 ## 11. Layout and styling (R9)
 
-- [ ] 11.1 Write `AppBar.module.css`, `Panel.module.css`, `Dock.module.css`, the page layout with
+- [x] 11.1 Write `AppBar.module.css`, `Panel.module.css`, `Dock.module.css`, the page layout with
   `--dock-h`, the narrow-width wrapping and the reduced-motion rules; remove the unused rules from
   `Shell.module.css`. Done when `npm run build` succeeds, `npm test` and `npm run typecheck` pass
   and headless Chrome screenshots at 1440 x 900 and 390 x 844 show no overlap and no horizontal

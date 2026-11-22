@@ -25,11 +25,25 @@
   /* forked ribbon ends; apply as clip-path on a filled band with black text */
   --ribbon-clip: polygon(0 0, 100% 0, calc(100% - 0.8em) 50%, 100% 100%, 0 100%, 0.8em 50%);
   --ribbon-pad: 0.2em 1.6em;
+
+  /* page layout: the status strip row under the dock; --dock-h and --bar-h are measured at run time */
+  --strip-h: 2.4rem;
 }
 
 body {
+  margin: 0;
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 600px) { :root { --strip-h: 3.6rem; } }
+/* R9.5: slides and fades stop with prefers-reduced-motion or the pauseMotion setting (App sets the attribute). */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+:root[data-reduce-motion="true"] *, :root[data-reduce-motion="true"] *::before, :root[data-reduce-motion="true"] *::after {
+  animation: none !important;
+  transition: none !important;
 }

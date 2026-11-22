@@ -28,7 +28,7 @@ export function StatusStrip() {
   return (
     <Show when={shown()}>
       <div
-        class={styles.bar}
+        class={styles.strip}
         data-status-strip
         onPointerEnter={() => status.pause()}
         onPointerLeave={() => status.resume()}

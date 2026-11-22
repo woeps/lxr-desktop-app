@@ -1,5 +1,6 @@
-import { For, Show } from "solid-js";
+import { For, onSettled, Show } from "solid-js";
 import { useApp } from "../state/app";
+import { trackHeight } from "../visual/layout";
 import { guardOutput, useShell } from "../state/shell";
 import { ConnectionPill } from "./ConnectionPill";
 import { RuneStone } from "./RuneStone";
@@ -20,8 +21,10 @@ export function Dock() {
   const strike = guardOutput(app, shell, (slot: number, v?: number) => app.strike(slot, v));
   const playAll = guardOutput(app, shell, () => app.playAll());
   const panic = guardOutput(app, shell, () => app.panic());
+  let box: HTMLDivElement | undefined;
+  onSettled(() => (box ? trackHeight(box, "--dock-h") : undefined));
   return (
-    <div class={styles.dock} role="group" aria-label="Audition" data-collapsed={collapsed() ? "true" : "false"}>
+    <div ref={box} class={styles.dock} role="group" aria-label="Audition" data-collapsed={collapsed() ? "true" : "false"}>
       <ConnectionPill />
       <Show when={!collapsed()}>
         <For each={SLOT_NAMES}>
