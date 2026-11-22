@@ -33,3 +33,8 @@
 .x:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
 .body { padding: 6px 10px; overflow-wrap: anywhere; }
 .body input[type="range"] { max-width: 100%; }
+/* Native controls in the panel bodies (library, import, settings) look like the rest of the shell. */
+.body :is(button, select, input:not([type="range"]):not([type="checkbox"]):not([type="radio"])) { font: inherit; padding: 0.2em 0.6em; color: var(--text); background: var(--bg); border: 1px solid var(--line); border-radius: 0.4em; }
+.body button { cursor: pointer; }
+.body button:disabled { color: var(--muted); cursor: default; }
+.body :is(button, select, input):focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
