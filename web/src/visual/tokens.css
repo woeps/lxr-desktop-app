@@ -1,0 +1,35 @@
+/* Design tokens, design 4.12.1. Every colour is read by tokens.test.ts and must reach 7:1 on --bg. */
+:root {
+  --bg: #000000;
+  --text: #ffffff;
+  --muted: #d0d0e4;
+  --line: #9a9abc;
+  --gold: #ffd23f;
+  --oracle: #a99bff;
+  --bindings: #ffffff;
+  --contested: #ff6680;
+
+  /* voice "spirits"; --voice is set per page through the CSSOM */
+  --voice-drum1: #ff7a1a;
+  --voice-drum2: #ffe500;
+  --voice-drum3: #4dff3a;
+  --voice-snare: #00f0e0;
+  --voice-cymbal: #3db8ff;
+  --voice-hihat: #ff4dff;
+  --voice: var(--gold);
+
+  --font-serif: Georgia, "Times New Roman", serif;
+  --font-sans: system-ui, sans-serif;
+  --title-spacing: 0.08em;
+
+  /* forked ribbon ends; apply as clip-path on a filled band with black text */
+  --ribbon-clip: polygon(0 0, 100% 0, calc(100% - 0.8em) 50%, 100% 100%, 0 100%, 0.8em 50%);
+  --ribbon-pad: 0.2em 1.6em;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-variant-numeric: tabular-nums;
+}

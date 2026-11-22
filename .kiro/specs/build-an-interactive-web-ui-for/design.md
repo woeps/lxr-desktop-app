@@ -527,17 +527,18 @@ picture claims to show the real audio.
 | `--bg` | `#000000` | page, cards, controls |
 | `--text` | `#ffffff` | text, values, focus ring |
 | `--muted` | `#d0d0e4` | subtitles, labels, secondary lines |
-| `--line` | `#7a7a9e` | control borders, dim guides |
+| `--line` | `#9a9abc` | control borders, dim guides |
 | `--gold` | `#ffd23f` | station frames, ribbons, trail, Mentor |
 | `--oracle` | `#a99bff` | Oracle frame, ribbon, threads, badges |
 | `--bindings` | `#ffffff` | Bindings frame and ribbon |
-| `--contested` | `#ff3b5c` | contested bindings (4.12.8) |
+| `--contested` | `#ff6680` | contested bindings (4.12.8) |
 | `--voice` | per page | fills, accent motifs, active chips |
 
   Voice colours (the voice "spirits"): drum 1 fire `#ff7a1a`, drum 2 sun `#ffe500`, drum 3 earth
   `#4dff3a`, snare water `#00f0e0`, cymbal air `#3db8ff`, hi-hat aether `#ff4dff`. The Cauldron
   page uses gold. The Oracle colour moved from the mockup's cyan to lavender so it can never be
   mistaken for the snare's water colour.
+  `--line` (was `#7a7a9e`, 5.11:1) and `--contested` (was `#ff3b5c`, 6.03:1) were lightened to reach 7:1.
 - **Type:** titles in the system serif stack (`Georgia, "Times New Roman", serif`), bold,
   uppercase, letter-spacing 0.08 em; subtitles in the same serif, italic; everything else in
   `system-ui`, values with `font-variant-numeric: tabular-nums`. No web fonts are loaded.

@@ -89,7 +89,7 @@ is checked off. Host tests run with `ctest --test-dir build/host`; web tests wit
 
 ## 7. Visual foundation (design 4.12.1, 4.12.6, 4.12.10)
 
-- [ ] 7.1 `visual/tokens.css` (colours, type, ribbons) and the shared CSS Modules setup. Done when
+- [x] 7.1 `visual/tokens.css` (colours, type, ribbons) and the shared CSS Modules setup. Done when
   a token test checks every colour pair of design 4.12.1 is at least 7:1 on black.
 - [ ] 7.2 `visual/motion.ts` (one loop per page, time-based follow with τ 0.12 s, strike envelope,
   pause, reduced motion, visibility) with `motion.test.ts`.
