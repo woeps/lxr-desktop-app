@@ -56,3 +56,4 @@
   border-radius: 0.4em;
 }
 .dock[data-collapsed="true"] .pill:hover .label, .dock[data-collapsed="true"] .pill:focus-visible .label { display: block; }
+.dock[data-collapsed="true"] { background: transparent; border-top: 0; }

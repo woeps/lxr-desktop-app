@@ -189,7 +189,7 @@ Acceptance criteria:
 4. WHEN the user presses a rune stone, Play all, Panic, Send all or Seal and no output is selected,
    THE popover SHALL open and the action SHALL NOT run. It SHALL NOT open on page load.
 5. THE collapse button SHALL collapse the dock to a thin bar that keeps only a bare connection dot
-   (no background, border or pill) and an expand button. The dot SHALL stay focusable, SHALL open
+   (no background, border or pill) and an expand button. THE collapsed dock itself SHALL have a transparent background and no border, outline or gold line, so the page shows through. The dot SHALL stay focusable, SHALL open
    the connection popover, and SHALL show the connection label on hover and focus only; its
    accessible name and `title` SHALL always carry the label. Collapsing SHALL NOT disable the keyboard keys of R4.3 of the earlier
    feature. THE collapsed state SHALL persist in the settings.
