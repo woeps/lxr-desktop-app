@@ -1,4 +1,4 @@
-import { createEffect, createMemo, createSignal, onCleanup } from "solid-js";
+import { createEffect, createMemo, createSignal, onCleanup, untrack } from "solid-js";
 import { useSession } from "../state/session";
 import type { Live } from "../state/live";
 import {
@@ -50,8 +50,9 @@ export function JourneyOverlay(props: { voice: Voice; live: Live; hot?: Hot | nu
     if (!g) { slot.replaceChildren(); view = null; return; }
     view = buildOverlay(g, l);
     slot.replaceChildren(view.svg);
-    view.update(live());
-    view.highlight(props.hot?.from ?? null, props.hot?.fall ?? false);
+    view.update(untrack(live)); // later changes: the two effects below
+    const h = untrack(() => props.hot);
+    view.highlight(h?.from ?? null, h?.fall ?? false);
   });
   createEffect(live, (l) => view?.update(l));
   createEffect(() => ({ g: geometry(), from: props.hot?.from ?? null, fall: props.hot?.fall ?? false }), ({ from, fall }) => view?.highlight(from, fall));

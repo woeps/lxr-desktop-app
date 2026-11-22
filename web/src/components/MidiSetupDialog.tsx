@@ -1,4 +1,4 @@
-import { createSignal, For } from "solid-js";
+import { createSignal, For, untrack } from "solid-js";
 import { useApp } from "../state/app";
 import { SLOTS } from "../state/settings";
 import { SLOT_NAMES } from "./voices";
@@ -8,9 +8,10 @@ const slots = Array.from({ length: SLOTS }, (_, i) => i);
 /** Module MIDI setup (R2): channels, global channel and trigger notes. Kept in the browser, never sent. */
 export function MidiSetupDialog(props: { onClose: () => void }) {
   const { settings } = useApp();
-  const [channels, setChannels] = createSignal([...settings.state.channels]);
-  const [global, setGlobal] = createSignal(settings.state.global);
-  const [notes, setNotes] = createSignal([...settings.state.notes]);
+  // A snapshot taken on open: edits stay in the dialog until Save.
+  const [channels, setChannels] = createSignal(untrack(() => [...settings.state.channels]));
+  const [global, setGlobal] = createSignal(untrack(() => settings.state.global));
+  const [notes, setNotes] = createSignal(untrack(() => [...settings.state.notes]));
   const put = (list: number[], i: number, v: string) => list.map((x, j) => (j === i ? Number(v) : x));
   function save() {
     settings.set({ channels: channels(), global: global(), notes: notes() });

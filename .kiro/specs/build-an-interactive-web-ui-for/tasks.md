@@ -147,7 +147,7 @@ is checked off. Host tests run with `ctest --test-dir build/host`; web tests wit
   for 2 s after a store, full transfer first when needed, the result text.
 - [x] 11.3 `Grimoire` drawer (library list, tags, sort and filter, Load, Send, Rename, Duplicate,
   Delete, Export and Import), `ImportDialog`, `ConfirmDialog` for unsaved edits, `MidiSetupDialog`.
-- [ ] 11.4 `app.test.tsx`: connect with a fake MIDI access, move a bar and see the CC, seal into
+- [x] 11.4 `app.test.tsx`: connect with a fake MIDI access, move a bar and see the CC, seal into
   the boot slot and see the transfer followed by the store command, voice switch, pick-to-bind,
   no-Web-MIDI message.
 
