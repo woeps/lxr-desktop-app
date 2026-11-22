@@ -245,6 +245,16 @@ int main(void)
 		lxr_set_param_callback(NULL, NULL);
 	}
 
+	/* store request: one flag merges requests, a request after a take gives a second take */
+	CHECK(lxr_take_store_request() == 0, "store request pending at start");
+	lxr_midi_request_store();
+	lxr_midi_request_store();
+	CHECK(lxr_take_store_request() == 1, "first take after two requests");
+	CHECK(lxr_take_store_request() == 0, "second take after two requests");
+	lxr_midi_request_store();
+	CHECK(lxr_take_store_request() == 1, "take after a new request");
+	CHECK(lxr_take_store_request() == 0, "nothing left to take");
+
 	/* UI layers: both are notified, init and poll are called */
 	static const ui_t uiA = { "a", uiAInitFn, NULL, uiAChanged };
 	static const ui_t uiB = { "b", NULL, uiBPollFn, uiBChanged };

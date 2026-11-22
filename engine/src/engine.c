@@ -298,6 +298,18 @@ int lxr_midi_param_set(uint16_t id, uint8_t value)
 	return 0;
 }
 
+static volatile uint32_t storeRequest;
+
+void lxr_midi_request_store(void)
+{
+	__atomic_store_n(&storeRequest, 1u, __ATOMIC_RELEASE);
+}
+
+int lxr_take_store_request(void)
+{
+	return (int)__atomic_exchange_n(&storeRequest, 0u, __ATOMIC_ACQ_REL);
+}
+
 void lxr_dispatch_param_events(void)
 {
 	uint32_t tail = eventTail;

@@ -7,7 +7,7 @@ is checked off. Host tests run with `ctest --test-dir build/host`; web tests wit
 
 ## 1. Firmware: store command (R11)
 
-- [ ] 1.1 Add `LXR_NRPN_STORE_BOOT`, `LXR_STORE_BOOT_KEY`, `LXR_NRPN_NULL`,
+- [x] 1.1 Add `LXR_NRPN_STORE_BOOT`, `LXR_STORE_BOOT_KEY`, `LXR_NRPN_NULL`,
   `lxr_midi_request_store()` and `lxr_take_store_request()` to `engine/include/lxr/engine.h` and
   `engine/src/engine.c` (design 3.1, 3.2). Done when the engine builds for host and RP2350 and a
   host test shows that two requests before one take give one take, and a request after a take

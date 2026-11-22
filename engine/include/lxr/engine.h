@@ -62,6 +62,19 @@ void lxr_midi_trigger_note(uint8_t voice, uint8_t note, uint8_t velocity);
 /** Sets a parameter now (same checks as lxr_param_set). Audio core, outside lxr_engine_render. */
 int lxr_midi_param_set(uint16_t id, uint8_t value);
 
+/** NRPN number of the store command: CC 99 = 126, CC 98 = 0 (R11). */
+#define LXR_NRPN_STORE_BOOT 16128u
+/** Data entry value (CC 6) that confirms the store command. Any other value is ignored. */
+#define LXR_STORE_BOOT_KEY  0x53u
+/** NRPN "null" number; selecting it makes a following CC 6 do nothing. */
+#define LXR_NRPN_NULL       16383u
+
+/** Audio core: records a store request from MIDI (R11). Never blocks, never writes flash. */
+void lxr_midi_request_store(void);
+
+/** Control core: returns 1 and clears the request if one is pending, else 0. */
+int lxr_take_store_request(void);
+
 /** Control core: delivers parameter changes made by MIDI to the callback. ui_poll_all() calls it. */
 void lxr_dispatch_param_events(void);
 
