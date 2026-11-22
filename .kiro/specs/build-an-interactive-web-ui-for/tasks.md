@@ -54,7 +54,7 @@ is checked off. Host tests run with `ctest --test-dir build/host`; web tests wit
 
 ## 4. Model (R3, R5, design 4.4, 4.12.3, 4.12.7, 4.12.8)
 
-- [ ] 4.1 `model/params.ts` and `model/sound.ts` (factory, clamp, diff, copy and paste by
+- [x] 4.1 `model/params.ts` and `model/sound.ts` (factory, clamp, diff, copy and paste by
   `slotKey`, randomise with injectable random source) with `sound.test.ts`.
 - [ ] 4.2 `model/history.ts` with `history.test.ts` (one step per drag, 200-step cap, undo and
   redo change sets).
