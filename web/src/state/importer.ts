@@ -25,6 +25,8 @@ export interface Importer {
   /** Returns "confirm" when edits would be lost and `force` is not set; nothing changes then (R2.8). */
   select(key: string, force?: boolean): "ok" | "confirm";
   step(delta: 1 | -1): "ok" | "confirm";
+  /** Sends the current values again and shows the hint when the transfer ends (R3.5). */
+  sendAgain(): void;
 }
 
 /** Never calls `app.store()`: a selection is live only (R2.3). */
@@ -34,11 +36,14 @@ export function createImporter(app: App, clock: Clock = realClock): Importer {
   });
   let sendTimer: unknown = null;
   let hintTimer: unknown = null;
+  /** A transfer started by this importer has not ended yet. */
+  let awaiting = false;
 
   const clearTimers = () => {
     if (sendTimer !== null) clock.clearTimeout(sendTimer);
     if (hintTimer !== null) clock.clearTimeout(hintTimer);
     sendTimer = hintTimer = null;
+    awaiting = false;
   };
   const setHint = (text: string | null) => {
     if (hintTimer !== null) clock.clearTimeout(hintTimer);
@@ -53,6 +58,20 @@ export function createImporter(app: App, clock: Clock = realClock): Importer {
     }
   };
 
+  // shortcut: subscribed for the life of the app, never unsubscribed; one importer per page.
+  app.sender.onChange(() => {
+    if (!awaiting) return;
+    const t = app.sender.transfer();
+    if (app.cancelled() || t === null) { awaiting = false; return; } // cancelled, or the output went away
+    if (t.sent < t.total) return;
+    awaiting = false;
+    const preset = state.presets.find((p) => p.key === state.selected);
+    if (!preset) return;
+    const notes = preset.notes.length > 0 ? " See the notes on the row." : "";
+    setHint(`${preset.sound.name} sent. Live only, not stored on the module. Arrival cannot be confirmed.${notes}`);
+    flush();
+  });
+
   function select(key: string, force = false): "ok" | "confirm" {
     const preset = state.presets.find((p) => p.key === key);
     if (!preset) return "ok";
@@ -61,10 +80,12 @@ export function createImporter(app: App, clock: Clock = realClock): Importer {
     setState((s) => { s.selected = key; });
     if (sendTimer !== null) clock.clearTimeout(sendTimer);
     sendTimer = null;
+    awaiting = false;
     if (app.hasOutput()) {
       setHint(null);
       sendTimer = clock.setTimeout(() => {
         sendTimer = null;
+        awaiting = true;
         app.sendAll();
       }, SEND_DEBOUNCE_MS);
     } else {
@@ -95,6 +116,13 @@ export function createImporter(app: App, clock: Clock = realClock): Importer {
       const i = state.presets.findIndex((p) => p.key === state.selected);
       const next = i < 0 ? (delta > 0 ? 0 : n - 1) : Math.min(n - 1, Math.max(0, i + delta));
       return select(state.presets[next]!.key);
+    },
+    sendAgain() {
+      if (state.selected === null || !app.hasOutput()) return;
+      setHint(null);
+      awaiting = true;
+      app.sendAll();
+      flush();
     },
   };
 }

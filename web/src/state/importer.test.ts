@@ -195,3 +195,78 @@ describe("importer: step and open", () => {
     expect(out).toEqual([]);
   });
 });
+
+describe("importer: transfer-done hint and send again", () => {
+  beforeEach(() => setup(true));
+  // Runs the clock in small steps until the hint shows (it is gone 4000 ms later).
+  const done = () => {
+    advance(SEND_DEBOUNCE_MS);
+    for (let i = 0; i < 6000 && imp.state.hint === null; i++) advance(1);
+  };
+
+  it("shows the hint naming the preset when the transfer ends, and drops it after 4000 ms", () => {
+    imp.select(key("Bbb"));
+    advance(SEND_DEBOUNCE_MS + 50);
+    expect(imp.state.hint).toBeNull(); // still running
+    done();
+    expect(imp.state.hint).toBe("Bbb sent. Live only, not stored on the module. Arrival cannot be confirmed.");
+    advance(HINT_MS - 1);
+    expect(imp.state.hint).not.toBeNull();
+    advance(1);
+    expect(imp.state.hint).toBeNull();
+  });
+
+  it("adds the notes sentence when the preset has notes", async () => {
+    const f = kit("Eee", 5);
+    const bytes = new Uint8Array(await f.read()); // one extra byte makes a note
+    const padded = new Uint8Array(bytes.length + 1); padded.set(bytes);
+    await imp.open([{ ...f, size: padded.length, read: () => Promise.resolve(padded.buffer) }]);
+    imp.select(key("Eee"));
+    done();
+    expect(imp.state.hint).toContain("See the notes on the row.");
+  });
+
+  it("clears the hint on the next selection", () => {
+    imp.select(key("Aaa")); done();
+    expect(imp.state.hint).not.toBeNull();
+    imp.select(key("Bbb"));
+    expect(imp.state.hint).toBeNull();
+  });
+
+  it("shows no hint after the transfer was cancelled", () => {
+    imp.select(key("Aaa"));
+    advance(SEND_DEBOUNCE_MS + 50);
+    app.cancelTransfer();
+    advance(5000);
+    expect(imp.state.hint).toBeNull();
+  });
+
+  it("shows no hint when the output disappears mid-transfer", () => {
+    imp.select(key("Aaa"));
+    advance(SEND_DEBOUNCE_MS + 50);
+    app.conn.select(null);
+    advance(5000);
+    expect(imp.state.hint).toBeNull();
+  });
+
+  it("sendAgain sends the current values and then shows the hint", () => {
+    imp.select(key("Aaa")); done();
+    advance(HINT_MS);
+    out.length = 0;
+    imp.sendAgain();
+    expect(imp.state.hint).toBeNull();
+    done();
+    expect(sentAll(app.session.state.current.values)).toBe(true);
+    expect(imp.state.hint).toContain("Aaa sent.");
+  });
+
+  it("audition after send plays once per transfer", () => {
+    app.settings.set({ auditionAfterSend: true });
+    let strikes = 0;
+    app.onStrike(() => { strikes++; });
+    imp.select(key("Aaa")); done();
+    expect(strikes).toBe(1);
+    imp.sendAgain(); advance(HINT_MS + 5000);
+    expect(strikes).toBe(2);
+  });
+});
