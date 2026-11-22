@@ -49,7 +49,7 @@ Task 12 needs Chris at the browser.
   `VEL<n>`, incoming list) and `model/caption.ts` ("LFO", "Velocity", station path). Done when
   `links.test.ts`, `caption.test.tsx` and `threads.test.tsx` pass with the new strings, including a
   snare "Noise" and a hi-hat "Click" case.
-- [ ] 4.3 Change the labels in `host/scripts/gen_web_params.py` to "LFO to" and "Velocity to",
+- [x] 4.3 Change the labels in `host/scripts/gen_web_params.py` to "LFO to" and "Velocity to",
   regenerate `generated/params.ts`, check the badge width in `ParamRow.module.css`. Done when the
   `web_params` ctest and `npm test` pass.
 

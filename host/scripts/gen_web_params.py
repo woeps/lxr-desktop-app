@@ -77,8 +77,8 @@ RULES = [
     (r"offset_lfo\d", "mentor", 4, "lo", "start phase", "offset_lfo"),
     (r"voice_lfo\d", "mentor", 5, "rt", "voice", "voice_lfo"),
     # Bindings
-    (r"target_lfo\d", "bindings", 0, "link", "Mentor to", "target_lfo"),
-    (r"vel_dest_\d", "bindings", 1, "link", "Oracle to", "vel_dest"),
+    (r"target_lfo\d", "bindings", 0, "link", "LFO to", "target_lfo"),
+    (r"vel_dest_\d", "bindings", 1, "link", "Velocity to", "vel_dest"),
     # Oracle
     (r"velo_mod_amt_\d", "oracle", 0, "va", "strength", "velo_mod_amt"),
     # Cauldron

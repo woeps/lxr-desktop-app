@@ -94,4 +94,9 @@ describe("links", () => {
     expect(targetLabel(click.id)).toBe(`Hi-hat › Click › ${click.label}`);
     expect(targetLabel(id("filter_freq_6")).startsWith("Hi-hat › ")).toBe(true);
   });
+
+  it("labels the target rows LFO to and Velocity to", () => {
+    expect(PARAMS.find((q) => q.name === "target_lfo1")!.label).toBe("LFO to");
+    expect(PARAMS.find((q) => q.name === "vel_dest_1")!.label).toBe("Velocity to");
+  });
 });
