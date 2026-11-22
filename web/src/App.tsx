@@ -1,4 +1,4 @@
-import { createSignal, onCleanup, Show } from "solid-js";
+import { createEffect, createSignal, onCleanup, Show } from "solid-js";
 import { AppBar } from "./components/AppBar";
 import { Dock } from "./components/Dock";
 import { ImportDialog } from "./components/ImportDialog";
@@ -6,8 +6,8 @@ import { ImportPanel } from "./components/ImportPanel";
 import { InfoPanel } from "./components/InfoPanel";
 import { LibraryPanel } from "./components/LibraryPanel";
 import { SettingsPanel } from "./components/SettingsPanel";
+import { StatusStrip } from "./components/StatusStrip";
 import { StoreDialog } from "./components/StoreDialog";
-import { TransferStatus } from "./components/TransferStatus";
 import { ShieldRow } from "./components/ShieldRow";
 import { VoicePage } from "./components/VoicePage";
 import { AppContext, createApp, type App as AppState } from "./state/app";
@@ -41,6 +41,17 @@ export function App(props: { app?: AppState }) {
   const [sealing, setSealing] = createSignal(false);
   const [importing, setImporting] = createSignal(false);
   const status = createStatus();
+  // R7.4: connection errors (output gone, access denied) show in the strip.
+  let mirrored: string | null = null;
+  createEffect(() => (app.rev(), app.conn.message()), (m) => {
+    if (m) {
+      mirrored = m;
+      status.say({ kind: "error", text: m, action: { label: "Open connection", run: () => shell.openConnection() } });
+    } else if (mirrored !== null) {
+      if (status.current()?.text === mirrored) status.dismiss();
+      mirrored = null;
+    }
+  });
   // Created once so the list and selection survive closing and reopening the panel.
   const importer = createImporter(app);
 
@@ -56,10 +67,10 @@ export function App(props: { app?: AppState }) {
         <Show when={importing()}><ImportDialog onClose={() => setImporting(false)} /></Show>
         <Show when={shell.panel() === "settings"}><SettingsPanel onClose={() => shell.close()} /></Show>
         <Show when={shell.panel() === "info"}><InfoPanel /></Show>
-        <TransferStatus />
         <ShieldRow />
         <VoicePage />
         <Dock />
+        <StatusStrip />
         </StatusContext>
        </ShellContext>
       </SessionContext>

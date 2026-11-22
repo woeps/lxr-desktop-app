@@ -52,7 +52,7 @@ beforeEach(async () => {
 });
 afterEach(() => { dispose(); host.remove(); });
 
-describe("TransferStatus", () => {
+describe("StatusStrip", () => {
   it("shows progress while sending, then the completion note", () => {
     click(btn("Send all"));
     const total = app.progress()!.total;

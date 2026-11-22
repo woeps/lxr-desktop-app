@@ -98,7 +98,7 @@ Task 12 needs Chris at the browser.
 
 ## 10. Status strip (R7)
 
-- [ ] 10.1 Add `StatusStrip` with the priority of design 3.6; remove `TransferStatus.tsx`; post
+- [x] 10.1 Add `StatusStrip` with the priority of design 3.6; remove `TransferStatus.tsx`; post
   results from Save, Rename, Load, import and `StoreDialog`; mirror connection errors. Done when
   `transfer.test.tsx` (moved to the strip) and `store.test.tsx` pass and a new test covers
   the timer, hover pause, dismiss and the `status`/`alert` roles.

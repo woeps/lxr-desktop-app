@@ -1,5 +1,6 @@
-import { Show } from "solid-js";
+import { createEffect, Show } from "solid-js";
 import { useApp } from "../state/app";
+import { useStatus } from "../state/status";
 import { NOTICE_NO_FLASH } from "./notices";
 
 const two = (n: number) => String(n).padStart(2, "0");
@@ -15,6 +16,14 @@ const timeOfDay = (ms: number) => {
  */
 export function StoreDialog(props: { onClose: () => void }) {
   const app = useApp();
+  const status = useStatus();
+  // R7.4: the strip carries the progress and result of this flow too.
+  createEffect(() => app.storeWaiting(), (w) => {
+    if (w) status.say({ kind: "info", text: "Sending the sound; the store command follows." });
+  });
+  createEffect(() => (app.storeWaiting() ? null : app.storedAt()), (at) => {
+    if (at !== null) status.say({ kind: "info", text: `Store command sent at ${timeOfDay(at)}. The module writes it over its boot slot; this cannot be confirmed over a one-way link.` });
+  });
   return (
     <div role="dialog" aria-modal="true" aria-label="Seal into boot slot" onKeyDown={(e) => { if (e.key === "Escape") props.onClose(); }}>
       <p>

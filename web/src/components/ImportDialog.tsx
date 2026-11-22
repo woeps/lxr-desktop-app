@@ -4,6 +4,7 @@ import { readFile } from "../files/read";
 import { checkSndName, importSnd, sndNotes } from "../files/snd";
 import type { Sound } from "../model/sound";
 import { useApp } from "../state/app";
+import { useStatus } from "../state/status";
 import { cleanName, nameError, NAME_MAX, numberDuplicates } from "../state/library";
 import { ConfirmDialog } from "./ConfirmDialog";
 
@@ -24,6 +25,7 @@ interface Entry {
  */
 export function ImportDialog(props: { onClose: () => void }) {
   const app = useApp();
+  const status = useStatus();
   // A store keeps each row's object, so typing in a name does not rebuild the row and lose focus.
   const [box, setBox] = createStore<{ list: Entry[] }>({ list: [] });
   const entries = () => box.list;
@@ -81,11 +83,13 @@ export function ImportDialog(props: { onClose: () => void }) {
     for (const e of todo) {
       const old = app.library.findByName(cleanName(e.name));
       const r = old ? app.library.replace(old.id, e.name, e.sound) : app.library.add(e.name, e.sound, e.tags);
-      if (!r.ok) { setResult(`${r.error} Added ${n} of ${todo.length}.`); const done = new Set(todo.slice(0, n).map((x) => x.key)); setEntries(entries().filter((x) => !done.has(x.key))); return; }
+      if (!r.ok) { const m = `${r.error} Added ${n} of ${todo.length}.`; setResult(m); status.say({ kind: "error", text: m }); const done = new Set(todo.slice(0, n).map((x) => x.key)); setEntries(entries().filter((x) => !done.has(x.key))); return; }
       n++;
     }
     setEntries([]);
-    setResult(`Added ${n} ${n === 1 ? "sound" : "sounds"} to the library.`);
+    const m = `Added ${n} ${n === 1 ? "sound" : "sounds"} to the library.`;
+    setResult(m);
+    status.say({ kind: "success", text: m });
   }
 
   return (

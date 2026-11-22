@@ -1,8 +1,9 @@
-import { createSignal, For, Show } from "solid-js";
+import { createEffect, createSignal, For, Show } from "solid-js";
 import { readFile } from "../files/read";
 import type { PackFile } from "../files/pack";
 import { checkSndName } from "../files/snd";
 import { useApp } from "../state/app";
+import { useStatus } from "../state/status";
 import type { Importer } from "../state/importer";
 import { nameError, NAME_MAX } from "../state/library";
 import { ConfirmDialog } from "./ConfirmDialog";
@@ -17,6 +18,10 @@ const isSnd = (path: string) => path.toUpperCase().endsWith(".SND");
 export function ImportPanel(props: { importer: Importer }) {
   const app = useApp();
   const imp = props.importer;
+  const status = useStatus();
+  createEffect(() => imp.state.result, (m) => {
+    if (m) status.say({ kind: / of \d+\.$/.test(m) ? "error" : "success", text: m });
+  });
   const [message, setMessage] = createSignal<string | null>(null);
   const [replacing, setReplacing] = createSignal<PackFile[] | null>(null);
   const [replacingSounds, setReplacingSounds] = createSignal(false);

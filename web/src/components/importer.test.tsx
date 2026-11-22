@@ -8,6 +8,7 @@ import { AppContext, createApp, type App as AppState } from "../state/app";
 import { createImporter, type Importer } from "../state/importer";
 import { ImportPanel } from "./ImportPanel";
 import { ShellContext, createShell } from "../state/shell";
+import { StatusContext, createStatus } from "../state/status";
 
 let host: HTMLElement;
 let dispose: () => void;
@@ -46,7 +47,7 @@ async function mount(connect: boolean) {
   imp = createImporter(app, clock);
   host = document.createElement("div");
   document.body.appendChild(host);
-  dispose = render(() => <AppContext value={app}><ShellContext value={createShell()}><ImportPanel importer={imp} /></ShellContext></AppContext>, host);
+  dispose = render(() => <AppContext value={app}><ShellContext value={createShell()}><StatusContext value={createStatus()}><ImportPanel importer={imp} /></StatusContext></ShellContext></AppContext>, host);
   flush();
   if (connect) {
     await app.conn.connect();

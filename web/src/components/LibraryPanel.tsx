@@ -3,6 +3,7 @@ import { download } from "../files/download";
 import { exportJson } from "../files/json";
 import { useApp } from "../state/app";
 import { isDirty } from "../state/dirty";
+import { useStatus } from "../state/status";
 import { toSound, type LibrarySound, type LibraryResult, type SortKey } from "../state/library";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { RenameDialog } from "./RenameDialog";
@@ -21,6 +22,7 @@ const fileName = (name: string) => `${name.replace(/[^A-Za-z0-9_-]+/g, "_") || "
 export function LibraryPanel(props: { onImport: () => void }) {
   const app = useApp();
   const { library, session } = app;
+  const status = useStatus();
   const [sort, setSort] = createSignal<SortKey>("name");
   const [filter, setFilter] = createSignal("");
   const [renaming, setRenaming] = createSignal<string | null>(null);
@@ -41,6 +43,7 @@ export function LibraryPanel(props: { onImport: () => void }) {
   function load(e: LibrarySound) {
     setLoading(null);
     session.load(toSound(e), e.id);
+    status.say({ kind: "success", text: `Loaded '${e.name}'.` });
     setError(null);
   }
   function addTag(id: string) {
