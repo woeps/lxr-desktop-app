@@ -44,7 +44,7 @@ is checked off. Host tests run with `ctest --test-dir build/host`; web tests wit
 
 ## 3. Web project scaffold (R10.6, R10.7, R1.7)
 
-- [ ] 3.1 Create `web/` with `package.json` (exact versions of design 4.1), `package-lock.json`
+- [x] 3.1 Create `web/` with `package.json` (exact versions of design 4.1), `package-lock.json`
   from `npm install`, `.node-version` (24), `tsconfig.json`, `vite.config.ts` (`base: "./"`, hosts
   bound to 127.0.0.1), `index.html` with the CSP of design 4.10, `src/main.tsx` rendering an empty
   `App`, and `.gitignore` entries for `web/node_modules/` and `web/dist/`. Done when `npm ci`,
