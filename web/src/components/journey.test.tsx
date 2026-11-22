@@ -30,8 +30,7 @@ const boxes = () => [...host.querySelectorAll<HTMLElement>("[data-station]")];
 const text = (el: Element, part: string) => el.querySelector(`[data-part=${part}]`)!.textContent;
 const paramsIn = (el: Element) => [...el.querySelectorAll<HTMLElement>("[data-param]")].map((e) => e.dataset.param!);
 
-const TITLES = ["The Call", "The Hero", "The Threshold", "Road of Trials", "The Ordeal", "The Forge", "The Road Back", "Return"];
-const SUBS = ["modulator", "oscillator", "click + the fall", "filter", "amp envelope", "drive", "mixer", "to the speakers"];
+const TITLES = ["Modulator", "Oscillator", "Click + the fall", "Filter", "Amp envelope", "Drive", "Mixer", "To the speakers"];
 
 describe("JourneyPage", () => {
   it("every station and card of a voice holds its picture", () => {
@@ -46,15 +45,16 @@ describe("JourneyPage", () => {
       expect(all.map((b) => b.dataset.station)).toEqual(
         ["call", "hero", "threshold", "trials", "ordeal", "forge", "roadBack", "return", "mentor", "bindings", "oracle"]);
       const titles = TITLES.slice();
-      const subs = SUBS.slice();
-      if (voice === 3) subs[0] = "noise";
-      if (voice >= 4) subs[2] = "click";
+      if (voice === 3) titles[0] = "Noise";
+      if (voice >= 4) titles[2] = "Click";
       all.slice(0, 8).forEach((b, i) => {
         expect(text(b, "title")).toBe(titles[i]);
-        expect(text(b, "subtitle")).toBe(subs[i]);
+        expect(b.getAttribute("aria-label")).toBe(titles[i]);
+        expect(b.querySelector("[data-part=subtitle]")).toBeNull();
       });
-      expect(all.slice(8).map((b) => [text(b, "title"), text(b, "subtitle")])).toEqual([
-        ["Mentor", "LFO of the voice"], ["Bindings", "one target each"], ["Oracle", "velocity of the voice"]]);
+      expect(all.slice(8).map((b) => [text(b, "title"), b.getAttribute("aria-label")])).toEqual([
+        ["LFO of the voice", "LFO of the voice"], ["Modulation targets", "Modulation targets"],
+        ["Velocity of the voice", "Velocity of the voice"]]);
       const rows = paramsIn(host);
       expect(rows.length).toBe(count);
       expect(new Set(rows).size).toBe(count);

@@ -1,6 +1,7 @@
 import { createMemo } from "solid-js";
 import { FX_LABELS, type ParamDef } from "../generated/params";
 import { brewRows, stationRows } from "../model/stations";
+import { headingOf } from "../model/headings";
 import { useSession } from "../state/session";
 import { valueOf } from "./param";
 import { Station } from "./Station";
@@ -23,9 +24,9 @@ export function CauldronPage() {
   return (
     <div class={styles.journey} data-journey="cauldron">
       <div class={styles.stations}>
-        <Station station="brew" title="The Brew" subtitle="effect" voice={-1} rows={brew()} />
-        <Station station="pour" title="The Pour" subtitle="mix" voice={-1} rows={stationRows(-1, "pour")} />
-        <Station station="millstone" title="The Millstone" subtitle="all voices" voice={-1}
+        <Station station="brew" title={headingOf("brew", -1)} voice={-1} rows={brew()} />
+        <Station station="pour" title={headingOf("pour", -1)} voice={-1} rows={stationRows(-1, "pour")} />
+        <Station station="millstone" title={headingOf("millstone", -1)} voice={-1}
           rows={stationRows(-1, "millstone")} />
       </div>
     </div>

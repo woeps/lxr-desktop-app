@@ -13,7 +13,7 @@ import styles from "./Journey.module.css";
 export type BoxKind = "station" | "return" | "mentor" | "bindings" | "oracle";
 
 /**
- * One box of the journey: ribbon title, subtitle, a slot for the frame (task 9.2) and one for the
+ * One box of the journey: ribbon title, a slot for the frame (task 9.2) and one for the
  * picture (task 9.3), then one ParamRow per parameter (design 4.12.2, 4.12.3).
  * The frame (design 4.12.4) is rebuilt from the measured size on every resize.
  * shortcut: the picture slot is an empty element until task 9.3; without ResizeObserver (jsdom) the
@@ -30,7 +30,7 @@ function mountFrame(box: HTMLElement, id: FrameId, owner: Owner | null) {
 }
 
 export function Station(props: {
-  station: string; numeral?: string; title: string; subtitle: string; rows: readonly ParamDef[];
+  station: string; numeral?: string; title: string; rows: readonly ParamDef[];
   kind?: BoxKind; voice?: Voice; live?: Live; onPicture?: () => void; children?: JSX.Element;
 }) {
   const owner = getOwner();
@@ -61,7 +61,6 @@ export function Station(props: {
         {props.numeral && <span class={styles.numeral}>{props.numeral}</span>}
         <span data-part="title">{props.title}</span>
       </h3>
-      <p class={styles.subtitle} data-part="subtitle">{props.subtitle}</p>
       <div class={styles.slot} data-slot="picture" ref={pic}
         onClick={() => props.onPicture?.()} />
       <For each={props.rows}>{(def) => <ParamRow def={def} />}</For>

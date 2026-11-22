@@ -40,8 +40,9 @@ describe("CauldronPage", () => {
     mount(() => <CauldronPage />);
     const boxes = [...host.querySelectorAll("[data-station]")];
     expect(boxes.map((b) => b.getAttribute("data-station"))).toEqual(["brew", "pour", "millstone"]);
-    expect(boxes.map((b) => b.querySelector("[data-part=title]")!.textContent)).toEqual(["The Brew", "The Pour", "The Millstone"]);
-    expect(boxes.map((b) => b.querySelector("[data-part=subtitle]")!.textContent)).toEqual(["effect", "mix", "all voices"]);
+    expect(boxes.map((b) => b.querySelector("[data-part=title]")!.textContent)).toEqual(["Effect", "Mix", "All voices"]);
+    expect(boxes.map((b) => b.getAttribute("aria-label"))).toEqual(["Effect", "Mix", "All voices"]);
+    expect(boxes.some((b) => b.querySelector("[data-part=subtitle]"))).toBe(false);
     expect([...host.querySelectorAll("[data-slot=picture] svg[data-picture]")].map((e) => e.getAttribute("data-picture")))
       .toEqual(["brew", "pour", "millstone"]);
     expect(params(boxes[1]!)).toEqual(["fx_dry_wet", "fx_routing"]);

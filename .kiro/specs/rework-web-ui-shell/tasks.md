@@ -40,7 +40,7 @@ Task 12 needs Chris at the browser.
 
 ## 4. Headings and names (R8)
 
-- [ ] 4.1 Move the station name table to `model/headings.ts` (`headingOf(station, voice)`), use it
+- [x] 4.1 Move the station name table to `model/headings.ts` (`headingOf(station, voice)`), use it
   in `JourneyPage.tsx`, `Station.tsx` (title is ribbon and `aria-label`, no subtitle element),
   `cards.tsx` and `CauldronPage.tsx`. Done when `journey.test.tsx` and `cauldron.test.tsx` assert the
   table of R8.1 and R8.2 for drum, snare, cymbal and hi-hat, the aria labels and the missing
