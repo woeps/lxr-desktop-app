@@ -184,6 +184,19 @@ describe("Grimoire", () => {
     expect(app.library.sounds.length).toBe(0);
   });
 
+  it("shows the renamed-on-load notice once", async () => {
+    localStorage.clear();
+    const e = (id: string, created: string) => ({ id, name: "Kick", tags: [], created, modified: created, params: {} });
+    localStorage.setItem("lxr.library.v1", JSON.stringify({ version: 1, sounds: [e("a", "1"), e("b", "2"), e("c", "3")] }));
+    await mount(false);
+    openGrimoire();
+    expect(host.querySelector("[data-testid=renamed-notice]")!.textContent).toBe("2 sounds were renamed because names must be unique.");
+    expect(names().sort()).toEqual(["Kick", "Kick2", "Kick3"]);
+    click(button("Close Grimoire"));
+    openGrimoire();
+    expect(host.querySelector("[data-testid=renamed-notice]")).toBeNull();
+  });
+
   it("adds and removes tags", async () => {
     await mount();
     app.library.add("Alpha", sound("Alpha"));

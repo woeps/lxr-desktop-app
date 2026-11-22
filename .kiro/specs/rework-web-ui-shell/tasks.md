@@ -16,7 +16,7 @@ Task 12 needs Chris at the browser.
 - [x] 1.2 Adapt the importers: `state/importer.ts`, `components/ImportDialog.tsx` and their tests
   for the "exists" note, unticked default, one confirmation for replacing and numbering inside a
   batch (R3.4). Done when `importer.test.ts` and `importer.test.tsx` pass.
-- [ ] 1.3 Remove Duplicate from the drawer in `Grimoire.tsx` and show the one-time renamed notice
+- [x] 1.3 Remove Duplicate from the drawer in `Grimoire.tsx` and show the one-time renamed notice
   (R3.2, R3.3). Done when `grimoire.test.tsx` passes with both changes.
 
 ## 2. Session name and save state (R2)

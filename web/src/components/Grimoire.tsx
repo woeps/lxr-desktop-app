@@ -6,6 +6,8 @@ import { isDirty } from "../state/dirty";
 import { nameError, NAME_MAX, toSound, type LibrarySound, type LibraryResult, type SortKey } from "../state/library";
 import { ConfirmDialog } from "./ConfirmDialog";
 
+/** Libraries whose renamed-on-load notice was already shown (R3.3: once). */
+const noticeShown = new WeakSet<object>();
 const day = (iso: string) => iso.slice(0, 16).replace("T", " ");
 const fileName = (name: string) => `${name.replace(/[^A-Za-z0-9_-]+/g, "_") || "sound"}.json`;
 
@@ -24,6 +26,8 @@ export function Grimoire(props: { onClose: () => void; onImport: () => void }) {
   const [deleting, setDeleting] = createSignal<LibrarySound | null>(null);
   const [loading, setLoading] = createSignal<LibrarySound | null>(null);
   const [error, setError] = createSignal<string | null>(null);
+  const renamed = noticeShown.has(library) ? 0 : library.renamedOnLoad;
+  noticeShown.add(library);
   const [persisted, setPersisted] = createSignal<boolean | null>(null);
 
   onSettled(() => { void library.requestPersistence().then(setPersisted); });
@@ -73,6 +77,9 @@ export function Grimoire(props: { onClose: () => void; onImport: () => void }) {
           </select>
         </label>
       </div>
+      <Show when={renamed > 0}>
+        <p data-testid="renamed-notice">{`${renamed} ${renamed === 1 ? "sound was" : "sounds were"} renamed because names must be unique.`}</p>
+      </Show>
       <Show when={error()}>{(m) => <p role="alert">{m()}</p>}</Show>
       <Show when={rows().length === 0}><p data-testid="library-empty">No sounds{filter().trim() ? " match" : " saved yet"}.</p></Show>
       <ul>
