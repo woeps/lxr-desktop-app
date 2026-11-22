@@ -45,7 +45,7 @@ export interface Session {
   undo(): void;
   redo(): void;
   /** Make `sound` current and baseline as one undo step, and send it in full (R3.9, R5.6). */
-  load(sound: Sound, libraryId?: string | null): void;
+  load(sound: Sound, libraryId?: string | null, opts?: { send?: boolean }): void;
   /** Current becomes the baseline, after a save to the library (R3.6). */
   markSaved(libraryId?: string | null): void;
   /** Restore the sound as last loaded or saved, as one step (R5.3). */
@@ -167,7 +167,7 @@ export function createSession(deps: SessionDeps): Session {
     applyChanges,
     undo: () => replay(history.undo()),
     redo: () => replay(history.redo()),
-    load(sound, libraryId = null) {
+    load(sound, libraryId = null, opts) {
       const target = copySound(sound);
       const changes = toward(target);
       if (changes.length > 0) history.push(changes);
@@ -176,7 +176,7 @@ export function createSession(deps: SessionDeps): Session {
         s.baseline = copySound(target);
         s.libraryId = libraryId;
       });
-      if (hasOutput()) sender.sendTransfer(target.values);
+      if (opts?.send !== false && hasOutput()) sender.sendTransfer(target.values);
       else setState((s) => { s.moduleInSync = false; });
       flush();
       scheduleSave();

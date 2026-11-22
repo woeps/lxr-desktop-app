@@ -119,6 +119,23 @@ describe("session", () => {
     expect(session.state.current.values[A.id]).toBe(10);
   });
 
+  it("load with send false queues nothing, marks the module out of sync, and is one undo step", () => {
+    const { session, transfers, params } = make();
+    session.setModuleInSync(true);
+    const s = factory("Snare");
+    s.values[A.id] = 55;
+    session.load(s, null, { send: false });
+    expect(transfers).toEqual([]);
+    expect(params).toEqual([]);
+    expect(session.state.moduleInSync).toBe(false);
+    expect(session.state.current.values[A.id]).toBe(55);
+    expect(session.state.baseline.values[A.id]).toBe(55);
+    session.undo();
+    expect(session.state.current.values[A.id]).toBe(factory().values[A.id]);
+    session.load(s);
+    expect(transfers.length).toBe(1);
+  });
+
   it("markSaved moves the baseline to the current sound", () => {
     const { session } = make();
     session.applyChanges([change(A.id, 30)]);
