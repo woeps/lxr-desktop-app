@@ -66,7 +66,7 @@ is checked off. Host tests run with `ctest --test-dir build/host`; web tests wit
 
 ## 5. MIDI output (R1, R3.3, R3.4, R4, R7, design 4.6)
 
-- [ ] 5.1 `midi/encode.ts` with `encode.test.ts` (CC and NRPN bytes, channel choice, notes, store
+- [x] 5.1 `midi/encode.ts` with `encode.test.ts` (CC and NRPN bytes, channel choice, notes, store
   sequence from `STORE`, panic without CC 120/123, output choices sent as 0/2/3/6 and aliases sent
   unchanged).
 - [ ] 5.2 `midi/sender.ts` with `sender.test.ts` on a fake output and clock (order, coalescing,
