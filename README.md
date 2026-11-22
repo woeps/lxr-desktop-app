@@ -382,19 +382,67 @@ After a change to the parameter table, regenerate both lists with `host/scripts/
 ## Web UI
 
 `web/` holds a browser page for sound design. It shows every voice and master FX parameter as a
-control, plays a test note, keeps a library of sounds in the browser (with file import and export),
-and can send the whole sound to the module. Changes are sent as the same CC and NRPN messages
+control, plays test notes, keeps a library of sounds in the browser (with file import and export),
+and sends the whole sound to the module. Changes are sent as the same CC and NRPN messages
 described in [MIDI implementation](#midi-implementation), so the module needs no extra firmware
 support beyond the store command.
 
-Use it to design and audition sounds without typing CC numbers: pick a voice tab, adjust its controls,
-and use Undo, Redo and A/B to compare. "Roll" randomises every voice by the Roll amount, "Roll <voice>"
-(for example "Roll Snare") randomises only the voice you are editing, and locked parameters are never
-changed. Good sounds go into the library, and "Seal into boot slot" keeps one on the module.
+Layout. From top to bottom the page has a slim app bar, a row of voice shields, the controls of the
+selected voice, a status strip and a dock. The side panels open over the page from the app bar.
+
+App bar. At the left is the sound name with a Save button. The button reads Save for a new name,
+Update when the name already exists in the library (it asks before replacing that sound) and Saved
+when the library holds the current sound unchanged; its menu has Rename. A dot next to the name marks
+unsaved changes. Ctrl+S (Cmd+S on macOS) saves too. Then come Undo, Redo and A/B (swaps the current
+sound with a held snapshot), Revert (back to the loaded sound; its menu has Initialise, which sets the
+factory sound as one undo step), Copy and Paste (a drum voice's parameters, shown on the three drum
+voices) and Send all. The Send all menu has "Seal into boot slot" and "Audition after send", which
+plays the current voice once the send has finished. At the right, four icons open the side panels
+Library, Import presets, Settings and Info.
+
+Voices. One shield per voice and one for the FX page (the Cauldron). Each shield shows how many
+parameters differ from the loaded sound. Each voice has a dice button that randomises only that voice,
+and the selected voice has an amount button (0 to 100 %) for it. "Roll all" randomises every voice by
+its own amount, which you pick in its menu. Locked parameters are never changed. Arrow keys, Home and
+End move between shields.
+
+Boxes. A voice page is a chain of boxes whose headings name their role: Modulator (Noise on the
+snare), Oscillator, Click + the fall (Click on cymbal and hi-hat), Filter, Amp envelope, Drive, Mixer
+and To the speakers. Three more boxes hold the modulation: "LFO of the voice", "Velocity of the voice"
+and "Modulation targets", which holds the parameter each of the two modulates. A row that is
+modulated carries a badge (LFO1, VEL1, and so on, numbered by voice). The FX page has Effect, Mix and
+All voices.
+
+Side panels.
+
+- Library lists the saved sounds, with sort, filter, tags, Load, Send, Rename, Delete and Export.
+  The library is keyed by name, compared without regard to case, so a name exists once. It lives
+  in the browser's storage, which the browser can clear: export it to keep a backup.
+- Import presets opens a drawer where you pick a kit folder (or several `.SND` files). It lists the
+  kits it finds. Selecting one makes it the current sound and sends it live to the module, and
+  "Add ticked to library" copies kits into the library. Nothing is stored on the module: after a
+  power-cycle it plays its boot slot again. Files that are not `.SND` kits, such as `.PAT`, `.SNG`,
+  `.CFG` and `.NFO`, are ignored and only counted.
+- Settings holds the module's MIDI channels, trigger notes and global channel as the page should
+  assume them. They are kept in the browser and never sent; change the module's own values with the
+  console.
+- Info shows the parameter table id and the fixed notices about the one-way link.
+
+Dock. The dock sits at the bottom edge. It has a connection pill (a dot and the output name), the
+seven drum triggers with their keys (1 to 7), Velocity, Pitch, Play all (key 0) and Panic. A help line appears as a band
+just above the dock (beside the dot when the dock is collapsed) and names the path of the row under
+the pointer through the boxes. The pill opens the MIDI connection form (Connect, output
+choice, Test). Actions that need an output open that form when there is none. The arrow at the right
+collapses the dock to a bare dot, whose label shows on hover or focus.
+
+Status strip. The strip above the dock shows a running transfer with a progress bar and Cancel, the
+result of a transfer, and messages, coloured by kind (information, success, error). A success message goes
+away after 5 seconds (not while the pointer is over it); any message can be dismissed. After a cancelled transfer
+it says the module holds a mix of the old and new sound and offers "Send again".
 
 Connection. Wire a computer MIDI interface (USB to DIN or TRS) to the module's TRS input as described
-in [Hardware](#hardware): the interface's MIDI out goes to the TRS socket. In the page, choose that
-interface as the MIDI output.
+in [Hardware](#hardware): the interface's MIDI out goes to the TRS socket. In the page, open the
+connection pill and choose that interface as the MIDI output.
 
 The link is one way. The module has no MIDI output, so the page cannot read parameters, preset slots
 or connection state from it. The page keeps its own copy of the sound and shows what it last sent;
@@ -404,12 +452,6 @@ the console are not visible to the page.
 "Seal into boot slot" sends the store command (NRPN 16128, value 0x53) on drum 1's channel. The module
 saves the sound it is playing now to the slot that is loaded at power-up, keeps that slot's name, and
 plays it after the next power-up.
-
-Preset importer. The "Preset importer" button opens a drawer where you pick a kit folder (or several
-`.SND` files). The drawer lists the kits it finds, and selecting one makes it the current sound and
-sends all its values live to the module. Nothing is stored on the module: after a power-cycle it plays
-its boot slot again, and "Seal into boot slot" is still the only way to keep a kit. Files that are not
-`.SND` kits, such as `.PAT`, `.SNG`, `.CFG` and `.NFO`, are ignored and only counted.
 
 Building and serving (tested with Node.js 24):
 
