@@ -105,6 +105,11 @@ int lxr_preset_boot(void);
 /** Slot that the last load or save used (the boot slot), or -1 if none since boot. */
 int lxr_preset_current(void);
 
+/** Saves the live sound to the boot slot like `preset save <slot>` without a name (R11.2, R11.3):
+ *  the loaded slot, else the slot the globals sector named at boot (0 if none). Keeps the slot's name.
+ *  Returns the slot written, or LXR_PRESET_NO_STORAGE. Control core. */
+int lxr_preset_store_boot(void);
+
 #define LXR_PRESET_NO_STORAGE (-3)
 
 #endif /* LXR_PRESET_H_ */

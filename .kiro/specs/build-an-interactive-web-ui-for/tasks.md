@@ -16,7 +16,7 @@ is checked off. Host tests run with `ctest --test-dir build/host`; web tests wit
   CRLF line endings. Extend `host/test_midi_parser.c` with the cases of design 3.6 (sequence,
   wrong key, neighbouring NRPNs, stray CC 6 afterwards, channel rules, existing cases unchanged).
   Done when `midi_parser` passes.
-- [ ] 1.3 Add `lxr_preset_store_boot()` and the `globalsSlot` bookkeeping in
+- [x] 1.3 Add `lxr_preset_store_boot()` and the `globalsSlot` bookkeeping in
   `engine/src/preset.c` (design 3.4). Extend `host/test_preset.c`: loaded slot keeps its name;
   boot with globals naming a blank slot 3 writes slot 3; blank globals write slot 0 as `slot00`.
   Done when `preset` passes.

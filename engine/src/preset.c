@@ -158,6 +158,7 @@ lxr_preset_status_t lxr_globals_unpack(const uint8_t sector[LXR_PRESET_SECTOR_SI
 
 static const lxr_storage_t *storage;
 static int currentSlot = -1;
+static uint8_t globalsSlot;                      /* boot slot the globals sector named at boot, 0 if none */
 static uint8_t work[LXR_PRESET_SECTOR_SIZE];      /* one sector buffer, control core only */
 static uint8_t compare[LXR_PRESET_SECTOR_SIZE];
 
@@ -233,15 +234,25 @@ int lxr_preset_boot(void)
 {
 	uint8_t slot = 0;
 	uint8_t values[LXR_SOUND_PARAM_COUNT];
-	if(storage && storage->read(LXR_STORAGE_GLOBALS, work) == 0 && lxr_globals_unpack(work, &slot) == LXR_PRESET_OK
-	   && storage->read(slot, work) == 0 && lxr_preset_unpack(work, NULL, values) == LXR_PRESET_OK)
+	globalsSlot = 0;
+	if(storage && storage->read(LXR_STORAGE_GLOBALS, work) == 0 && lxr_globals_unpack(work, &slot) == LXR_PRESET_OK)
 	{
-		lxr_sound_set(values);
-		currentSlot = slot;
-		return slot;
+		globalsSlot = slot;
+		if(storage->read(slot, work) == 0 && lxr_preset_unpack(work, NULL, values) == LXR_PRESET_OK)
+		{
+			lxr_sound_set(values);
+			currentSlot = slot;
+			return slot;
+		}
 	}
 	lxr_preset_factory(values);
 	lxr_sound_set(values);
 	currentSlot = -1;
 	return -1;
+}
+
+int lxr_preset_store_boot(void)
+{
+	const int slot = (currentSlot >= 0 && currentSlot < LXR_PRESET_SLOTS) ? currentSlot : globalsSlot;
+	return lxr_preset_save((uint8_t)slot, NULL) == 0 ? slot : LXR_PRESET_NO_STORAGE;
 }

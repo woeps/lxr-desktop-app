@@ -248,9 +248,47 @@ static void test_storage(void)
 	lxr_preset_set_storage(NULL);
 }
 
+static void test_store_boot(void)
+{
+	char name[9];
+	uint8_t v = 0;
+	memset(flashSim, 0xFF, sizeof flashSim);
+	lxr_engine_init(44100);
+	lxr_preset_set_storage(&simStorage);
+
+	/* blank globals: slot 0, named slot00 */
+	CHECK(lxr_preset_boot() == -1, "erased boot");
+	lxr_param_set(PAR_VOL1, 33);
+	render(2);
+	CHECK(lxr_preset_store_boot() == 0, "blank globals store slot");
+	CHECK(lxr_preset_name(0, name) == LXR_PRESET_OK && strcmp(name, "slot00") == 0, "name '%s'", name);
+
+	/* a loaded slot keeps its name and takes the new sound */
+	CHECK(lxr_preset_save(4, "Snappy") == 0, "save 4");
+	lxr_param_set(PAR_VOL1, 55);
+	render(2);
+	CHECK(lxr_preset_store_boot() == 4, "store goes to the loaded slot");
+	CHECK(lxr_preset_name(4, name) == LXR_PRESET_OK && strcmp(name, "Snappy") == 0, "kept name '%s'", name);
+	lxr_engine_init(44100);
+	CHECK(lxr_preset_boot() == 4, "boot slot 4");
+	render(LXR_SOUND_PARAM_COUNT / 32 + 2);
+	lxr_param_get(PAR_VOL1, &v);
+	CHECK(v == 55, "stored vol1 %u", v);
+
+	/* globals naming a blank slot 3: the store writes slot 3 */
+	CHECK(lxr_preset_save(3, "Three") == 0, "save 3");
+	memset(flashSim[3], 0xFF, sizeof flashSim[3]);
+	lxr_engine_init(44100);
+	CHECK(lxr_preset_boot() == -1, "blank boot slot gives factory");
+	CHECK(lxr_preset_store_boot() == 3, "store goes to the slot named by the globals");
+	CHECK(lxr_preset_name(3, name) == LXR_PRESET_OK && strcmp(name, "slot03") == 0, "name '%s'", name);
+	lxr_preset_set_storage(NULL);
+}
+
 int main(void)
 {
 	test_storage();
+	test_store_boot();
 	test_crc_vector();
 	test_round_trip();
 	test_corruption();
