@@ -4,7 +4,16 @@
 .bar button:disabled { opacity: 0.6; cursor: not-allowed; }
 .bar button:focus-visible, .shield:focus-visible, .stone:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
 .grow { flex: 1 1 20em; color: var(--muted); font-size: 0.9em; }
-.shields { display: flex; gap: 6px; padding: 6px 10px; }
+.shieldRow { display: flex; align-items: center; gap: 8px; padding: 6px 10px; flex-wrap: wrap; }
+.shields { display: flex; gap: 6px; }
+.shieldWrap { position: relative; display: inline-flex; align-items: center; gap: 2px; }
+.dice, .amountBtn { font: inherit; display: inline-flex; align-items: center; padding: 0.2em 0.35em; color: var(--text); background: var(--bg); border: 1px solid var(--shield); border-radius: 0.4em; cursor: pointer; }
+.dice { opacity: 0; }
+.shieldWrap[data-selected="true"] .dice, .shieldWrap:hover .dice, .shieldWrap:focus-within .dice { opacity: 1; }
+.dice:focus-visible, .amountBtn:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+.amount { position: relative; display: inline-flex; }
+.amountLabel { display: flex; align-items: center; gap: 0.5em; white-space: nowrap; }
+.rollAllAmount { color: var(--muted); font-size: 0.9em; }
 .shield { font: inherit; display: inline-flex; gap: 4px; align-items: center; padding: 0.3em 0.9em; color: var(--text); background: var(--bg); border: 2px solid var(--shield); border-radius: 0.3em 0.3em 1.2em 1.2em; cursor: pointer; }
 .shield[aria-selected="true"] { background: var(--shield); color: #000; }
 .count { min-width: 1em; font-size: 0.8em; }

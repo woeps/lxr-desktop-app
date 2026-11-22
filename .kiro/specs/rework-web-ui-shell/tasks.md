@@ -73,7 +73,7 @@ Task 12 needs Chris at the browser.
 
 ## 7. Shield row (R4)
 
-- [ ] 7.1 Add `ShieldRow` with dice buttons, the amount popover and Roll all with its own amount;
+- [x] 7.1 Add `ShieldRow` with dice buttons, the amount popover and Roll all with its own amount;
   remove `VoiceShields.tsx`. Done when `shields.test.tsx` covers R4.1 to R4.8 and the existing tab
   keyboard tests pass.
 

@@ -9,8 +9,8 @@ import { MidiSetupDialog } from "./components/MidiSetupDialog";
 import { PresetImporter } from "./components/PresetImporter";
 import { StoreDialog } from "./components/StoreDialog";
 import { TransferStatus } from "./components/TransferStatus";
+import { ShieldRow } from "./components/ShieldRow";
 import { VoicePage } from "./components/VoicePage";
-import { VoiceShields } from "./components/VoiceShields";
 import { AppContext, createApp, type App as AppState } from "./state/app";
 import { createImporter } from "./state/importer";
 import { SessionContext } from "./state/session";
@@ -56,7 +56,7 @@ export function App(props: { app?: AppState }) {
         <Show when={importing()}><ImportDialog onClose={() => setImporting(false)} /></Show>
         <Show when={shell.panel() === "settings"}><MidiSetupDialog onClose={() => shell.close()} /></Show>
         <TransferStatus />
-        <VoiceShields />
+        <ShieldRow />
         <VoicePage />
         <AuditionBar />
         <Footer />
