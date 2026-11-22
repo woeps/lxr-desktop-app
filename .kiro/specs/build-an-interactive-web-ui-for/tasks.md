@@ -56,7 +56,7 @@ is checked off. Host tests run with `ctest --test-dir build/host`; web tests wit
 
 - [x] 4.1 `model/params.ts` and `model/sound.ts` (factory, clamp, diff, copy and paste by
   `slotKey`, randomise with injectable random source) with `sound.test.ts`.
-- [ ] 4.2 `model/history.ts` with `history.test.ts` (one step per drag, 200-step cap, undo and
+- [x] 4.2 `model/history.ts` with `history.test.ts` (one step per drag, 200-step cap, undo and
   redo change sets).
 - [ ] 4.3 `model/stations.ts` with `stations.test.ts` (each id in exactly one place, hidden
   parameters, visible counts 35/34/35/35, row order).
