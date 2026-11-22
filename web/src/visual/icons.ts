@@ -29,11 +29,11 @@ type Part =
   | { t: "path"; d: string; fill?: boolean; dim?: boolean }
   | { t: "circle"; cx: number; cy: number; r: number; fill?: boolean };
 
-const r2 = (n: number) => Math.round(n * 100) / 100;
-const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, Number.isFinite(n) ? n : 0));
+export const r2 = (n: number) => Math.round(n * 100) / 100;
+export const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, Number.isFinite(n) ? n : 0));
 const px = (x: number) => r2(1 + 28 * clamp(x, 0, 1)); // x in 0..1 -> 1..29
 const py = (y: number) => r2(9 - 7.5 * clamp(y, -1, 1)); // y in -1..1 -> 16.5..1.5
-const hash = (i: number) => { const s = Math.sin(i * 12.9898 + 78.233) * 43758.5453; return s - Math.floor(s); };
+export const hash = (i: number) => { const s = Math.sin(i * 12.9898 + 78.233) * 43758.5453; return s - Math.floor(s); };
 const sin = (x: number, cycles: number, phase = 0) => Math.sin(TWO_PI * cycles * x + phase);
 
 function plot(f: (x: number) => number): Part {
@@ -64,7 +64,7 @@ function shape(w: number, x: number): number {
     default: return sqr(p, 0.25);
   }
 }
-function lfoShape(w: number, p: number): number {
+export function lfoShape(w: number, p: number): number {
   switch (Math.round(w) % 8) {
     case 0: return Math.sin(TWO_PI * p);
     case 1: return tri(p + 0.25);
@@ -80,7 +80,7 @@ const click = (x: number, amp: number, freq: number, pat: number) =>
   amp * Math.exp(-5 * x) * (pat % 2 ? sin(x, freq) : saw(x * freq));
 const bump = (x: number, c: number, wd: number) => Math.exp(-(((x - c) / wd) ** 2));
 
-function response(type: number, x: number, knee: number, peak: number): number {
+export function response(type: number, x: number, knee: number, peak: number): number {
   const k = clamp(knee, 0.05, 0.95);
   const lp = 1 / (1 + (x / k) ** 4);
   const hp = 1 / (1 + (k / Math.max(x, 0.001)) ** 4);
@@ -98,7 +98,7 @@ function response(type: number, x: number, knee: number, peak: number): number {
   }
   return clamp(m, 0, 1.1) * 1.7 - 0.85;
 }
-function envelope(x: number, atk: number, dec: number, curve: number): number {
+export function envelope(x: number, atk: number, dec: number, curve: number): number {
   if (x < atk) return atk > 0 ? x / atk : 1;
   const t = clamp((x - atk) / Math.max(dec, 0.01), 0, 1);
   return 1 - t ** curve;

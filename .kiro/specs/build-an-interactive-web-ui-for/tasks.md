@@ -116,7 +116,7 @@ is checked off. Host tests run with `ctest --test-dir build/host`; web tests wit
 - [x] 9.2 `visual/frames.ts`: the top-edge frames of design 4.12.4 for all fourteen boxes, built from
   the measured size. Done when each frame stays outside the content padding at the box sizes of
   all six voices.
-- [ ] 9.3 `visual/vignettes.ts`: the pictures of design 4.12.5 for all voices, including the snare
+- [x] 9.3 `visual/vignettes.ts`: the pictures of design 4.12.5 for all voices, including the snare
   noise cloud, the two moons of cymbal and hi-hat, repeat flickers, the two hi-hat flames and the
   FX cauldron in Return. Done when each picture renders at min, default and max values without
   errors.

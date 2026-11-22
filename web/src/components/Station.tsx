@@ -1,7 +1,9 @@
-import { For, onCleanup } from "solid-js";
+import { createEffect, For, onCleanup } from "solid-js";
 import type { JSX } from "@solidjs/web";
 import type { ParamDef } from "../generated/params";
+import { useSession } from "../state/session";
 import { frameSvg, type FrameId } from "../visual/frames";
+import { picInput, PICTURE_IDS, vignetteSvg, type PictureId, type Voice } from "../visual/vignettes";
 import { ParamRow } from "./ParamRow";
 import styles from "./Journey.module.css";
 
@@ -26,8 +28,18 @@ function mountFrame(box: HTMLElement, id: FrameId) {
 
 export function Station(props: {
   station: string; numeral?: string; title: string; subtitle: string; rows: readonly ParamDef[];
-  kind?: BoxKind; children?: JSX.Element;
+  kind?: BoxKind; voice?: Voice; children?: JSX.Element;
 }) {
+  const session = useSession();
+  const voice = () => props.voice ?? (props.rows[0]?.voice as Voice | undefined);
+  let pic!: HTMLDivElement;
+  if ((PICTURE_IDS as readonly string[]).includes(props.station)) {
+    // Ambient time, strike glow and level stay 0 until the animation loop (task 10).
+    createEffect(
+      () => (voice() === undefined ? undefined : vignetteSvg(props.station as PictureId, picInput(voice()!, session.state.current.values))),
+      (svg) => { if (svg) pic.replaceChildren(svg); else pic.replaceChildren(); },
+    );
+  }
   return (
     <section class={[styles.box, props.kind && props.kind !== "station" && styles[props.kind]]}
       data-station={props.station} aria-label={props.title}
@@ -38,7 +50,7 @@ export function Station(props: {
         <span data-part="title">{props.title}</span>
       </h3>
       <p class={styles.subtitle} data-part="subtitle">{props.subtitle}</p>
-      <div class={styles.slot} data-slot="picture" />
+      <div class={styles.slot} data-slot="picture" ref={pic} />
       <For each={props.rows}>{(def) => <ParamRow def={def} />}</For>
       {props.children}
     </section>

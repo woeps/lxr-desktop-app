@@ -34,6 +34,11 @@ const TITLES = ["The Call", "The Hero", "The Threshold", "Road of Trials", "The 
 const SUBS = ["modulator", "oscillator", "click + the fall", "filter", "amp envelope", "drive", "mixer", "to the speakers"];
 
 describe("JourneyPage", () => {
+  it("every station and card of a voice holds its picture", () => {
+    mount(5);
+    const pics = [...host.querySelectorAll("[data-slot=picture] svg[data-picture]")].map((e) => e.getAttribute("data-picture"));
+    expect(pics).toEqual(["call", "hero", "threshold", "trials", "ordeal", "forge", "roadBack", "return", "mentor", "oracle"]);
+  });
   for (const [voice, count] of [[0, 35], [1, 35], [2, 35], [3, 34], [4, 35], [5, 35]] as const) {
     it(`voice ${voice}: stations in order, every row once (${count})`, () => {
       mount(voice);

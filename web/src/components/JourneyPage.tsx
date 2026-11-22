@@ -45,7 +45,7 @@ export function JourneyPage(props: { voice: Voice }) {
         <For each={JOURNEY}>
           {(s) => (
             <Station station={s.id} numeral={s.numeral} title={s.title}
-              subtitle={subtitleOf(s.id, props.voice)} kind={s.id === "return" ? "return" : "station"}
+              subtitle={subtitleOf(s.id, props.voice)} kind={s.id === "return" ? "return" : "station"} voice={props.voice}
               rows={s.id === "return" ? [] : stationRows(props.voice, s.id)}>
               {s.id === "return" && <p class={styles.result} data-part="result">{outText()}</p>}
             </Station>
