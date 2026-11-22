@@ -5,7 +5,8 @@ import { App } from "../App";
 import { createApp, type App as AppState } from "../state/app";
 import { exportJson } from "../files/json";
 import { factory } from "../model/sound";
-import { PARAMS } from "../generated/params";
+import { PARAMS, TABLE_ID } from "../generated/params";
+import { NOTICE_NO_FLASH, NOTICE_NOT_SEEN, NOTICE_ONE_WAY } from "./notices";
 
 let host: HTMLElement;
 let dispose: () => void;
@@ -301,19 +302,30 @@ describe("ImportDialog", () => {
   });
 });
 
-describe("MidiSetupDialog", () => {
+describe("SettingsPanel", () => {
   it("states that the settings are not sent and saves the changes", async () => {
     await mount(false);
     click(byLabel("Settings"));
-    expect(host.querySelector("[role=dialog]")!.textContent).toContain("not sent to it");
+    expect(host.querySelector("aside[aria-label=Settings]")!.textContent).toContain("not sent to it");
     type(input("Channel Drum 1"), "9");
     type(input("Global channel"), "4");
     type(input("Note Snare"), "40");
     click(button("Save setup"));
-    expect(host.querySelector("[role=dialog]")).toBeNull();
+    expect(host.querySelector("aside[aria-label=Settings]")).toBeNull();
     expect(app.settings.state.channels[0]).toBe(9);
     expect(app.settings.state.global).toBe(4);
     expect(app.settings.state.notes[3]).toBe(40);
+  });
+
+  it("the Info panel shows the table id and the three notices", async () => {
+    await mount(false);
+    click(byLabel("Info"));
+    const p = host.querySelector("aside[aria-label=Info]")!;
+    expect(p.textContent).toContain(TABLE_ID);
+    expect(p.textContent).toContain(NOTICE_NO_FLASH);
+    expect(p.textContent).toContain(NOTICE_ONE_WAY);
+    expect(p.textContent).toContain(NOTICE_NOT_SEEN);
+    expect(host.querySelector("footer")).toBeNull();
   });
 
   it("Cancel leaves the settings alone", async () => {

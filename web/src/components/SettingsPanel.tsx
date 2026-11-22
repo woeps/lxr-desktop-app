@@ -1,14 +1,15 @@
 import { createSignal, For, untrack } from "solid-js";
 import { useApp } from "../state/app";
 import { SLOTS } from "../state/settings";
+import { SidePanel } from "./SidePanel";
 import { SLOT_NAMES } from "./voices";
 
 const slots = Array.from({ length: SLOTS }, (_, i) => i);
 
-/** Module MIDI setup (R2): channels, global channel and trigger notes. Kept in the browser, never sent. */
-export function MidiSetupDialog(props: { onClose: () => void }) {
+/** Settings panel (R5.7): module MIDI setup: channels, global channel and trigger notes. Kept in the browser, never sent. */
+export function SettingsPanel(props: { onClose: () => void }) {
   const { settings } = useApp();
-  // A snapshot taken on open: edits stay in the dialog until Save.
+  // A snapshot taken on open: edits stay in the panel until Save.
   const [channels, setChannels] = createSignal(untrack(() => [...settings.state.channels]));
   const [global, setGlobal] = createSignal(untrack(() => settings.state.global));
   const [notes, setNotes] = createSignal(untrack(() => [...settings.state.notes]));
@@ -18,7 +19,7 @@ export function MidiSetupDialog(props: { onClose: () => void }) {
     props.onClose();
   }
   return (
-    <div role="dialog" aria-modal="true" aria-label="MIDI setup" onKeyDown={(e) => { if (e.key === "Escape") props.onClose(); }}>
+    <SidePanel title="Settings" glyph="settings">
       <p>
         These settings describe the module. They are not sent to it: the firmware does not accept its
         MIDI settings over MIDI, so change them with the console (for example <code>set midi_chan_1 3</code>).
@@ -48,6 +49,6 @@ export function MidiSetupDialog(props: { onClose: () => void }) {
         <button type="button" onClick={save}>Save setup</button>
         <button type="button" onClick={props.onClose}>Cancel</button>
       </div>
-    </div>
+    </SidePanel>
   );
 }

@@ -23,4 +23,3 @@
 .stone { font: inherit; width: 3em; height: 3em; color: #000; background: var(--stone); border: 2px solid var(--text); border-radius: 40% 60% 50% 50%; cursor: pointer; }
 .stone:disabled { opacity: 0.5; cursor: not-allowed; }
 .stoneKey { font-weight: bold; }
-.footer { padding: 6px 10px; color: var(--muted); font-size: 0.9em; }

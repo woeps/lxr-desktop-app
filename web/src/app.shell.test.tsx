@@ -62,6 +62,7 @@ describe("page shell", () => {
 
   it("shows the fixed notices, taken verbatim from requirements.md", () => {
     const req = readFileSync("../.kiro/specs/build-an-interactive-web-ui-for/requirements.md", "utf8").replace(/\s+/g, " ");
+    click(btn("Info")); // the notices live in the Info panel
     const text = host.textContent!;
     for (const [notice, phrase] of [
       [NOTICE_ONE_WAY, "it cannot detect the module, its firmware version, or whether a message arrived"],

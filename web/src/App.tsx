@@ -4,9 +4,9 @@ import { AuditionBar } from "./components/AuditionBar";
 import { ConnectBar } from "./components/ConnectBar";
 import { ImportDialog } from "./components/ImportDialog";
 import { ImportPanel } from "./components/ImportPanel";
+import { InfoPanel } from "./components/InfoPanel";
 import { LibraryPanel } from "./components/LibraryPanel";
-import { MidiSetupDialog } from "./components/MidiSetupDialog";
-import { Footer } from "./components/Footer";
+import { SettingsPanel } from "./components/SettingsPanel";
 import { StoreDialog } from "./components/StoreDialog";
 import { TransferStatus } from "./components/TransferStatus";
 import { ShieldRow } from "./components/ShieldRow";
@@ -54,12 +54,12 @@ export function App(props: { app?: AppState }) {
         <Show when={shell.panel() === "library"}><LibraryPanel onImport={() => setImporting(true)} /></Show>
         <Show when={shell.panel() === "import"}><ImportPanel importer={importer} /></Show>
         <Show when={importing()}><ImportDialog onClose={() => setImporting(false)} /></Show>
-        <Show when={shell.panel() === "settings"}><MidiSetupDialog onClose={() => shell.close()} /></Show>
+        <Show when={shell.panel() === "settings"}><SettingsPanel onClose={() => shell.close()} /></Show>
+        <Show when={shell.panel() === "info"}><InfoPanel /></Show>
         <TransferStatus />
         <ShieldRow />
         <VoicePage />
         <AuditionBar />
-        <Footer />
         </StatusContext>
        </ShellContext>
       </SessionContext>
