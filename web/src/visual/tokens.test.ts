@@ -42,3 +42,19 @@ describe("tokens.css", () => {
     expect(contrast("#000000", "#000000")).toBeCloseTo(1, 5);
   });
 });
+
+// CSS modules of the shell rework (design 4.6, 6): colours come from tokens, never literals.
+const SHELL_CSS = ["Controls", "AppBar", "Panel", "Dock"].map((n) => `src/components/${n}.module.css`);
+
+describe("shell CSS modules", () => {
+  const read = (f: string) => { try { return readFileSync(f, "utf8"); } catch { return null; } };
+  it("includes the shared button styles", () => expect(read(SHELL_CSS[0]!)).not.toBeNull());
+  it.each(SHELL_CSS.filter((f) => read(f) !== null))("%s has no colour literals", (file) => {
+    const src = read(file)!.replace(/\/\*[\s\S]*?\*\//g, "");
+    expect(src.match(/#[0-9a-fA-F]{3,8}\b|\b(?:rgb|hsl)a?\(/g) ?? []).toEqual([]);
+  });
+  it("the scan catches a literal", () => {
+    expect("a { color: #fff; }".match(/#[0-9a-fA-F]{3,8}\b|\b(?:rgb|hsl)a?\(/g)).not.toBeNull();
+    expect("a { color: rgb(0 0 0); }".match(/#[0-9a-fA-F]{3,8}\b|\b(?:rgb|hsl)a?\(/g)).not.toBeNull();
+  });
+});

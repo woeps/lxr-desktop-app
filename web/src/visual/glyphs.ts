@@ -72,3 +72,24 @@ export function chain(links = 3, color = "var(--gold)"): SVGSVGElement {
   }
   return svg;
 }
+
+export const HEADER_GLYPHS = ["library", "import", "settings", "info"] as const;
+export type HeaderGlyph = (typeof HEADER_GLYPHS)[number];
+
+/** One glyph per side panel header (design 4.6). */
+const HEADER_PATHS: Record<HeaderGlyph, string[]> = {
+  library: ["M4 3H8V21H4ZM9 3H13V21H9Z", "M14.5 5L18.3 4L22 19L18.2 20Z"],
+  import: ["M12 3V15M7 10L12 15L17 10", "M4 15V21H20V15"],
+  settings: ["M4 7H20M4 12H20M4 17H20", "M9 4V10M15 9V15M8 14V20"],
+  info: ["M12 3A9 9 0 1 0 12 21A9 9 0 1 0 12 3Z", "M12 11V17M12 7V7.5"],
+};
+
+export function headerGlyph(name: HeaderGlyph): SVGSVGElement {
+  const svg = svgEl("svg", { viewBox: "0 0 24 24", width: 24, height: 24, "aria-hidden": "true", "data-glyph": name }) as SVGSVGElement;
+  for (const d of HEADER_PATHS[name]) {
+    svg.appendChild(svgEl("path", {
+      d, fill: "none", stroke: "var(--gold)", "stroke-width": 1.5, "stroke-linejoin": "round", "stroke-linecap": "round",
+    }));
+  }
+  return svg;
+}
