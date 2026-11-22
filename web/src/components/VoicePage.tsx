@@ -17,7 +17,6 @@ export function VoicePage() {
   return (
     <section role="tabpanel" id="voice-panel" aria-labelledby={`shield-${session.state.page}`} class={styles.page}
       ref={el}>
-      <h2>{info().name}</h2>
       <Show when={voiceOf(session.state.page) !== -1} fallback={<CauldronPage />}>
         <JourneyPage voice={voiceOf(session.state.page) as 0 | 1 | 2 | 3 | 4 | 5} />
       </Show>
