@@ -93,7 +93,7 @@ is checked off. Host tests run with `ctest --test-dir build/host`; web tests wit
   a token test checks every colour pair of design 4.12.1 is at least 7:1 on black.
 - [x] 7.2 `visual/motion.ts` (one loop per page, time-based follow with τ 0.12 s, strike envelope,
   pause, reduced motion, visibility) with `motion.test.ts`.
-- [ ] 7.3 `visual/icons.ts` with every icon kind of design 4.12.6, and `visual/glyphs.ts` (landmark
+- [x] 7.3 `visual/icons.ts` with every icon kind of design 4.12.6, and `visual/glyphs.ts` (landmark
   glyphs, seals, stars, chains). Done when `icons.test.ts` passes for all kinds at min, default and
   max.
 
