@@ -616,4 +616,13 @@ static void consoleInit(void)
 		putStr("sound: factory\r\n");
 }
 
-const ui_t console_ui = { "console", consoleInit, console_poll, onParamChanged };
+static void onPresetStored(int slot)
+{
+	char n[LXR_PRESET_NAME_LEN + 1];
+	if(slot >= 0 && lxr_preset_name((uint8_t)slot, n) == LXR_PRESET_OK)
+		out("stored slot %d '%s'\r\n", slot, n);
+	else
+		putStr("error: store failed, no preset storage\r\n");
+}
+
+const ui_t console_ui = { "console", consoleInit, console_poll, onParamChanged, onPresetStored };

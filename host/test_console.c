@@ -188,7 +188,19 @@ int main(void)
 	CHECK(HAS("error: name longer than 8"), "long name: %s", output);
 	run("preset frob\n");
 	CHECK(HAS("error: usage: preset"), "preset usage: %s", output);
+
+	/* MIDI store command: the next poll writes the boot slot and the console reports it */
+	run("preset load 2\nset vol3 66\n");
+	lxr_midi_request_store();
+	run("");
+	CHECK(HAS("stored slot 2 'Rimshot'"), "store report: %s", output);
+	run("set vol3 100\npreset load 2\n");
+	lxr_param_get(lxr_param_find("vol3")->id, &vol3);
+	CHECK(vol3 == 66, "vol3 after stored sound %u", vol3);
 	lxr_preset_set_storage(NULL);
+	lxr_midi_request_store();
+	run("");
+	CHECK(HAS("error: store failed, no preset storage"), "store failure report: %s", output);
 
 	run("frobnicate\n");
 	CHECK(HAS("error: unknown command 'frobnicate'"), "unknown command: %s", output);

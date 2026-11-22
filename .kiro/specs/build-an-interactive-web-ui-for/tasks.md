@@ -20,7 +20,7 @@ is checked off. Host tests run with `ctest --test-dir build/host`; web tests wit
   `engine/src/preset.c` (design 3.4). Extend `host/test_preset.c`: loaded slot keeps its name;
   boot with globals naming a blank slot 3 writes slot 3; blank globals write slot 0 as `slot00`.
   Done when `preset` passes.
-- [ ] 1.4 Add `on_preset_stored` to `ui_t`, the store step in `ui_poll_all()` and the console
+- [x] 1.4 Add `on_preset_stored` to `ui_t`, the store step in `ui_poll_all()` and the console
   message (design 3.5). Extend `host/test_console.c` for `stored slot <n> '<name>'`. Done when the
   full host suite passes and the RP2350 release build links, with `LXR_ENABLE_CONSOLE` on and off.
 - [ ] 1.5 Document the store command in the README "Playing" section (R11.9). Done when

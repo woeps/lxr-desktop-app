@@ -27,6 +27,9 @@ typedef struct {
 	void (*poll)(void);
 	/** Called after any parameter changed, from whichever context changed it. Must be short. May be NULL. */
 	void (*on_param_changed)(uint16_t id, uint8_t value);
+	/** Called on the control core after a MIDI store command wrote the boot slot (slot 0..15),
+	 *  or failed (-3). May be NULL. */
+	void (*on_preset_stored)(int slot);
 } ui_t;
 
 /** Adds a UI layer. Returns 0, or -1 if UI_MAX_LAYERS are already registered. The pointer must stay valid. */
