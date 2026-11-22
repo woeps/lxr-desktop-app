@@ -20,9 +20,9 @@ export function StatusStrip() {
     const tr = t();
     return tr !== null && !running() && !stopped() && tr.sent === tr.total && tr !== dismissed();
   };
-  const posted = () => (running() || stopped() ? null : status.current());
-  const waiting = () => app.pending() && !running() && !stopped();
-  const shown = () => running() || stopped() || waiting() || posted() !== null || finished();
+  // A message without text never makes a band.
+  const posted = () => { const c = status.current(); return running() || stopped() || !c || c.text.trim() === "" ? null : c; };
+  const shown = () => running() || stopped() || posted() !== null || finished();
   const dismiss = () => { status.dismiss(); setDismissed(t()); };
 
   return (
@@ -30,7 +30,7 @@ export function StatusStrip() {
       <div
         class={styles.strip}
         data-status-strip
-        data-kind={running() || stopped() || waiting() ? "info" : posted()?.kind === "error" ? "error" : posted()?.kind === "success" ? "success" : "info"}
+        data-kind={running() || stopped() ? "info" : posted()?.kind === "error" ? "error" : posted()?.kind === "success" ? "success" : "info"}
         onPointerEnter={() => status.pause()}
         onPointerLeave={() => status.resume()}
         onFocusIn={() => status.pause()}
@@ -54,7 +54,6 @@ export function StatusStrip() {
             </span>
           )}
         </Show>
-        <Show when={waiting()}><span role="status" data-testid="pending">Sending…</span></Show>
         <Show when={posted()}>
           {(s) => (
             <span role={s().kind === "error" ? "alert" : "status"} data-testid="status-message">

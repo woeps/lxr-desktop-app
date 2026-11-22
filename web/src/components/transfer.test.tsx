@@ -112,3 +112,16 @@ describe("StatusStrip", () => {
     expect(out.filter((m) => (m[0]! & 0xf0) === 0x90)).toHaveLength(0);
   });
 });
+
+describe("StatusStrip and slider moves", () => {
+  it("moving a sound slider while connected shows no band at all", () => {
+    const slider = q("[role=slider]:not([aria-readonly=true])")!;
+    slider.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }));
+    flush();
+    expect(out.length).toBeGreaterThan(0); // the change was sent
+    expect(app.pending()).toBe(true);
+    expect(q("[data-status-strip]")).toBeNull();
+    advance(5000);
+    expect(q("[data-status-strip]")).toBeNull();
+  });
+});

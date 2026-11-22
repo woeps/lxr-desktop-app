@@ -79,3 +79,15 @@ describe("StatusStrip", () => {
     expect(strip()).toBeNull();
   });
 });
+
+describe("StatusStrip empty messages", () => {
+  it("a message with empty text never renders a band", () => {
+    const s = mount();
+    s.say({ kind: "error", text: "" });
+    flush();
+    expect(strip()).toBeNull();
+    s.say({ kind: "info", text: "  " });
+    flush();
+    expect(strip()).toBeNull();
+  });
+});
