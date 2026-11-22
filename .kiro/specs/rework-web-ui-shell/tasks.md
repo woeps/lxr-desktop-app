@@ -113,7 +113,7 @@ Task 12 needs Chris at the browser.
 
 ## 12. Acceptance in the browser
 
-- [ ] 12.1 Take the screenshots listed at the end of design section 6 and compare them with the
+- [x] 12.1 Take the screenshots listed at the end of design section 6 and compare them with the
   agreed mockup. Done when they are in the scratch directory and every difference is fixed or
   listed.
 - [ ] 12.2 **[browser]** Chris opens the built page in his browser with the MIDI interface
