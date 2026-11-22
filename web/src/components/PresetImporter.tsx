@@ -18,6 +18,7 @@ export function PresetImporter(props: { importer: Importer; onClose: () => void 
   const imp = props.importer;
   const [message, setMessage] = createSignal<string | null>(null);
   const [replacing, setReplacing] = createSignal<PackFile[] | null>(null);
+  const [replacingSounds, setReplacingSounds] = createSignal(false);
   const [selecting, setSelecting] = createSignal<string | null>(null);
   let list: HTMLUListElement | undefined;
 
@@ -26,6 +27,7 @@ export function PresetImporter(props: { importer: Importer; onClose: () => void 
     return t.length > 0 && t.every((p) => nameError(p.name) === null);
   };
 
+  const existingTicked = () => imp.state.presets.filter((p) => imp.state.ticked.includes(p.key) && imp.exists(p.key)).length;
   const allTicked = () => imp.state.presets.length > 0 && imp.state.presets.every((p) => imp.state.ticked.includes(p.key));
 
   function choose(files: FileList | null) {
@@ -116,12 +118,13 @@ export function PresetImporter(props: { importer: Importer; onClose: () => void 
               <input aria-label={`Name of ${p.file}`} maxlength={NAME_MAX * 4} value={p.name}
                 onInput={(e) => imp.rename(p.key, e.currentTarget.value)} />
               <Show when={nameError(p.name)}>{(m) => <span role="alert">{m()}</span>}</Show>
+              <Show when={imp.exists(p.key)}><span data-testid="importer-exists">exists, will be replaced</span></Show>
               <For each={p.notes}>{(n) => <div data-testid="importer-note">{n}</div>}</For>
             </li>
           )}
         </For>
       </ul>
-      <button type="button" disabled={!canAdd()} onClick={() => imp.addTicked()}>Add ticked to library</button>
+      <button type="button" disabled={!canAdd()} onClick={() => { if (imp.addTicked() === "confirm") setReplacingSounds(true); }}>Add ticked to library</button>
       <Show when={imp.state.result}>{(m) => <p role="status" data-testid="importer-result">{m()}</p>}</Show>
       <button type="button" onClick={props.onClose}>Close</button>
       <Show when={replacing()}>
@@ -131,6 +134,12 @@ export function PresetImporter(props: { importer: Importer; onClose: () => void 
             {`Replace the list of ${imp.state.presets.length} presets?`}
           </ConfirmDialog>
         )}
+      </Show>
+      <Show when={replacingSounds()}>
+        <ConfirmDialog title="Replace sounds" confirmLabel="Replace sounds" onCancel={() => setReplacingSounds(false)}
+          onConfirm={() => { setReplacingSounds(false); imp.addTicked(true); }}>
+          {`${existingTicked()} ${existingTicked() === 1 ? "sound" : "sounds"} in the library will be replaced by the ticked presets.`}
+        </ConfirmDialog>
       </Show>
       <Show when={selecting()}>
         {(key) => (

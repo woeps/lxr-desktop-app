@@ -3,6 +3,7 @@ import type { Pack, PackFile, Preset, Unreadable } from "../files/pack";
 import { scanPack } from "../files/pack";
 import { realClock, type Clock } from "../midi/sender";
 import type { App } from "./app";
+import { cleanName, numberDuplicates } from "./library";
 import { isDirty } from "./dirty";
 
 /** A selection is sent only after this long without another one (R3.3). */
@@ -36,8 +37,14 @@ export interface Importer {
   toggleAll(): void;
   /** Edits the name used when the preset is added to the library (R4.2). */
   rename(key: string, name: string): void;
-  /** Adds the ticked presets in list order; stops at the first library error (R4.1). Never touches the session or sender (R4.3). */
-  addTicked(): void;
+  /** True when the library has a sound with this preset's name (R3.4). */
+  exists(key: string): boolean;
+  /**
+   * Adds the ticked presets in list order; stops at the first library error (R4.1). A ticked preset
+   * whose name exists replaces that sound, which needs one confirmation for the batch: without
+   * `force` it returns "confirm" and changes nothing. Never touches the session or sender (R4.3).
+   */
+  addTicked(force?: boolean): "ok" | "confirm";
 }
 
 /** Never calls `app.store()`: a selection is live only (R2.3). */
@@ -110,6 +117,10 @@ export function createImporter(app: App, clock: Clock = realClock): Importer {
     state,
     async open(files) {
       const pack: Pack = await scanPack(files);
+      // Same name twice in one pack: number the later ones (R3.4). Nothing is ticked by default, so
+      // presets that exist in the library start unticked.
+      const names = numberDuplicates(pack.presets.map((p) => p.name));
+      pack.presets.forEach((p, i) => { p.name = names[i]!; });
       clearTimers();
       setState((s) => {
         s.presets = pack.presets;
@@ -159,12 +170,18 @@ export function createImporter(app: App, clock: Clock = realClock): Importer {
       });
       flush();
     },
-    addTicked() {
+    exists: (key) => {
+      const p = state.presets.find((x) => x.key === key);
+      return p !== undefined && app.library.findByName(cleanName(p.name)) !== undefined;
+    },
+    addTicked(force = false) {
       const todo = state.presets.filter((p) => state.ticked.includes(p.key));
+      if (!force && todo.some((p) => app.library.findByName(cleanName(p.name)))) return "confirm";
       let n = 0;
       let error: string | null = null;
       for (const p of todo) {
-        const r = app.library.add(p.name, p.sound, []);
+        const old = app.library.findByName(cleanName(p.name));
+        const r = old ? app.library.replace(old.id, p.name, p.sound) : app.library.add(p.name, p.sound, []);
         if (!r.ok) { error = r.error; break; }
         n++;
       }
@@ -176,6 +193,7 @@ export function createImporter(app: App, clock: Clock = realClock): Importer {
           : `${error} Added ${n} of ${todo.length}.`;
       });
       flush();
+      return "ok";
     },
   };
 }

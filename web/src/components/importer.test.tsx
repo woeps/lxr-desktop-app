@@ -170,6 +170,23 @@ describe("PresetImporter", () => {
     expect(app.library.list().length).toBe(0);
   });
 
+  it("marks existing names, and replaces them only after one confirmation", async () => {
+    app.library.add("bbb", factory("bbb"));
+    const k = kitFolder();
+    await pick("Open folder", k.files, k.paths);
+    expect([...host.querySelectorAll("[data-testid=importer-exists]")].length).toBe(1);
+    expect(host.querySelector("[data-testid=importer-exists]")!.textContent).toBe("exists, will be replaced");
+    click(button("Select all"));
+    click(button("Add ticked to library"));
+    expect(host.querySelector("[role=alertdialog]")!.textContent).toContain("1 sound in the library will be replaced");
+    expect(app.library.sounds.length).toBe(1);
+    click(button("Cancel"));
+    click(button("Add ticked to library"));
+    click(button("Replace sounds"));
+    expect(app.library.list().map((e) => e.name).sort()).toEqual(["Aaa", "Bbb", "Ccc"]);
+    expect(host.querySelector("[role=alertdialog]")).toBeNull();
+  });
+
   it("disables select all with an empty list", () => {
     expect(button("Select all").disabled).toBe(true);
   });

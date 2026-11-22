@@ -13,7 +13,7 @@ Task 12 needs Chris at the browser.
   `duplicate`; add the migration in `parse` with the write-back (design 3.3). Done when
   `library.test.ts` covers the R3.1 and R3.3 cases (including the examples, a three-way duplicate,
   the 8-character limit and a quota failure on write-back) and passes.
-- [ ] 1.2 Adapt the importers: `state/importer.ts`, `components/ImportDialog.tsx` and their tests
+- [x] 1.2 Adapt the importers: `state/importer.ts`, `components/ImportDialog.tsx` and their tests
   for the "exists" note, unticked default, one confirmation for replacing and numbering inside a
   batch (R3.4). Done when `importer.test.ts` and `importer.test.tsx` pass.
 - [ ] 1.3 Remove Duplicate from the drawer in `Grimoire.tsx` and show the one-time renamed notice

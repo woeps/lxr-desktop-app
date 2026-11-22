@@ -244,6 +244,37 @@ describe("ImportDialog", () => {
     expect(app.library.sounds.map((s) => s.name)).toEqual(["Kit 2"]);
   });
 
+  it("numbers names repeated inside a batch, and lists existing names unticked", async () => {
+    await mount(false);
+    app.library.add("Old", sound("Old", 1));
+    const e = (name: string) => ({ name, tags: [], created: "2026-01-01T00:00:00Z", modified: "2026-01-01T00:00:00Z", params: {} });
+    open();
+    await pickFile(new File([exportJson([e("Dup"), e("dup"), e("OLD")])], "set.json"));
+    const boxes = () => [...host.querySelectorAll<HTMLInputElement>("[role=dialog] input[type=checkbox]")];
+    expect([...host.querySelectorAll<HTMLInputElement>("input[aria-label^='Name of']")].map((i) => i.value)).toEqual(["Dup", "dup2", "OLD"]);
+    expect(boxes().map((b) => b.checked)).toEqual([true, true, false]);
+    expect(host.querySelectorAll("[data-testid=import-exists]").length).toBe(1);
+  });
+
+  it("replaces an existing sound only after one confirmation for the batch", async () => {
+    await mount(false);
+    app.library.add("Old", sound("Old", 1));
+    const before = JSON.stringify(app.library.sounds[0]!.params);
+    const e = (name: string, v: number) => ({ name, tags: [], created: "2026-01-01T00:00:00Z", modified: "2026-01-01T00:00:00Z", params: { [PARAMS[0]!.name]: v } });
+    open();
+    await pickFile(new File([exportJson([e("OLD", 2), e("New", 0)])], "set.json"));
+    click(host.querySelector<HTMLInputElement>("[aria-label='Add set.json: OLD']")!);
+    click(button("Add selected to library"));
+    expect(host.querySelector("[role=alertdialog]")).not.toBeNull();
+    expect(app.library.sounds.map((x) => x.name)).toEqual(["Old"]);
+    click(button("Cancel"));
+    expect(JSON.stringify(app.library.sounds[0]!.params)).toBe(before);
+    click(button("Add selected to library"));
+    click(button("Replace sounds"));
+    expect(app.library.sounds.map((x) => x.name).sort()).toEqual(["New", "OLD"]);
+    expect(app.library.sounds.length).toBe(2);
+  });
+
   it("refuses other file types and bad JSON with a message", async () => {
     await mount(false);
     open();

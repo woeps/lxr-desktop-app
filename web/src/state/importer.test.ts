@@ -303,6 +303,35 @@ describe("importer: transfer-done hint and send again", () => {
       expect(imp.state.ticked).toEqual([key("Bbb"), key("Ccc")]);
       expect(imp.state.result).toBe("Full. Added 1 of 3.");
     });
+    it("numbers a name repeated inside the pack and starts nothing ticked", async () => {
+      await setup(false);
+      await imp.open([kit("Aaa", 1), { ...kit("Aaa", 2), path: "more/Aaa.SND" }, { ...kit("aaa", 3), path: "more/aaa.SND" }]);
+      expect(imp.state.presets.map((p) => p.name)).toEqual(["Aaa", "Aaa2", "aaa3"]);
+      expect(imp.state.ticked).toEqual([]);
+    });
+    it("marks names that exist in the library, case-insensitively", async () => {
+      await setup(false);
+      app.library.add("bbb", factory("bbb"));
+      expect(NAMES.filter((n) => imp.exists(key(n)))).toEqual(["Bbb"]);
+      imp.rename(key("Ccc"), " AAA ");
+      expect(imp.exists(key("Ccc"))).toBe(false);
+      imp.rename(key("Ccc"), " BBB ");
+      expect(imp.exists(key("Ccc"))).toBe(true);
+    });
+    it("asks once before replacing, changes nothing until forced, then replaces", async () => {
+      await setup(false);
+      app.library.add("Bbb", factory("Bbb"));
+      const id = app.library.findByName("Bbb")!.id;
+      ["Aaa", "Bbb"].forEach((n) => imp.tick(key(n), true));
+      expect(imp.addTicked()).toBe("confirm");
+      expect(names()).toEqual(["Bbb"]);
+      expect(imp.state.ticked).toEqual([key("Aaa"), key("Bbb")]);
+      expect(imp.addTicked(true)).toBe("ok");
+      expect(names().sort()).toEqual(["Aaa", "Bbb"]);
+      expect(app.library.findByName("Bbb")!.id).toBe(id);
+      expect(app.library.sounds.length).toBe(2);
+      expect(imp.state.result).toBe("Added 2 sounds to the library.");
+    });
     it("touches neither sender nor session; selecting adds nothing", async () => {
       await setup(true);
       imp.select(key("Aaa")); done();

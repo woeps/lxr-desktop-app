@@ -44,6 +44,18 @@ export function freeName(name: string, taken: ReadonlySet<string>): string {
   }
 }
 
+/** Names for a batch of sounds: a later name that repeats an earlier one (or a name in `taken`) is numbered as in R3.3. */
+export function numberDuplicates(names: readonly string[], taken: Iterable<string> = []): string[] {
+  const all = new Set([...names, ...taken].map(nameKey));
+  const seen = new Set([...taken].map(nameKey));
+  return names.map((n) => {
+    if (!seen.has(nameKey(n))) { seen.add(nameKey(n)); return n; }
+    const out = freeName(n, all);
+    all.add(nameKey(out)); seen.add(nameKey(out));
+    return out;
+  });
+}
+
 const existsError = (name: string) => `A sound named '${name}' already exists.`;
 
 export function toParams(sound: Sound): Record<string, number> {
