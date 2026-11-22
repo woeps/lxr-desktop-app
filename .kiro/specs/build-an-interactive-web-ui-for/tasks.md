@@ -111,7 +111,7 @@ is checked off. Host tests run with `ctest --test-dir build/host`; web tests wit
 
 ## 9. Journey page (design 4.12.2 to 4.12.5)
 
-- [ ] 9.1 `Station`, `MentorCard`, `BindingsCard`, `OracleCard` and `JourneyPage` laid out as in
+- [x] 9.1 `Station`, `MentorCard`, `BindingsCard`, `OracleCard` and `JourneyPage` laid out as in
   design 4.12.2, with ribbon titles, subtitles and rows from `model/stations.ts`.
 - [ ] 9.2 `visual/frames.ts`: the top-edge frames of design 4.12.4 for all fourteen boxes, built from
   the measured size. Done when each frame stays outside the content padding at the box sizes of
