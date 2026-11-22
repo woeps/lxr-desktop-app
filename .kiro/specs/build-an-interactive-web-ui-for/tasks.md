@@ -103,7 +103,7 @@ is checked off. Host tests run with `ctest --test-dir build/host`; web tests wit
   reset, badges, keyboard and pointer behaviour of design 4.9; one drag is one undo step; value
   changes go through `applyChanges`. Done when component tests cover keyboard, relative drag,
   Shift fine drag, double-click reset and lock.
-- [ ] 8.2 `ConnectBar`, `Toolbar` (Undo, Redo, A/B, Revert, Initialise, Send all, Seal into boot
+- [x] 8.2 `ConnectBar`, `Toolbar` (Undo, Redo, A/B, Revert, Initialise, Send all, Seal into boot
   slot, Save to library, Roll with amount, Copy/Paste on drum pages), `VoiceShields`, `RuneStone`,
   `AuditionBar` (rune stones 1–7, velocity, pitch, Play all, Panic, keys), `Footer` with the fixed
   notices of R1.4, R3.10 and R7.6. Done when the app renders with these and switching a shield

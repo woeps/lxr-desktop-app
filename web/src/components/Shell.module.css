@@ -1,0 +1,17 @@
+.bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 6px 10px; border-bottom: 1px solid var(--line); }
+.bar button, .bar select, .bar input { font: inherit; color: var(--text); background: var(--bg); border: 1px solid var(--line); border-radius: 0.4em; }
+.bar button { cursor: pointer; padding: 0.2em 0.7em; }
+.bar button:disabled { opacity: 0.6; cursor: not-allowed; }
+.bar button:focus-visible, .shield:focus-visible, .stone:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+.grow { flex: 1 1 20em; color: var(--muted); font-size: 0.9em; }
+.shields { display: flex; gap: 6px; padding: 6px 10px; }
+.shield { font: inherit; display: inline-flex; gap: 4px; align-items: center; padding: 0.3em 0.9em; color: var(--text); background: var(--bg); border: 2px solid var(--shield); border-radius: 0.3em 0.3em 1.2em 1.2em; cursor: pointer; }
+.shield[aria-selected="true"] { background: var(--shield); color: #000; }
+.count { min-width: 1em; font-size: 0.8em; }
+.page { padding: 6px 10px; }
+.box { border: 1px solid var(--line); margin: 6px 0; }
+.box legend { color: var(--voice); text-transform: capitalize; }
+.stone { font: inherit; width: 3em; height: 3em; color: #000; background: var(--stone); border: 2px solid var(--text); border-radius: 40% 60% 50% 50%; cursor: pointer; }
+.stone:disabled { opacity: 0.5; cursor: not-allowed; }
+.stoneKey { font-weight: bold; }
+.footer { padding: 6px 10px; color: var(--muted); font-size: 0.9em; }
