@@ -1,7 +1,6 @@
 import { createSignal, onCleanup, Show } from "solid-js";
 import { AppBar } from "./components/AppBar";
-import { AuditionBar } from "./components/AuditionBar";
-import { ConnectBar } from "./components/ConnectBar";
+import { Dock } from "./components/Dock";
 import { ImportDialog } from "./components/ImportDialog";
 import { ImportPanel } from "./components/ImportPanel";
 import { InfoPanel } from "./components/InfoPanel";
@@ -14,12 +13,15 @@ import { VoicePage } from "./components/VoicePage";
 import { AppContext, createApp, type App as AppState } from "./state/app";
 import { createImporter } from "./state/importer";
 import { SessionContext } from "./state/session";
-import { createShell, ShellContext } from "./state/shell";
+import { createShell, guardOutput, ShellContext } from "./state/shell";
 import { createStatus, StatusContext } from "./state/status";
 
 /** Page shell (design 4.9). `app` is injectable for tests. */
 export function App(props: { app?: AppState }) {
   const app = props.app ?? createApp();
+
+  const shell = createShell();
+  const strikeKey = guardOutput(app, shell, (i: number) => { if (i === 7) app.playAll(); else app.strike(i); });
 
   // R4.3: mapped keys trigger voices; ignored in text fields, with modifiers and on key repeat.
   function onKey(e: KeyboardEvent) {
@@ -28,7 +30,7 @@ export function App(props: { app?: AppState }) {
     if (t && (["INPUT", "SELECT", "TEXTAREA"].includes(t.tagName) || t.isContentEditable)) return;
     const i = app.settings.state.keys.indexOf(e.key);
     if (i < 0) return;
-    if (i === 7) app.playAll(); else app.strike(i);
+    strikeKey(i);
   }
   document.addEventListener("keydown", onKey);
   onCleanup(() => document.removeEventListener("keydown", onKey));
@@ -38,7 +40,6 @@ export function App(props: { app?: AppState }) {
 
   const [sealing, setSealing] = createSignal(false);
   const [importing, setImporting] = createSignal(false);
-  const shell = createShell();
   const status = createStatus();
   // Created once so the list and selection survive closing and reopening the panel.
   const importer = createImporter(app);
@@ -48,8 +49,7 @@ export function App(props: { app?: AppState }) {
       <SessionContext value={app.session}>
        <ShellContext value={shell}>
         <StatusContext value={status}>
-        <ConnectBar />
-        <AppBar onSeal={() => setSealing(true)} />
+        <AppBar onSeal={guardOutput(app, shell, () => setSealing(true))} />
         <Show when={sealing()}><StoreDialog onClose={() => setSealing(false)} /></Show>
         <Show when={shell.panel() === "library"}><LibraryPanel onImport={() => setImporting(true)} /></Show>
         <Show when={shell.panel() === "import"}><ImportPanel importer={importer} /></Show>
@@ -59,7 +59,7 @@ export function App(props: { app?: AppState }) {
         <TransferStatus />
         <ShieldRow />
         <VoicePage />
-        <AuditionBar />
+        <Dock />
         </StatusContext>
        </ShellContext>
       </SessionContext>

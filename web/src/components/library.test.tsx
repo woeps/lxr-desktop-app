@@ -48,6 +48,7 @@ async function mount(connect = true) {
   dispose = render(() => <App app={app} />, host);
   flush();
   if (connect) {
+    click(host.querySelector("[data-connection-pill]")!);
     click(button("Connect"));
     await Promise.resolve(); await Promise.resolve(); flush();
     advance(0);

@@ -90,7 +90,7 @@ Task 12 needs Chris at the browser.
 
 ## 9. Dock and connection (R6)
 
-- [ ] 9.1 Add `ConnectionPill` and `Dock` from `ConnectBar.tsx` and `AuditionBar.tsx`; add the
+- [x] 9.1 Add `ConnectionPill` and `Dock` from `ConnectBar.tsx` and `AuditionBar.tsx`; add the
   needs-output guard to the stones, Play all, Panic, Send all, Seal and the key handler; remove
   both old components and the Audition checkbox row. Done when tests show the popover opens on a
   guarded action without output and not on load, the existing audition and key tests pass, and

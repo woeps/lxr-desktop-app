@@ -1,6 +1,6 @@
 import { Show } from "solid-js";
 import { useApp } from "../state/app";
-import { useShell, type PanelId } from "../state/shell";
+import { guardOutput, useShell, type PanelId } from "../state/shell";
 import { copyVoice, diff, factory, pasteVoice } from "../model/sound";
 import { headerGlyph, type HeaderGlyph } from "../visual/glyphs";
 import { shellIcon } from "../visual/shellIcons";
@@ -71,9 +71,8 @@ export function AppBar(props: { onSeal: () => void }) {
         label="Send all"
         icon={() => shellIcon("send")}
         accent="gold"
-        mainDisabled={!app.hasOutput()}
         menuLabel="Send options"
-        onPress={() => app.sendAll()}
+        onPress={guardOutput(app, shell, () => app.sendAll())}
         menu={
           <>
             <button type="button" role="menuitem" disabled={app.pending()} title="Store the live sound into the module's boot slot" onClick={props.onSeal}>

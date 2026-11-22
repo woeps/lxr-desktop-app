@@ -34,7 +34,8 @@ const tick = async () => { await Promise.resolve(); await Promise.resolve(); flu
 const btn = (name: string) => host.querySelector<HTMLElement>(`[aria-label="${name}"]`)
   ?? [...host.querySelectorAll<HTMLElement>("button")].find((b) => b.textContent!.trim().startsWith(name))!;
 const click = (el: Element) => { (el as HTMLElement).click(); flush(); };
-const connect = async () => { click(btn("Connect")); await tick(); out.length = 0; };
+const pill = () => host.querySelector<HTMLElement>("[data-connection-pill]")!;
+const connect = async () => { if (!host.querySelector("[aria-label='MIDI connection']")) click(pill()); click(btn("Connect")); await tick(); out.length = 0; };
 const rows = () => [...host.querySelectorAll<HTMLElement>("[data-param]")].map((e) => e.dataset.param!);
 const press = (el: Element, key: string, init: KeyboardEventInit = {}) => {
   el.dispatchEvent(new KeyboardEvent("keydown", { key, bubbles: true, cancelable: true, ...init }));
@@ -48,6 +49,7 @@ describe("page shell", () => {
   beforeEach(() => mount());
 
   it("renders every control with an accessible name", () => {
+    click(pill());
     for (const n of ["Connect", "MIDI output", "Test", "Undo", "Redo", "A/B", "Revert", "Send all",
       "Sound name", "Save", "Library", "Import presets", "Settings", "Info", "Velocity", "Pitch", "Play all", "Panic"]) {
       expect(btn(n), n).toBeTruthy();
@@ -74,7 +76,8 @@ describe("page shell", () => {
       expect(req.toLowerCase()).toContain(phrase.toLowerCase());
     }
     expect(text).toContain("Send all makes the module match the page");
-    expect(text).toContain("Not sending");
+    click(pill()); // the not-sent notice lives in the connection popover
+    expect(host.textContent).toContain("Not sending");
   });
 
   it("switching a shield shows only that voice's controls", () => {
@@ -231,10 +234,12 @@ describe("Import presets panel", () => {
 });
 
 describe("without an output", () => {
-  it("disables sending and says nothing is sent", () => {
+  it("sends nothing, opens the connection popover and says nothing is sent", () => {
     mount(false);
-    expect((btn("Trigger Drum 1") as HTMLButtonElement).disabled).toBe(true);
-    expect((btn("Send all") as HTMLButtonElement).disabled).toBe(true);
+    expect(host.querySelector("[aria-label='MIDI connection']")).toBeNull(); // not on load
+    click(btn("Trigger Drum 1"));
+    expect(out).toHaveLength(0);
+    expect(host.querySelector("[aria-label='MIDI connection']")).not.toBeNull();
     expect(host.textContent).toContain("Not sending");
   });
 });

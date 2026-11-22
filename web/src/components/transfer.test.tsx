@@ -45,6 +45,7 @@ beforeEach(async () => {
   document.body.appendChild(host);
   dispose = render(() => <App app={app} />, host);
   flush();
+  click(host.querySelector("[data-connection-pill]")!);
   click(btn("Connect"));
   await tick();
   out.length = 0;
@@ -95,9 +96,7 @@ describe("TransferStatus", () => {
     advance(5000);
     const notes = () => out.filter((m) => (m[0]! & 0xf0) === 0x90);
     expect(notes()).toHaveLength(0);
-    const box = host.querySelector<HTMLInputElement>("input[type=checkbox]")!;
-    box.click(); flush();
-    expect(app.settings.state.auditionAfterSend).toBe(true);
+    app.settings.set({ auditionAfterSend: true });
     out.length = 0;
     click(btn("Send all"));
     advance(5000);

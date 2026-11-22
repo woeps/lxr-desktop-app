@@ -52,7 +52,9 @@ const button = (name: string) => [...host.querySelectorAll<HTMLButtonElement>("b
 const click = (el: Element) => { (el as HTMLElement).click(); flush(); };
 const seal = () => { click(host.querySelector("[aria-label='Send options']")!); click(host.querySelector("[role=menuitem]")!); };
 const tab = (name: string) => host.querySelector<HTMLElement>(`[role=tab][aria-label="${name}"]`)!;
-const connect = async () => { click(button("Connect")); await tick(); advance(0); out.length = 0; };
+const pill = () => host.querySelector<HTMLElement>("[data-connection-pill]")!;
+const openConnect = () => { if (!host.querySelector("[aria-label='MIDI connection']")) click(pill()); };
+const connect = async () => { openConnect(); click(button("Connect")); await tick(); advance(0); out.length = 0; };
 
 beforeEach(() => localStorage.clear());
 afterEach(() => { dispose(); host.remove(); });
@@ -114,6 +116,7 @@ describe("the page end to end, with a fake MIDI access", () => {
 
   it("without Web MIDI it says so and still edits", async () => {
     mount({ isSecureContext: true });
+    openConnect();
     click(button("Connect"));
     await tick();
     expect(host.textContent).toContain(MSG_UNSUPPORTED);

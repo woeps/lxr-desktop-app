@@ -234,6 +234,7 @@ describe("AppBar", () => {
 
   it("the Send menu has Seal, which opens the store dialog, and Audition after send", () => {
     mountApp();
+    app.hasOutput = () => true; // Seal needs an output (R6.4)
     click(byLabel("Send options"));
     const items = [...host.querySelectorAll<HTMLElement>("[role=menuitem]")].map((i) => i.textContent!.trim());
     expect(items).toEqual(["Seal into boot slot", "Audition after send"]);
@@ -303,5 +304,65 @@ describe("side panels", () => {
     expect(panels()).toEqual(["Library"]);
     esc(host.querySelector("aside")!);
     expect(panels()).toEqual([]);
+  });
+});
+
+describe("dock and connection pill", () => {
+  let app: AppState;
+  let sent: number[][];
+  function mountDock(withOutput: boolean) {
+    localStorage.clear();
+    sent = [];
+    const port = { id: "p1", name: "Fake out", send: (d: number[]) => { sent.push(d); } };
+    app = createApp({ storage: localStorage, rng: () => 0.5, clock: { now: () => 0, setTimeout: () => 1, clearTimeout: () => {} },
+      env: { isSecureContext: true, requestMIDIAccess: async () => ({ outputs: { values: () => (withOutput ? [port] : []) }, onstatechange: null }) } });
+    mount(() => <App app={app} />);
+  }
+  const pill = () => host.querySelector<HTMLButtonElement>("[data-connection-pill]")!;
+  const pop = () => host.querySelector("[role=dialog][aria-label='MIDI connection']");
+  const named = (l: string) => host.querySelector<HTMLButtonElement>(`button[aria-label="${l}"]`)!;
+  const text = (t: string) => [...host.querySelectorAll<HTMLButtonElement>("button")].find((b) => b.textContent!.trim().startsWith(t))!;
+
+  it("shows the state as text, does not open on load and toggles by click", () => {
+    mountDock(false);
+    expect(pill().textContent!.trim()).toBe("Not connected");
+    expect(pop()).toBeNull();
+    click(pill());
+    expect(pop()).not.toBeNull();
+    expect(pop()!.textContent).toContain(NOTICE_ONE_WAY);
+    expect(pop()!.querySelector("[aria-label='MIDI output']")).not.toBeNull();
+    click(pill());
+    expect(pop()).toBeNull();
+  });
+
+  it("opens on a guarded action without an output and runs nothing", () => {
+    for (const run of [() => click(named("Trigger Snare")), () => click(text("Play all")), () => click(text("Send all")),
+      () => { click(named("Send options")); click(host.querySelector("[role=menuitem]")!); },
+      () => document.dispatchEvent(new KeyboardEvent("keydown", { key: "1", bubbles: true }))]) {
+      mountDock(false);
+      expect(pop()).toBeNull();
+      run(); flush();
+      expect(pop()).not.toBeNull();
+      expect(sent).toHaveLength(0);
+      expect(host.querySelector("[role=dialog][aria-label='Seal into boot slot']")).toBeNull();
+      dispose(); host.remove();
+    }
+  });
+
+  it("collapse keeps the pill and the keys, and persists", async () => {
+    mountDock(true);
+    click(pill());
+    click(text("Connect"));
+    await Promise.resolve(); await Promise.resolve(); flush();
+    sent.length = 0;
+    click(named("Collapse dock"));
+    expect(app.settings.state.dockCollapsed).toBe(true);
+    expect(JSON.parse(localStorage.getItem("lxr.settings.v1")!).dockCollapsed).toBe(true);
+    expect(pill().textContent!.trim()).toBe("Fake out");
+    expect(host.querySelector("[aria-label='Trigger Snare']")).toBeNull();
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "1", bubbles: true })); flush();
+    expect(sent.length).toBeGreaterThan(0);
+    click(named("Expand dock"));
+    expect(host.querySelector("[aria-label='Trigger Snare']")).not.toBeNull();
   });
 });

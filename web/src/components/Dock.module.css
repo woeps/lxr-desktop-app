@@ -1,0 +1,31 @@
+/* Dock and connection pill (R6). Colours are tokens only. */
+.dock {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 5;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: var(--bg);
+  border-top: 1px solid var(--line);
+}
+.pillWrap { position: relative; display: inline-block; }
+.pill {
+  font: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  padding: 0.2em 0.7em;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 1em;
+  cursor: pointer;
+}
+.dot { width: 0.6em; height: 0.6em; border-radius: 50%; border: 1px solid var(--text); }
+.dot[data-on="true"] { background: var(--text); }
+.connection { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; padding: 6px; max-width: 24em; white-space: normal; }

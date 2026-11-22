@@ -45,6 +45,7 @@ async function mount() {
   document.body.appendChild(host);
   dispose = render(() => <App app={app} />, host);
   flush();
+  host.querySelector<HTMLElement>("[data-connection-pill]")!.click(); flush();
   const connect = [...host.querySelectorAll<HTMLElement>("button")].find((b) => b.textContent!.trim() === "Connect")!;
   connect.click(); flush();
   await Promise.resolve(); await Promise.resolve(); flush();
@@ -117,6 +118,6 @@ describe("StoreDialog", () => {
     await mount();
     seal();
     click(button("Close"));
-    expect(host.querySelector("[role=dialog]")).toBeNull();
+    expect(host.querySelector("[role=dialog][aria-label='Seal into boot slot']")).toBeNull();
   });
 });
