@@ -3,7 +3,7 @@
   position: fixed;
   top: var(--bar-h, 3em);
   right: 0;
-  bottom: calc(var(--dock-h, 4em) + var(--strip-h));
+  bottom: var(--dock-h, 4em);
   z-index: 5;
   width: 320px;
   max-width: 100%;

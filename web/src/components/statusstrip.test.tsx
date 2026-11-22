@@ -47,6 +47,7 @@ describe("StatusStrip", () => {
     s.say({ kind: "success", text: "Saved 'A'." });
     flush();
     expect(strip()!.querySelector("[role=status]")!.textContent).toContain("Saved 'A'.");
+    expect(strip()!.getAttribute("data-kind")).toBe("success");
     advance(SUCCESS_MS);
     expect(strip()).toBeNull();
   });
@@ -70,6 +71,7 @@ describe("StatusStrip", () => {
     flush();
     advance(60_000);
     expect(strip()!.querySelector("[role=alert]")!.textContent).toContain("Disconnected");
+    expect(strip()!.getAttribute("data-kind")).toBe("error");
     [...strip()!.querySelectorAll("button")].find((b) => b.textContent === "Open connection")!.click();
     expect(ran).toBe(true);
     strip()!.querySelector<HTMLElement>("[aria-label=Dismiss]")!.click();

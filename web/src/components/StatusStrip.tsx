@@ -30,6 +30,7 @@ export function StatusStrip() {
       <div
         class={styles.strip}
         data-status-strip
+        data-kind={running() || stopped() || waiting() ? "info" : posted()?.kind === "error" ? "error" : posted()?.kind === "success" ? "success" : "info"}
         onPointerEnter={() => status.pause()}
         onPointerLeave={() => status.resume()}
         onFocusIn={() => status.pause()}
