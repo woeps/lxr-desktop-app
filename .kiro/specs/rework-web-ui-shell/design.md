@@ -18,11 +18,11 @@ App
  ├─ VoicePage         unchanged apart from headings (R8)
  ├─ SidePanel         one at a time, over the right edge (R5)
  ├─ Dock              connection pill, stones, Velocity, Pitch, Play all, Panic, collapse (R6)
- └─ StatusStrip       below the dock (R7)
+ └─ StatusStrip       band above the dock (R7)
 ```
 
 The page is a column: app bar, shield row and voice page in a scrolling area, dock and strip fixed
-below it. The scrolling area has bottom padding equal to the dock plus strip height (measured with a
+below it, the strip directly above the dock (`bottom: var(--dock-h)`). The scrolling area has bottom padding equal to the dock plus strip height (measured with a
 `ResizeObserver` and written to a CSS variable `--dock-h`). The strip is `position: absolute` above
 the page's bottom edge so that showing it does not change `--dock-h`; the padding always includes
 one strip height.
@@ -205,7 +205,11 @@ The dock contains the `RuneStone`s, the Velocity and Pitch sliders (the existing
 `LiquidBar` where it fits), Play all, Panic and the collapse button. `ConnectionPill` reads
 `app.conn.selected()`, `status()` and `message()` exactly as `ConnectBar` does and moves the
 Connect, Output select, Test and notices into a `Popover` (`role="dialog"`). The pill text is the
-state ("Not connected", "No output", the output name); the dot has `aria-hidden`.
+state ("Not connected", "No output", the output name); the dot has `aria-hidden`. Collapsed, CSS
+(`[data-collapsed]` on the dock) strips the pill to the bare dot; the label span shows as a tooltip
+on hover and `:focus-visible`, and the button keeps `aria-label` and `title` set to the label.
+The dock has no reserved row below it. `StatusStrip` sets `data-kind` (`info`, `success`, `error`)
+and fills the band with `--notice-info`, `--notice-success` or `--notice-error` and black text.
 
 ### 4.5 Headings (R8)
 

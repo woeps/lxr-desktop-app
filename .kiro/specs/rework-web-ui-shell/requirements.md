@@ -27,7 +27,7 @@ does in the sound chain.
   buttons.
 - **Side panel**: a panel that slides over the page from the right.
 - **Dock**: the audition area at the bottom of the page.
-- **Status strip**: the one-line message row below the dock.
+- **Status strip**: the one-line message band directly above the dock.
 - **Current sound**: the sound being edited. **Loaded entry**: the library entry the current sound
   was loaded from or last saved to, if any.
 - **Journey heading**: the ribbon text of a box of the sound controls.
@@ -188,11 +188,13 @@ Acceptance criteria:
    select, Test, the status message from `app.conn.message()`, and the one-way notice.
 4. WHEN the user presses a rune stone, Play all, Panic, Send all or Seal and no output is selected,
    THE popover SHALL open and the action SHALL NOT run. It SHALL NOT open on page load.
-5. THE collapse button SHALL collapse the dock to a thin strip that keeps the connection indicator
-   and an expand button. Collapsing SHALL NOT disable the keyboard keys of R4.3 of the earlier
+5. THE collapse button SHALL collapse the dock to a thin bar that keeps only a bare connection dot
+   (no background, border or pill) and an expand button. The dot SHALL stay focusable, SHALL open
+   the connection popover, and SHALL show the connection label on hover and focus only; its
+   accessible name and `title` SHALL always carry the label. Collapsing SHALL NOT disable the keyboard keys of R4.3 of the earlier
    feature. THE collapsed state SHALL persist in the settings.
-6. THE page SHALL leave bottom padding equal to the dock and strip height so that no control is
-   covered.
+6. THE dock SHALL sit at the bottom edge of the page with no reserved row below it. THE page SHALL
+   leave bottom padding equal to the dock and strip height so that no control is covered.
 7. THE connection row, the transfer row and the Audition after send checkbox of the page SHALL be
    removed from the main flow; Audition after send is in the Send all menu (R1.4).
 
@@ -202,7 +204,7 @@ Acceptance criteria:
 controls.
 
 Acceptance criteria:
-1. THE status strip SHALL be the last row of the page, below the dock, and SHALL be visible when the
+1. THE status strip SHALL be a band directly above the dock, and SHALL be visible when the
    dock is collapsed.
 2. THE strip SHALL be hidden when there is nothing to show, and SHALL overlay the page edge; showing
    or hiding it SHALL NOT move the sound controls.
@@ -215,7 +217,8 @@ Acceptance criteria:
    such as an output disappearing, with a button that opens the connection popover.
 5. Success messages SHALL disappear after 5 seconds unless the pointer or focus is on the strip.
    Error messages, the mixed-sound message and progress SHALL stay until dismissed or replaced.
-6. THE strip SHALL have a dismiss button, `role="status"` for progress and success and
+6. THE strip SHALL be filled with a distinct design-token colour per kind (info, success, error)
+   with black text, and SHALL have a dismiss button, `role="status"` for progress and success and
    `role="alert"` for errors.
 7. THE `TransferStatus` row SHALL be removed.
 
