@@ -38,6 +38,7 @@ export function JourneyPage(props: { voice: Voice }) {
   const session = useSession();
   const out = () => PARAMS.find((p) => p.voice === props.voice && p.name.startsWith("audio_out"))!;
   const outText = () => out().values![valueOf(session, out()) - out().min] ?? "";
+  const toFx = () => outText() === "FX";
   return (
     <div class={styles.journey} data-journey={props.voice}>
       <div class={styles.trail} data-slot="trail" />
@@ -46,8 +47,14 @@ export function JourneyPage(props: { voice: Voice }) {
           {(s) => (
             <Station station={s.id} numeral={s.numeral} title={s.title}
               subtitle={subtitleOf(s.id, props.voice)} kind={s.id === "return" ? "return" : "station"} voice={props.voice}
-              rows={s.id === "return" ? [] : stationRows(props.voice, s.id)}>
+              rows={s.id === "return" ? [] : stationRows(props.voice, s.id)}
+              onPicture={s.id === "return" && toFx() ? () => session.setPage("cauldron") : undefined}>
               {s.id === "return" && <p class={styles.result} data-part="result">{outText()}</p>}
+              {s.id === "return" && toFx() && (
+                <button type="button" data-part="open-cauldron" onClick={() => session.setPage("cauldron")}>
+                  Open the Cauldron
+                </button>
+              )}
             </Station>
           )}
         </For>

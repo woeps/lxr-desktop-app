@@ -28,7 +28,7 @@ function mountFrame(box: HTMLElement, id: FrameId) {
 
 export function Station(props: {
   station: string; numeral?: string; title: string; subtitle: string; rows: readonly ParamDef[];
-  kind?: BoxKind; voice?: Voice; children?: JSX.Element;
+  kind?: BoxKind; voice?: Voice; onPicture?: () => void; children?: JSX.Element;
 }) {
   const session = useSession();
   const voice = () => props.voice ?? (props.rows[0]?.voice as Voice | undefined);
@@ -50,7 +50,8 @@ export function Station(props: {
         <span data-part="title">{props.title}</span>
       </h3>
       <p class={styles.subtitle} data-part="subtitle">{props.subtitle}</p>
-      <div class={styles.slot} data-slot="picture" ref={pic} />
+      <div class={styles.slot} data-slot="picture" ref={pic} onClick={() => props.onPicture?.()}
+        style={props.onPicture ? { cursor: "pointer" } : undefined} />
       <For each={props.rows}>{(def) => <ParamRow def={def} />}</For>
       {props.children}
     </section>

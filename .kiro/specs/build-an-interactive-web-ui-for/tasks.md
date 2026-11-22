@@ -120,7 +120,7 @@ is checked off. Host tests run with `ctest --test-dir build/host`; web tests wit
   noise cloud, the two moons of cymbal and hi-hat, repeat flickers, the two hi-hat flames and the
   FX cauldron in Return. Done when each picture renders at min, default and max values without
   errors.
-- [ ] 9.4 `CauldronPage`: The Brew, The Pour and The Millstone with their frames and pictures,
+- [x] 9.4 `CauldronPage`: The Brew, The Pour and The Millstone with their frames and pictures,
   only the parameters the chosen effect uses, and `FX_LABELS`; clicking the Return cauldron opens
   it.
 - [ ] 9.5 Output handling: four choices, aliases shown as their equivalent, pan dims for left and

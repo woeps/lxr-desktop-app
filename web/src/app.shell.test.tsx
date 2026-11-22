@@ -82,7 +82,9 @@ describe("page shell", () => {
       click(host.querySelector(`[role=tab][aria-label="${n}"]`)!);
       const shown = rows();
       const voice = i === 6 ? -1 : i;
-      const expected = PARAMS.filter((p) => p.voice === voice && !p.inert).map((p) => p.name).sort();
+      // The Cauldron shows only what the chosen effect uses (default "off": design 4.12.3).
+      const expected = PARAMS.filter((p) => p.voice === voice && !p.inert && (voice !== -1 || !/^fx_(dist_type|p\d|ratio|wave|delay_type)$/.test(p.name)))
+        .map((p) => p.name).sort();
       expect(shown.slice().sort()).toEqual(expected);
       expect(host.querySelector(`[role=tab][aria-label="${n}"]`)!.getAttribute("aria-selected")).toBe("true");
       seen.set(n, shown);
