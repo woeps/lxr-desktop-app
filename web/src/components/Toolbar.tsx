@@ -9,7 +9,7 @@ import styles from "./Shell.module.css";
 /**
  * Edit actions of the page (design 4.9). `onSeal` opens the store dialog.
  */
-export function Toolbar(props: { onSeal: () => void; onGrimoire: () => void; onSetup: () => void }) {
+export function Toolbar(props: { onSeal: () => void; onGrimoire: () => void; onImporter: () => void; onSetup: () => void }) {
   const app = useApp();
   const { session } = app;
   // History is not a signal; every history change also replaces `current`, so reading it tracks that.
@@ -67,6 +67,7 @@ export function Toolbar(props: { onSeal: () => void; onGrimoire: () => void; onS
         </span>
       </Show>
       <button type="button" onClick={props.onGrimoire}>Grimoire</button>
+      <button type="button" onClick={props.onImporter}>Preset importer</button>
       <button type="button" onClick={props.onSetup}>MIDI setup</button>
       <span>Roll amount</span>
       <input type="range" min={0} max={100} value={amount()} aria-label="Roll amount"

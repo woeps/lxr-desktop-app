@@ -213,6 +213,39 @@ describe("with a MIDI output", () => {
   });
 });
 
+describe("preset importer drawer", () => {
+  beforeEach(() => mount());
+  const toggle = () => click([...host.querySelectorAll("button")].find((b) => b.textContent === "Preset importer")!);
+  const drawer = () => host.querySelector("aside[aria-label='Preset importer']");
+
+  it("opens and closes from the toolbar and keeps its list while closed", async () => {
+    expect(drawer()).toBeNull();
+    toggle();
+    expect(drawer()).toBeTruthy();
+    const f = (n: string) => new File([new Uint8Array(255)], n);
+    const files = host.querySelector<HTMLInputElement>("[aria-label='Open files']")!;
+    Object.defineProperty(files, "files", { value: [f("A.SND"), f("B.SND")], configurable: true });
+    files.dispatchEvent(new Event("change", { bubbles: true }));
+    for (let i = 0; i < 20; i++) { await new Promise((r) => setTimeout(r, 2)); flush(); }
+    const rowsOf = () => [...host.querySelectorAll<HTMLElement>("button[data-select]")];
+    expect(rowsOf().length).toBe(2);
+    click(rowsOf()[1]!);
+    await tick();
+    expect(rowsOf()[1]!.getAttribute("aria-pressed")).toBe("true");
+    toggle();
+    expect(drawer()).toBeNull();
+    toggle();
+    expect(rowsOf().length).toBe(2);
+    expect(rowsOf()[1]!.getAttribute("aria-pressed")).toBe("true");
+  });
+
+  it("closes with Escape", () => {
+    toggle();
+    press(drawer()!, "Escape");
+    expect(drawer()).toBeNull();
+  });
+});
+
 describe("without an output", () => {
   it("disables sending and says nothing is sent", () => {
     mount(false);

@@ -5,12 +5,14 @@ import { Footer } from "./components/Footer";
 import { Grimoire } from "./components/Grimoire";
 import { ImportDialog } from "./components/ImportDialog";
 import { MidiSetupDialog } from "./components/MidiSetupDialog";
+import { PresetImporter } from "./components/PresetImporter";
 import { StoreDialog } from "./components/StoreDialog";
 import { Toolbar } from "./components/Toolbar";
 import { TransferStatus } from "./components/TransferStatus";
 import { VoicePage } from "./components/VoicePage";
 import { VoiceShields } from "./components/VoiceShields";
 import { AppContext, createApp, type App as AppState } from "./state/app";
+import { createImporter } from "./state/importer";
 import { SessionContext } from "./state/session";
 
 /** Page shell (design 4.9). `app` is injectable for tests. */
@@ -36,14 +38,18 @@ export function App(props: { app?: AppState }) {
   const [grimoire, setGrimoire] = createSignal(false);
   const [importing, setImporting] = createSignal(false);
   const [setup, setSetup] = createSignal(false);
+  // Created once so the list and selection survive closing and reopening the drawer.
+  const importer = createImporter(app);
+  const [drawer, setDrawer] = createSignal(false);
 
   return (
     <AppContext value={app}>
       <SessionContext value={app.session}>
         <ConnectBar />
-        <Toolbar onSeal={() => setSealing(true)} onGrimoire={() => setGrimoire(!grimoire())} onSetup={() => setSetup(true)} />
+        <Toolbar onSeal={() => setSealing(true)} onGrimoire={() => setGrimoire(!grimoire())} onImporter={() => setDrawer(!drawer())} onSetup={() => setSetup(true)} />
         <Show when={sealing()}><StoreDialog onClose={() => setSealing(false)} /></Show>
         <Show when={grimoire()}><Grimoire onClose={() => setGrimoire(false)} onImport={() => setImporting(true)} /></Show>
+        <Show when={drawer()}><PresetImporter importer={importer} onClose={() => setDrawer(false)} /></Show>
         <Show when={importing()}><ImportDialog onClose={() => setImporting(false)} /></Show>
         <Show when={setup()}><MidiSetupDialog onClose={() => setSetup(false)} /></Show>
         <TransferStatus />
