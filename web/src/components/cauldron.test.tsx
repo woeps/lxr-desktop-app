@@ -88,4 +88,47 @@ describe("Return cauldron", () => {
     click(host.querySelector("[data-station=return] [data-slot=picture]")!);
     expect(app.session.state.page).toBe(0);
   });
+
+  describe("dragging a slider in The Brew", () => {
+    const ptr = (el: Element, type: string, x: number) => {
+      const ev = new PointerEvent(type, { clientX: x, button: 0, pointerId: 1, bubbles: true, cancelable: true });
+      el.dispatchEvent(ev);
+      flush();
+      return ev;
+    };
+    const bar = () => host.querySelector<HTMLElement>("[data-station=brew] [data-param=fx_p1] [role=slider]")!;
+    const value = () => app.session.state.current.values[def("fx_p1", -1).id]!;
+
+    it("follows several moves, stays attached to the same element, and is one history step", () => {
+      mount(() => <CauldronPage />);
+      set("fx_type", -1, 1);
+      const el = bar();
+      const captured: number[] = [];
+      el.setPointerCapture = (id: number) => { captured.push(id); };
+      const before = value();
+      const down = ptr(el, "pointerdown", 0);
+      expect(down.defaultPrevented).toBe(true); // no text selection starts from this press
+      expect(captured).toEqual([1]);
+      const seen: number[] = [];
+      for (const x of [10, 20, 30, 40]) { ptr(el, "pointermove", x); seen.push(value()); }
+      ptr(el, "pointerup", 40);
+      expect(seen[0]).toBeGreaterThan(before);
+      expect(seen[3]).toBeGreaterThan(seen[0]!); // keeps moving after the first step
+      expect(bar()).toBe(el); // the row was not re-created under the pointer
+      const after = value();
+      expect(app.session.history.undo()).toEqual([[def("fx_p1", -1).id, after, before]]);
+      // exactly one step for the drag: the next one back is the effect choice
+      expect(app.session.history.undo()![0]![0]).toBe(def("fx_type", -1).id);
+    });
+
+    it("cancels mousedown and dragstart so Firefox does not start a selection", () => {
+      mount(() => <CauldronPage />);
+      set("fx_type", -1, 1);
+      for (const type of ["mousedown", "dragstart"]) {
+        const ev = new Event(type, { bubbles: true, cancelable: true });
+        bar().dispatchEvent(ev);
+        expect(ev.defaultPrevented).toBe(true);
+      }
+    });
+  });
 });

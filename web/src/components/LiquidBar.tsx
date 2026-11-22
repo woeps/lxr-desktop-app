@@ -47,10 +47,15 @@ export function LiquidBar(props: { def: ParamDef }) {
 
   function onPointerDown(e: PointerEvent) {
     if (e.button !== 0 || locked()) return;
+    // Firefox starts a text selection from the default action of mousedown/pointerdown and then
+    // stops delivering the drag; cancelling it keeps the whole drag on the bar.
+    e.preventDefault();
     drag = { x: e.clientX, start: value(), acc: value(), shown: value() };
     try { track.setPointerCapture?.(e.pointerId); } catch { /* synthetic pointer */ }
     track.focus();
   }
+
+  const noDefault = (e: Event) => e.preventDefault();
 
   function onPointerMove(e: PointerEvent) {
     if (!drag || locked()) return;
@@ -90,6 +95,9 @@ export function LiquidBar(props: { def: ParamDef }) {
       onPointerMove={onPointerMove}
       onPointerUp={endDrag}
       onPointerCancel={endDrag}
+      onLostPointerCapture={endDrag}
+      onMouseDown={noDefault}
+      onDragStart={noDefault}
       onDblClick={() => resetValue(session, props.def)}
     >
       <div class={styles.fill} ref={fill} />
