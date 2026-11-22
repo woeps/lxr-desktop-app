@@ -79,12 +79,12 @@ Task 12 needs Chris at the browser.
 
 ## 8. Side panels (R5)
 
-- [ ] 8.1 Add `SidePanel` and the panel switching in `App.tsx`; turn `Grimoire.tsx` into
+- [x] 8.1 Add `SidePanel` and the panel switching in `App.tsx`; turn `Grimoire.tsx` into
   `LibraryPanel.tsx` and `PresetImporter.tsx` into `ImportPanel.tsx` with the X header, no bottom
   Close, "Library" and "Import presets" names, and Rename through `RenameDialog`. Done when
   `shell.test.tsx`, `grimoire.test.tsx` (renamed) and `importer.test.tsx` pass, including Escape
   order, one panel at a time and focus return.
-- [ ] 8.2 Add `SettingsPanel` from `MidiSetupDialog.tsx`, and `InfoPanel` with the table id and
+- [x] 8.2 Add `SettingsPanel` from `MidiSetupDialog.tsx`, and `InfoPanel` with the table id and
   notices; remove `Footer.tsx` and `MidiSetupDialog.tsx`. Done when the MIDI setup tests are moved
   to the panel and pass, and a test finds the three notices in the Info panel.
 
