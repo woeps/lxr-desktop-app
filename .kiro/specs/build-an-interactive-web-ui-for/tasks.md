@@ -131,7 +131,7 @@ is checked off. Host tests run with `ctest --test-dir build/host`; web tests wit
 - [x] 10.1 `JourneyOverlay`: trail with glyphs and seals, the hero walk on strike, bridges with
   sparks, labels and level-based brightness, the fall arc on voices with a pitch envelope, chains;
   geometry from a `ResizeObserver`.
-- [ ] 10.2 Threads, badges, incoming list, contested styling and pick-to-bind (Esc cancels, Enter
+- [x] 10.2 Threads, badges, incoming list, contested styling and pick-to-bind (Esc cancels, Enter
   binds) for the Mentor and the Oracle.
 - [ ] 10.3 `Caption` and downstream highlighting for station, fall, Mentor, Oracle and Bindings
   rows.

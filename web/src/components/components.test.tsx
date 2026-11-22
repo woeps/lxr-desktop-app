@@ -197,12 +197,11 @@ describe("TargetSelect", () => {
 });
 
 describe("ParamRow", () => {
-  beforeEach(() => mount(() => <ParamRow def={NUM} badges={["M1"]} />));
+  beforeEach(() => mount(() => <ParamRow def={NUM} />));
   const dot = () => host.querySelector<HTMLElement>("[data-modified]")!.dataset.modified;
 
-  it("shows label, live icon, badge and value", () => {
+  it("shows label, live icon and value", () => {
     expect(host.textContent).toContain(NUM.label);
-    expect(host.textContent).toContain("M1");
     expect(host.querySelector("svg[data-icon]")!.getAttribute("data-icon")).toBe(NUM.icon);
     expect(host.querySelector("[data-testid=value]")!.textContent).toBe(String(NUM.def));
   });

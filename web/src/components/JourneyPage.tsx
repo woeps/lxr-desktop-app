@@ -1,4 +1,4 @@
-import { For } from "solid-js";
+import { For, onCleanup } from "solid-js";
 import { PARAMS, type Station as StationId } from "../generated/params";
 import { stationRows } from "../model/stations";
 import { useSession } from "../state/session";
@@ -45,6 +45,10 @@ export function JourneyPage(props: { voice: Voice }) {
   const out = () => PARAMS.find((p) => p.voice === props.voice && p.name.startsWith("audio_out"))!;
   const outText = () => out().values![valueOf(session, out()) - out().min] ?? "";
   const toFx = () => outText() === "FX";
+  // Esc leaves pick mode (design 4.12.8).
+  const onEsc = (e: KeyboardEvent) => { if (e.key === "Escape" && session.state.pick) session.setPick(null); };
+  document.addEventListener("keydown", onEsc);
+  onCleanup(() => document.removeEventListener("keydown", onEsc));
   return (
     <div class={styles.journey} data-journey={props.voice}>
       <JourneyOverlay voice={props.voice} live={live} />

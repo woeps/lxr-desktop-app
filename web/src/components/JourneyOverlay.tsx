@@ -5,6 +5,9 @@ import {
   bridgeLabels, buildOverlay, computeGeometry, hasFall, voiceLevels, type OverlayLive, type OverlayView, type Rect,
 } from "../visual/overlay";
 import { picInput, type Voice } from "../visual/vignettes";
+import { bindings, contestedIds } from "../model/links";
+import { paramById } from "../model/params";
+import { threadPaths, type Thread } from "../visual/threads";
 
 interface Measured { w: number; h: number; stations: Rect[]; cards: Rect[] }
 
@@ -50,6 +53,22 @@ export function JourneyOverlay(props: { voice: Voice; live: Live }) {
   });
   createEffect(live, (l) => view?.update(l));
 
+  // Threads from the Bindings card to the bound station (design 4.12.8); other voices draw none.
+  let threadSlot!: HTMLDivElement;
+  const threads = createMemo((): Thread[] => {
+    const m = measured();
+    if (!m) return [];
+    const all = bindings(session.state.current.values);
+    const hot = contestedIds(all);
+    return all.filter((b) => b.voice === props.voice && b.target !== null).flatMap((b) => {
+      const p = paramById(b.target!);
+      return p && p.voice === props.voice ? [{ kind: b.kind, station: p.station, contested: hot.has(b.target!) }] : [];
+    });
+  });
+  createEffect(() => ({ m: measured(), t: threads() }), ({ m, t }) => {
+    threadSlot.replaceChildren(m ? threadPaths(m.stations, m.cards[1], t, m.w, m.h) : document.createComment(""));
+  });
+
   function mount(el: HTMLDivElement) {
     queueMicrotask(() => {
       const journey = el.parentElement;
@@ -63,5 +82,10 @@ export function JourneyOverlay(props: { voice: Voice; live: Live }) {
       onCleanup(() => ro.disconnect());
     });
   }
-  return <div data-slot="overlay" style={{ position: "absolute", left: 0, top: 0 }} ref={(el: HTMLDivElement) => { slot = el; mount(el); }} />;
+  return (
+    <>
+      <div data-slot="overlay" style={{ position: "absolute", left: 0, top: 0 }} ref={(el: HTMLDivElement) => { slot = el; mount(el); }} />
+      <div data-slot="threads" style={{ position: "absolute", left: 0, top: 0, "pointer-events": "none" }} ref={threadSlot} />
+    </>
+  );
 }

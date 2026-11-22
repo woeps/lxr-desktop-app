@@ -13,3 +13,9 @@
 .row:hover .tool, .row:focus-within .tool, .on { opacity: 1; }
 .tool:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
 .tool:disabled { cursor: not-allowed; }
+.badge[data-kind="mentor"] { border-color: var(--gold); color: var(--gold); }
+.badge[data-own="false"] { border-style: dashed; }
+.row[data-contested="true"] { outline: 1px solid var(--contested); outline-offset: 1px; }
+.row[data-contested="true"] .badge { border-color: var(--contested); color: var(--contested); }
+.row[data-pickable="true"] { outline: 1px dashed var(--gold); outline-offset: 1px; cursor: crosshair; }
+.row[data-pickable="true"] * { cursor: crosshair; }
