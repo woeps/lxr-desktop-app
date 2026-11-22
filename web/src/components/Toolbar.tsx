@@ -1,7 +1,8 @@
 import { createSignal, Show } from "solid-js";
 import { useApp } from "../state/app";
 import { nameError } from "../state/library";
-import { copyVoice, diff, factory, pasteVoice, randomise } from "../model/sound";
+import { copyVoice, diff, factory, pasteVoice } from "../model/sound";
+import { rollAll, rollVoice } from "../state/roll";
 import { NOTICE_NOT_SEEN } from "./notices";
 import { PAGES, voiceOf } from "./voices";
 import styles from "./Shell.module.css";
@@ -27,15 +28,6 @@ export function Toolbar(props: { onSeal: () => void; onGrimoire: () => void; onI
     session.applyChanges(diff(session.state.current, f).map((id) => [id, session.state.current.values[id]!, f.values[id]!]));
   }
   const voiceName = () => PAGES.find((p) => p.page === session.state.page)?.name ?? "voice";
-  function rollVoice() {
-    const changes = randomise(session.state.current, voice(), amount() / 100, new Set(session.state.locked), app.rng);
-    session.applyChanges(changes);
-  }
-  function roll() {
-    const locked = new Set(session.state.locked);
-    const changes = PAGES.flatMap((p) => randomise(session.state.current, voiceOf(p.page), amount() / 100, locked, app.rng));
-    session.applyChanges(changes);
-  }
   function paste() {
     const clip = session.state.copyBuffer;
     if (clip) session.applyChanges(pasteVoice(session.state.current, voice(), clip, new Set(session.state.locked)));
@@ -79,8 +71,8 @@ export function Toolbar(props: { onSeal: () => void; onGrimoire: () => void; onI
       <input type="range" min={0} max={100} value={amount()} aria-label="Roll amount"
         onInput={(e) => setAmount(Number(e.currentTarget.value))} />
       <output aria-label="Roll amount value">{amount()}%</output>
-      <button type="button" onClick={roll}>Roll</button>
-      <button type="button" onClick={rollVoice}>{`Roll ${voiceName()}`}</button>
+      <button type="button" onClick={() => rollAll(app, amount())}>Roll</button>
+      <button type="button" onClick={() => rollVoice(app, voice(), amount())}>{`Roll ${voiceName()}`}</button>
       <Show when={isDrum()}>
         <button type="button" onClick={() => session.setCopyBuffer(copyVoice(session.state.current, voice()))}>Copy</button>
         <button type="button" disabled={!session.state.copyBuffer} onClick={paste}>Paste</button>

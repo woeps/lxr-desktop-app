@@ -33,7 +33,7 @@ Task 12 needs Chris at the browser.
 - [x] 3.1 Add `rollVoice`, `rollAll` and `dockCollapsed` to `state/settings.ts` with sanitising.
   Done when `settings.test.ts` passes with defaults, clamping and a stored object without the new
   fields.
-- [ ] 3.2 Add `state/roll.ts` (`rollVoice`, `rollAll`) by moving the bodies out of `Toolbar.tsx`,
+- [x] 3.2 Add `state/roll.ts` (`rollVoice`, `rollAll`) by moving the bodies out of `Toolbar.tsx`,
   `state/status.ts` (message, 5 s success timer with pause) and `state/shell.ts` (panel and
   connection state, `guardOutput`). Done when unit tests cover one undo step per roll, locks kept,
   the timer with fake timers and one panel at a time.
